@@ -19,6 +19,7 @@ The University Clinic Information System (UCIS) is a mobile-first, secure, exten
 The system is designed around:
 
 - longitudinal electronic medical records (EMR);
+- medical records;
 - dental records and odontogram history;
 - walk-in registration and queue management;
 - nurse/staff triage and vital signs;

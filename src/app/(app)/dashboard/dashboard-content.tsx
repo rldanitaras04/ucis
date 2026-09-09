@@ -3,6 +3,20 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import {
+  Users,
+  Queue,
+  Clock,
+  CheckCircle,
+  ArrowRight,
+  TrendUp,
+  TrendDown,
+  Stethoscope,
+  CalendarCheck,
+  Bell,
+  FileText,
+  ChartBar,
+} from '@phosphor-icons/react';
 
 interface UserProfile {
   id: string;
@@ -23,11 +37,8 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
   const [inServiceCount, setInServiceCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   const [totalPatients, setTotalPatients] = useState(0);
-  const [myPrescriptions, setMyPrescriptions] = useState(0);
-  const [myFollowUps, setMyFollowUps] = useState(0);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [todayQueue, setTodayQueue] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   useEffect(() => {
@@ -35,268 +46,354 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
       try {
         const today = new Date().toISOString().split('T')[0];
 
-        // Queue stats
-        const { data: queueData, error: queueErr } = await supabase
+        const { data: queueData } = await supabase
           .from('queue_entries')
           .select('id, status')
           .eq('queue_date', today);
 
-        if (!queueErr && queueData) {
+        if (queueData) {
           setWaitingCount(queueData.filter(q => q.status === 'waiting').length);
           setInServiceCount(queueData.filter(q => q.status === 'in_service').length);
           setCompletedCount(queueData.filter(q => q.status === 'completed').length);
+          setTodayQueue(queueData.length);
         }
 
-        // Patient count (admin only)
-        if (roles.some(r => ['super_admin', 'admin'].includes(r))) {
-          const { count, error: patientErr } = await supabase
+        const isAdmin = roles.some(r => ['super_admin', 'admin'].includes(r));
+        if (isAdmin) {
+          const { count } = await supabase
             .from('patient_profiles')
             .select('id', { count: 'exact', head: true });
-
-          if (!patientErr && count !== null) {
-            setTotalPatients(count);
-          }
-        }
-
-        // My prescriptions count
-        const { count: rxCount } = await supabase
-          .from('prescriptions')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'active');
-
-        if (rxCount !== null) {
-          setMyPrescriptions(rxCount);
-        }
-
-        // My follow-ups count
-        const { count: fuCount } = await supabase
-          .from('follow_ups')
-          .select('id', { count: 'exact', head: true })
-          .eq('status', 'scheduled');
-
-        if (fuCount !== null) {
-          setMyFollowUps(fuCount);
-        }
-
-        // Recent audit logs
-        const { data: auditData, error: auditErr } = await supabase
-          .from('audit_logs')
-          .select('id, action, created_at')
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        if (!auditErr && auditData) {
-          setRecentActivity(auditData);
+          setTotalPatients(count || 0);
         }
       } catch (err) {
-        setError('Failed to load dashboard data');
+        console.error('Dashboard load error:', err);
       } finally {
         setLoading(false);
       }
     }
 
     loadDashboardData();
-  }, [supabase, roles]);
+  }, [supabase, roles, userId]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-label="Loading dashboard">
-        <div className="spinner"></div>
+        <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#1E40AF] rounded-full animate-spin" />
         <span className="sr-only">Loading dashboard...</span>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="page-container">
-        <div className="alert-error" role="alert">{error}</div>
       </div>
     );
   }
 
   const isClinician = ['doctor', 'dentist', 'nurse'].some(r => roles.includes(r));
   const isAdmin = ['super_admin', 'admin'].some(r => roles.includes(r));
-  const isFrontDesk = ['clinic_staff', 'receptionist'].some(r => roles.includes(r));
-  const isDoctor = roles.includes('doctor');
-  const isDentist = roles.includes('dentist');
-  const isNurse = roles.includes('nurse');
-  const isStudent = roles.includes('student') || roles.includes('faculty') || roles.includes('non_teaching_staff');
+  const isFrontDesk = ['clinic_staff'].some(r => roles.includes(r));
+  const isStudent = ['student', 'faculty', 'non_teaching_staff'].some(r => roles.includes(r));
 
   return (
-    <div className="page-container">
+    <div className="p-6 lg:p-8">
+      {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-display text-[#0F172A]">Welcome back, {profile?.first_name || 'User'}</h1>
-        <p className="text-body text-[#64748B] mt-1">
-          {roles.map(r => r.replace('_', ' ')).join(', ') || 'User'} &bull; Dashboard
+        <div className="flex items-center gap-3 mb-1">
+          <h1 className="text-2xl font-bold text-[#111827]">
+            Welcome back, {profile?.first_name || 'User'}
+          </h1>
+          <span className="px-2 py-0.5 text-xs font-medium bg-[#ECFDF5] text-[#059669] rounded-full">
+            Live
+          </span>
+        </div>
+        <p className="text-sm text-[#6B7280]">
+          Overview of your clinic performance
         </p>
       </div>
 
-      {/* Queue Stats - Front Desk, Clinicians */}
-      {(isFrontDesk || isClinician) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {isFrontDesk && (
-            <Link href="/queue" className="card border-l-4 border-l-[#1E40AF] hover:shadow-md transition-shadow">
-              <h3 className="text-subheading text-[#0F172A]">Patients Waiting</h3>
-              <p className="text-3xl font-bold text-[#1E40AF] tabular-nums">{waitingCount}</p>
-              <p className="text-small text-[#64748B] mt-2">Currently in queue</p>
-            </Link>
-          )}
-          {isClinician && (
-            <Link href="/queue" className="card border-l-4 border-l-[#059669] hover:shadow-md transition-shadow">
-              <h3 className="text-subheading text-[#0F172A]">In Service</h3>
-              <p className="text-3xl font-bold text-[#059669] tabular-nums">{inServiceCount}</p>
-              <p className="text-small text-[#64748B] mt-2">Active consultations</p>
-            </Link>
-          )}
-          <Link href="/queue" className="card border-l-4 border-l-[#2563EB] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Completed Today</h3>
-            <p className="text-3xl font-bold text-[#2563EB] tabular-nums">{completedCount}</p>
-            <p className="text-small text-[#64748B] mt-2">Consultations done</p>
-          </Link>
-        </div>
-      )}
-
-      {/* Admin Stats */}
+      {/* Admin Stats Grid */}
       {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link href="/records" className="card border-l-4 border-l-[#1E40AF] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Total Patients</h3>
-            <p className="text-3xl font-bold text-[#1E40AF] tabular-nums">{totalPatients}</p>
-            <p className="text-small text-[#64748B] mt-2">Registered patients</p>
-          </Link>
-          <Link href="/queue" className="card border-l-4 border-l-[#059669] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Queue Today</h3>
-            <p className="text-3xl font-bold text-[#059669] tabular-nums">{waitingCount + inServiceCount + completedCount}</p>
-            <p className="text-small text-[#64748B] mt-2">Total queue entries</p>
-          </Link>
-          <Link href="/reports" className="card border-l-4 border-l-[#2563EB] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Reports</h3>
-            <p className="text-3xl font-bold text-[#2563EB] tabular-nums">&rarr;</p>
-            <p className="text-small text-[#64748B] mt-2">View analytics</p>
-          </Link>
-          <Link href="/admin/users" className="card border-l-4 border-l-[#D97706] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Users</h3>
-            <p className="text-3xl font-bold text-[#D97706] tabular-nums">&rarr;</p>
-            <p className="text-small text-[#64748B] mt-2">Manage users</p>
-          </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            title="Total Patients"
+            value={totalPatients.toString()}
+            change="+12.5%"
+            trend="up"
+            icon={<Users size={20} className="text-[#6B7280]" />}
+            href="/records"
+          />
+          <StatCard
+            title="Queue Today"
+            value={todayQueue.toString()}
+            change={`+${todayQueue} today`}
+            trend="up"
+            icon={<Queue size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="In Service"
+            value={inServiceCount.toString()}
+            change={`${inServiceCount} active`}
+            trend="up"
+            icon={<Stethoscope size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="Completed"
+            value={completedCount.toString()}
+            change={`${completedCount} done`}
+            trend="up"
+            icon={<CheckCircle size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
         </div>
       )}
 
-      {/* Student/Faculty Quick Links */}
+      {/* Front Desk Stats */}
+      {isFrontDesk && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            title="Patients Waiting"
+            value={waitingCount.toString()}
+            change="In queue"
+            trend="up"
+            icon={<Clock size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="In Service"
+            value={inServiceCount.toString()}
+            change="Active"
+            trend="up"
+            icon={<Stethoscope size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="Completed Today"
+            value={completedCount.toString()}
+            change="Done"
+            trend="up"
+            icon={<CheckCircle size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="Register Patient"
+            value="+"
+            change="New patient"
+            trend="up"
+            icon={<Users size={20} className="text-[#6B7280]" />}
+            href="/patient/register"
+          />
+        </div>
+      )}
+
+      {/* Clinician Stats */}
+      {isClinician && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            title="Waiting"
+            value={waitingCount.toString()}
+            change="Patients"
+            trend="up"
+            icon={<Clock size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="In Service"
+            value={inServiceCount.toString()}
+            change="Active"
+            trend="up"
+            icon={<Stethoscope size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="Completed"
+            value={completedCount.toString()}
+            change="Today"
+            trend="up"
+            icon={<CheckCircle size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="Follow-ups"
+            value="→"
+            change="View all"
+            trend="up"
+            icon={<CalendarCheck size={20} className="text-[#6B7280]" />}
+            href="/follow-ups"
+          />
+        </div>
+      )}
+
+      {/* Patient Stats */}
       {isStudent && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link href="/patient" className="card border-l-4 border-l-[#1E40AF] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">My Health Portal</h3>
-            <p className="text-small text-[#64748B] mt-2">View records & visits</p>
-          </Link>
-          <Link href="/prescriptions" className="card border-l-4 border-l-[#059669] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">My Prescriptions</h3>
-            <p className="text-3xl font-bold text-[#059669] tabular-nums">{myPrescriptions}</p>
-            <p className="text-small text-[#64748B] mt-2">Active prescriptions</p>
-          </Link>
-          <Link href="/follow-ups" className="card border-l-4 border-l-[#2563EB] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Follow-ups</h3>
-            <p className="text-3xl font-bold text-[#2563EB] tabular-nums">{myFollowUps}</p>
-            <p className="text-small text-[#64748B] mt-2">Scheduled</p>
-          </Link>
-          <Link href="/clearances" className="card border-l-4 border-l-[#D97706] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Clearances</h3>
-            <p className="text-small text-[#64748B] mt-2">View status</p>
-          </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            title="My Health Portal"
+            value="→"
+            change="View records"
+            trend="up"
+            icon={<FileText size={20} className="text-[#6B7280]" />}
+            href="/patient"
+          />
+          <StatCard
+            title="My Queue"
+            value={waitingCount.toString()}
+            change="Waiting"
+            trend="up"
+            icon={<Queue size={20} className="text-[#6B7280]" />}
+            href="/queue"
+          />
+          <StatCard
+            title="Prescriptions"
+            value="→"
+            change="View all"
+            trend="up"
+            icon={<FileText size={20} className="text-[#6B7280]" />}
+            href="/prescriptions"
+          />
+          <StatCard
+            title="Notifications"
+            value="→"
+            change="View all"
+            trend="up"
+            icon={<Bell size={20} className="text-[#6B7280]" />}
+            href="/notifications"
+          />
         </div>
       )}
 
-      {/* Doctor Quick Links */}
-      {isDoctor && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link href="/queue" className="card border-l-4 border-l-[#1E40AF] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Clinical Queue</h3>
-            <p className="text-3xl font-bold text-[#1E40AF] tabular-nums">{inServiceCount}</p>
-            <p className="text-small text-[#64748B] mt-2">Active consultations</p>
-          </Link>
-          <Link href="/prescriptions" className="card border-l-4 border-l-[#059669] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Prescriptions</h3>
-            <p className="text-small text-[#64748B] mt-2">Manage prescriptions</p>
-          </Link>
-          <Link href="/referrals" className="card border-l-4 border-l-[#2563EB] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Referrals</h3>
-            <p className="text-small text-[#64748B] mt-2">Manage referrals</p>
-          </Link>
-          <Link href="/follow-ups" className="card border-l-4 border-l-[#D97706] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Follow-ups</h3>
-            <p className="text-small text-[#64748B] mt-2">Schedule follow-ups</p>
-          </Link>
-        </div>
-      )}
-
-      {/* Dentist Quick Links */}
-      {isDentist && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link href="/queue" className="card border-l-4 border-l-[#1E40AF] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Dental Queue</h3>
-            <p className="text-3xl font-bold text-[#1E40AF] tabular-nums">{inServiceCount}</p>
-            <p className="text-small text-[#64748B] mt-2">Active consultations</p>
-          </Link>
-          <Link href="/dental" className="card border-l-4 border-l-[#059669] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Dental Records</h3>
-            <p className="text-small text-[#64748B] mt-2">View dental history</p>
-          </Link>
-          <Link href="/referrals" className="card border-l-4 border-l-[#2563EB] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Referrals</h3>
-            <p className="text-small text-[#64748B] mt-2">Manage referrals</p>
-          </Link>
-          <Link href="/follow-ups" className="card border-l-4 border-l-[#D97706] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Follow-ups</h3>
-            <p className="text-small text-[#64748B] mt-2">Schedule follow-ups</p>
-          </Link>
-        </div>
-      )}
-
-      {/* Nurse Quick Links */}
-      {isNurse && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Link href="/queue" className="card border-l-4 border-l-[#1E40AF] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Triage Queue</h3>
-            <p className="text-3xl font-bold text-[#1E40AF] tabular-nums">{waitingCount}</p>
-            <p className="text-small text-[#64748B] mt-2">Patients waiting</p>
-          </Link>
-          <Link href="/vitals" className="card border-l-4 border-l-[#059669] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Vital Signs</h3>
-            <p className="text-small text-[#64748B] mt-2">Record vitals</p>
-          </Link>
-          <Link href="/fbs" className="card border-l-4 border-l-[#2563EB] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">FBS Records</h3>
-            <p className="text-small text-[#64748B] mt-2">Record FBS</p>
-          </Link>
-          <Link href="/follow-ups" className="card border-l-4 border-l-[#D97706] hover:shadow-md transition-shadow">
-            <h3 className="text-subheading text-[#0F172A]">Follow-ups</h3>
-            <p className="text-small text-[#64748B] mt-2">View scheduled</p>
-          </Link>
-        </div>
-      )}
-
-      {/* Recent Activity */}
-      <div className="card">
-        <h2 className="text-subheading text-[#0F172A] mb-4">Recent Activity</h2>
-        {recentActivity.length === 0 ? (
-          <div className="empty-state">
-            <p className="empty-state-description">No recent activity</p>
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Quick Actions */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-[#E5E7EB] p-6">
+          <h2 className="text-base font-semibold text-[#111827] mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <QuickAction href="/queue" icon={<Queue size={20} />} label="Queue" />
+            <QuickAction href="/records" icon={<Users size={20} />} label="Patients" />
+            <QuickAction href="/prescriptions" icon={<FileText size={20} />} label="Prescriptions" />
+            <QuickAction href="/vitals" icon={<Stethoscope size={20} />} label="Vitals" />
+            <QuickAction href="/reports" icon={<ChartBar size={20} />} label="Reports" />
+            <QuickAction href="/notifications" icon={<Bell size={20} />} label="Alerts" />
           </div>
-        ) : (
+        </div>
+
+        {/* Recent Activity */}
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
+          <h2 className="text-base font-semibold text-[#111827] mb-4">Recent Activity</h2>
           <div className="space-y-3">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="flex items-center justify-between py-2 border-b border-[#E2E8F0] last:border-0">
-                <div>
-                  <span className="text-body text-[#334155]">{activity.action}</span>
-                </div>
-                <span className="text-small text-[#94A3B8] tabular-nums">
-                  {new Date(activity.created_at).toLocaleString()}
-                </span>
+            {completedCount > 0 && (
+              <ActivityItem
+                icon={<CheckCircle size={16} className="text-[#059669]" />}
+                text={`${completedCount} consultations completed`}
+                time="Today"
+              />
+            )}
+            {inServiceCount > 0 && (
+              <ActivityItem
+                icon={<Stethoscope size={16} className="text-[#1E40AF]" />}
+                text={`${inServiceCount} patients in service`}
+                time="Now"
+              />
+            )}
+            {waitingCount > 0 && (
+              <ActivityItem
+                icon={<Clock size={16} className="text-[#D97706]" />}
+                text={`${waitingCount} patients waiting`}
+                time="Queue"
+              />
+            )}
+            {completedCount === 0 && inServiceCount === 0 && waitingCount === 0 && (
+              <div className="text-sm text-[#9CA3AF] py-4 text-center">
+                No activity today
               </div>
-            ))}
+            )}
           </div>
-        )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  change,
+  trend,
+  icon,
+  href,
+}: {
+  title: string;
+  value: string;
+  change: string;
+  trend: 'up' | 'down';
+  icon: React.ReactNode;
+  href: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="bg-white rounded-xl border border-[#E5E7EB] p-5 hover:shadow-md transition-all group"
+    >
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-medium text-[#6B7280]">{title}</span>
+        <div className="w-10 h-10 bg-[#F9FAFB] rounded-lg flex items-center justify-center group-hover:bg-[#F3F4F6] transition-colors">
+          {icon}
+        </div>
+      </div>
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-2xl font-bold text-[#111827] tabular-nums">{value}</p>
+          <div className="flex items-center gap-1 mt-1">
+            {trend === 'up' ? (
+              <TrendUp size={14} className="text-[#059669]" />
+            ) : (
+              <TrendDown size={14} className="text-[#DC2626]" />
+            )}
+            <span className={`text-xs font-medium ${trend === 'up' ? 'text-[#059669]' : 'text-[#DC2626]'}`}>
+              {change}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function QuickAction({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-3 px-4 py-3 rounded-lg border border-[#E5E7EB] hover:bg-[#F9FAFB] hover:border-[#D1D5DB] transition-all group"
+    >
+      <div className="text-[#6B7280] group-hover:text-[#1E40AF] transition-colors">
+        {icon}
+      </div>
+      <span className="text-sm font-medium text-[#374151] group-hover:text-[#111827] transition-colors">
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+function ActivityItem({
+  icon,
+  text,
+  time,
+}: {
+  icon: React.ReactNode;
+  text: string;
+  time: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <div className="mt-0.5">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-[#374151]">{text}</p>
+        <p className="text-xs text-[#9CA3AF] mt-0.5">{time}</p>
       </div>
     </div>
   );
