@@ -39,14 +39,17 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-center text-3xl font-bold text-blue-600">UCIS</h1>
-          <h2 className="mt-2 text-center text-2xl font-bold text-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-[#1E40AF] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-2xl">U</span>
+          </div>
+          <h1 className="text-display text-[#0F172A]">UCIS</h1>
+          <h2 className="text-heading text-[#0F172A] mt-2">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="text-body text-[#64748B] mt-2">
             University Clinic Information System
           </p>
         </div>
@@ -95,9 +98,9 @@ function LoginForm() {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
-              <Link href="/auth/register" className="text-blue-600 hover:text-blue-500">
+            <p className="text-body text-[#64748B]">
+              Don&apos;t have an account?{' '}
+              <Link href="/auth/register" className="text-[#1E40AF] hover:text-[#1D4ED8] font-medium">
                 Register
               </Link>
             </p>
@@ -111,8 +114,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="spinner"></div>
       </div>
     }>
       <LoginForm />

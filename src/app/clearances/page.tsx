@@ -85,66 +85,69 @@ export default function ClearancesPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'expired': return 'bg-yellow-100 text-yellow-800';
-      case 'revoked': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'badge-success';
+      case 'expired': return 'badge-warning';
+      case 'revoked': return 'badge-danger';
+      default: return 'badge-neutral';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading clearances">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading clearances...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Clearances</h1>
+    <div className="page-container">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-heading text-[#0F172A]">Clearances</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="btn-primary"
         >
           {showForm ? 'Cancel' : 'Issue Clearance'}
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
-          <button onClick={() => setError(null)} className="float-right">&times;</button>
+          <button onClick={() => setError(null)} className="float-right font-bold" aria-label="Dismiss error">&times;</button>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="alert-success mb-4" role="status">
           {success}
         </div>
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 mb-6 space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+        <form onSubmit={handleSubmit} className="card mb-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID *</label>
+              <label htmlFor="patient_id" className="label">Patient ID *</label>
               <input
+                id="patient_id"
                 type="text"
                 value={formData.patient_id}
                 onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })}
                 required
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Clearance Type *</label>
+              <label htmlFor="clearance_type" className="label">Clearance Type *</label>
               <select
+                id="clearance_type"
                 value={formData.clearance_type}
                 onChange={(e) => setFormData({ ...formData, clearance_type: e.target.value })}
                 required
-                className="w-full border rounded-lg px-3 py-2"
+                className="select-field"
               >
                 <option value="">Select type</option>
                 <option value="medical">Medical</option>
@@ -155,12 +158,13 @@ export default function ClearancesPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+              <label htmlFor="expiry_date" className="label">Expiry Date</label>
               <input
+                id="expiry_date"
                 type="date"
                 value={formData.expiry_date}
                 onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field"
               />
             </div>
           </div>
@@ -168,66 +172,68 @@ export default function ClearancesPage() {
           <button
             type="submit"
             disabled={actionLoading === 'create'}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+            className="btn-primary"
           >
             {actionLoading === 'create' ? 'Issuing...' : 'Issue Clearance'}
           </button>
         </form>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Control #</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expiry</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {clearances.map((clr) => (
-              <tr key={clr.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                  {clr.control_number}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {clr.patient?.last_name}, {clr.patient?.first_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {clr.clearance_type}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {new Date(clr.issue_date).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {clr.expiry_date ? new Date(clr.expiry_date).toLocaleDateString() : 'N/A'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(clr.status)}`}>
-                    {clr.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {clr.status === 'active' && (
-                    <button
-                      onClick={() => handleRevoke(clr.id)}
-                      disabled={actionLoading === clr.id}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                    >
-                      Revoke
-                    </button>
-                  )}
-                </td>
+      <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">Control #</th>
+                <th scope="col">Patient</th>
+                <th scope="col">Type</th>
+                <th scope="col">Issue Date</th>
+                <th scope="col">Expiry</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {clearances.map((clr) => (
+                <tr key={clr.id} className="hover:bg-[#F8FAFC]">
+                  <td className="font-mono tabular-nums">
+                    {clr.control_number}
+                  </td>
+                  <td>
+                    {clr.patient?.last_name}, {clr.patient?.first_name}
+                  </td>
+                  <td>{clr.clearance_type}</td>
+                  <td>
+                    {new Date(clr.issue_date).toLocaleDateString()}
+                  </td>
+                  <td>
+                    {clr.expiry_date ? new Date(clr.expiry_date).toLocaleDateString() : 'N/A'}
+                  </td>
+                  <td>
+                    <span className={`badge ${getStatusColor(clr.status)}`}>
+                      {clr.status}
+                    </span>
+                  </td>
+                  <td>
+                    {clr.status === 'active' && (
+                      <button
+                        onClick={() => handleRevoke(clr.id)}
+                        disabled={actionLoading === clr.id}
+                        className="text-[#DC2626] hover:text-[#B91C1C] font-medium disabled:opacity-50"
+                      >
+                        Revoke
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {clearances.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No clearances found</div>
+          <div className="text-center py-12 text-body text-[#64748B]">
+            No clearances found
+          </div>
         )}
       </div>
     </div>

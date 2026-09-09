@@ -21,11 +21,28 @@ interface QueueEntry {
   service?: { name: string };
 }
 
+interface Clinic {
+  id: string;
+  name: string;
+}
+
+interface ClinicService {
+  id: string;
+  name: string;
+  clinic_id: string;
+}
+
 export default function QueuePage() {
   const [queueEntries, setQueueEntries] = useState<QueueEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
+  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [services, setServices] = useState<ClinicService[]>([]);
+  const [formData, setFormData] = useState({ patient_id: '', clinic_id: '', service_id: '' });
   const supabase = createClient();
 
   const fetchQueue = async () => {
@@ -38,16 +55,55 @@ export default function QueuePage() {
 
     if (fetchError) {
       setError('Failed to fetch queue entries');
-      return;
+    } else {
+      setQueueEntries(data || []);
     }
+    setLoading(false);
+  };
 
-    setQueueEntries(data || []);
+  const fetchClinics = async () => {
+    const { data } = await supabase.from('clinics').select('id, name').eq('is_active', true);
+    setClinics(data || []);
+  };
+
+  const fetchServices = async (clinicId: string) => {
+    const { data } = await supabase.from('clinic_services').select('id, name, clinic_id').eq('clinic_id', clinicId);
+    setServices(data || []);
   };
 
   useEffect(() => {
     fetchQueue();
-    setLoading(false);
+    fetchClinics();
   }, []);
+
+  useEffect(() => {
+    if (formData.clinic_id) {
+      fetchServices(formData.clinic_id);
+    }
+  }, [formData.clinic_id]);
+
+  const handleAddToQueue = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading('add');
+    setError(null);
+    setSuccess(null);
+
+    const result = await addToQueue({
+      patient_id: formData.patient_id,
+      clinic_id: formData.clinic_id,
+      service_id: formData.service_id,
+    });
+
+    if (result.success) {
+      setSuccess('Patient added to queue');
+      setShowAddForm(false);
+      setFormData({ patient_id: '', clinic_id: '', service_id: '' });
+      await fetchQueue();
+    } else {
+      setError(result.error || 'Failed to add to queue');
+    }
+    setActionLoading(null);
+  };
 
   const handleCallNext = async () => {
     setActionLoading('call');
@@ -86,6 +142,8 @@ export default function QueuePage() {
     setActionLoading(entryId);
     const result = await cancelQueueEntry(entryId);
     if (result.success) {
+      setSuccess('Queue entry cancelled');
+      setConfirmCancel(null);
       await fetchQueue();
     } else {
       setError(result.error || 'Failed to cancel entry');
@@ -95,121 +153,148 @@ export default function QueuePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'waiting': return 'bg-yellow-100 text-yellow-800';
-      case 'called': return 'bg-blue-100 text-blue-800';
-      case 'in_service': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-gray-100 text-gray-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'waiting': return 'badge-warning';
+      case 'called': return 'badge-info';
+      case 'in_service': return 'badge-success';
+      case 'completed': return 'badge-neutral';
+      case 'cancelled': return 'badge-danger';
+      default: return 'badge-neutral';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading queue">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading queue...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Queue Management</h1>
-        <button
-          onClick={handleCallNext}
-          disabled={actionLoading === 'call'}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-        >
-          {actionLoading === 'call' ? 'Calling...' : 'Call Next Patient'}
-        </button>
+    <div className="page-container">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-heading text-[#0F172A]">Queue Management</h1>
+        <div className="flex gap-2">
+          <button onClick={() => setShowAddForm(!showAddForm)} className="btn-secondary">
+            {showAddForm ? 'Cancel' : 'Add to Queue'}
+          </button>
+          <button onClick={handleCallNext} disabled={actionLoading === 'call'} className="btn-primary">
+            {actionLoading === 'call' ? 'Calling...' : 'Call Next Patient'}
+          </button>
+        </div>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
-          <button onClick={() => setError(null)} className="float-right">&times;</button>
+          <button onClick={() => setError(null)} className="float-right font-bold" aria-label="Dismiss">&times;</button>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Queue #</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clinic</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {queueEntries.map((entry) => (
-              <tr key={entry.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {entry.queue_number}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {entry.patient?.last_name}, {entry.patient?.first_name}
-                  <br />
-                  <span className="text-xs text-gray-500">{entry.patient?.patient_id}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {entry.clinic?.name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {entry.service?.name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(entry.status)}`}>
-                    {entry.status.replace('_', ' ')}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {entry.status === 'waiting' && (
-                    <button
-                      onClick={() => handleStartService(entry.id)}
-                      disabled={actionLoading === entry.id}
-                      className="text-blue-600 hover:text-blue-900 mr-3 disabled:opacity-50"
-                    >
-                      Start
-                    </button>
-                  )}
-                  {entry.status === 'called' && (
-                    <button
-                      onClick={() => handleStartService(entry.id)}
-                      disabled={actionLoading === entry.id}
-                      className="text-green-600 hover:text-green-900 mr-3 disabled:opacity-50"
-                    >
-                      Begin
-                    </button>
-                  )}
-                  {entry.status === 'in_service' && (
-                    <button
-                      onClick={() => handleCompleteService(entry.id)}
-                      disabled={actionLoading === entry.id}
-                      className="text-green-600 hover:text-green-900 mr-3 disabled:opacity-50"
-                    >
-                      Complete
-                    </button>
-                  )}
-                  {(entry.status === 'waiting' || entry.status === 'called') && (
-                    <button
-                      onClick={() => handleCancel(entry.id)}
-                      disabled={actionLoading === entry.id}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </td>
+      {success && (
+        <div className="alert-success mb-4" role="status">{success}</div>
+      )}
+
+      {showAddForm && (
+        <form onSubmit={handleAddToQueue} className="card mb-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="patient_id" className="label">Patient ID *</label>
+              <input id="patient_id" type="text" required value={formData.patient_id} onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })} className="input-field" />
+            </div>
+            <div>
+              <label htmlFor="clinic_id" className="label">Clinic *</label>
+              <select id="clinic_id" required value={formData.clinic_id} onChange={(e) => setFormData({ ...formData, clinic_id: e.target.value, service_id: '' })} className="select-field">
+                <option value="">Select clinic</option>
+                {clinics.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="service_id" className="label">Service *</label>
+              <select id="service_id" required value={formData.service_id} onChange={(e) => setFormData({ ...formData, service_id: e.target.value })} className="select-field" disabled={!formData.clinic_id}>
+                <option value="">Select service</option>
+                {services.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <button type="submit" disabled={actionLoading === 'add'} className="btn-primary">
+            {actionLoading === 'add' ? 'Adding...' : 'Add to Queue'}
+          </button>
+        </form>
+      )}
+
+      {/* Cancel Confirmation Dialog */}
+      {confirmCancel && (
+        <div className="dialog-overlay" onClick={() => setConfirmCancel(null)}>
+          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-subheading text-[#0F172A] mb-2">Cancel Queue Entry?</h3>
+            <p className="text-body text-[#64748B] mb-4">This action will remove the patient from the queue. This cannot be undone.</p>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setConfirmCancel(null)} className="btn-secondary">Keep</button>
+              <button onClick={() => handleCancel(confirmCancel)} disabled={actionLoading === confirmCancel} className="btn-danger">
+                {actionLoading === confirmCancel ? 'Cancelling...' : 'Cancel Entry'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">Queue #</th>
+                <th scope="col">Patient</th>
+                <th scope="col">Clinic</th>
+                <th scope="col">Service</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {queueEntries.map((entry) => (
+                <tr key={entry.id} className="hover:bg-[#F8FAFC]">
+                  <td className="font-medium tabular-nums">{entry.queue_number}</td>
+                  <td>
+                    {entry.patient?.last_name}, {entry.patient?.first_name}
+                    <br />
+                    <span className="text-small text-[#94A3B8]">{entry.patient?.patient_id}</span>
+                  </td>
+                  <td>{entry.clinic?.name}</td>
+                  <td>{entry.service?.name}</td>
+                  <td>
+                    <span className={`badge ${getStatusColor(entry.status)}`}>
+                      {entry.status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="flex items-center gap-2">
+                      {entry.status === 'waiting' && (
+                        <button onClick={() => handleStartService(entry.id)} disabled={actionLoading === entry.id} className="text-[#1E40AF] hover:text-[#1D4ED8] font-medium disabled:opacity-50">Start</button>
+                      )}
+                      {entry.status === 'called' && (
+                        <button onClick={() => handleStartService(entry.id)} disabled={actionLoading === entry.id} className="text-[#059669] hover:text-[#047857] font-medium disabled:opacity-50">Begin</button>
+                      )}
+                      {entry.status === 'in_service' && (
+                        <button onClick={() => handleCompleteService(entry.id)} disabled={actionLoading === entry.id} className="text-[#059669] hover:text-[#047857] font-medium disabled:opacity-50">Complete</button>
+                      )}
+                      {(entry.status === 'waiting' || entry.status === 'called') && (
+                        <button onClick={() => setConfirmCancel(entry.id)} className="text-[#DC2626] hover:text-[#B91C1C] font-medium">Cancel</button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {queueEntries.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No queue entries today</div>
+          <div className="empty-state">
+            <p className="empty-state-title">No queue entries today</p>
+            <p className="empty-state-description">Add patients to the queue to get started</p>
+          </div>
         )}
       </div>
     </div>

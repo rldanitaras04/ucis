@@ -26,6 +26,7 @@ export default function RecordsPage() {
   const supabase = createClient();
 
   const fetchPatients = async () => {
+    setLoading(true);
     let query = supabase
       .from('patient_profiles')
       .select('*')
@@ -39,84 +40,86 @@ export default function RecordsPage() {
 
     if (fetchError) {
       setError('Failed to fetch patient records');
-      return;
+    } else {
+      setPatients(data || []);
     }
-
-    setPatients(data || []);
+    setLoading(false);
   };
 
   useEffect(() => {
     fetchPatients();
-    setLoading(false);
   }, [searchQuery]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading records">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading records...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Patient Records</h1>
+    <div className="page-container">
+      <h1 className="text-heading text-[#0F172A] mb-6">Patient Records</h1>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
         </div>
       )}
 
       <div className="mb-4">
+        <label htmlFor="search" className="sr-only">Search patients</label>
         <input
+          id="search"
           type="text"
           placeholder="Search by name or ID..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full md:w-96 border rounded-lg px-4 py-2"
+          className="input-field max-w-md"
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sex</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {patients.map((patient) => (
-              <tr key={patient.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                  {patient.patient_id}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {patient.last_name}, {patient.first_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {patient.sex}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {patient.user_type}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                    patient.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {patient.status}
-                  </span>
-                </td>
+      <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Sex</th>
+                <th scope="col">Type</th>
+                <th scope="col">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {patients.map((patient) => (
+                <tr key={patient.id} className="hover:bg-[#F8FAFC]">
+                  <td className="font-mono tabular-nums">
+                    {patient.patient_id}
+                  </td>
+                  <td>
+                    {patient.last_name}, {patient.first_name}
+                  </td>
+                  <td>{patient.sex}</td>
+                  <td>{patient.user_type}</td>
+                  <td>
+                    <span className={`badge ${
+                      patient.status === 'active' ? 'badge-success' : 'badge-neutral'
+                    }`}>
+                      {patient.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {patients.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No patients found</div>
+          <div className="text-center py-12 text-body text-[#64748B]">
+            No patients found
+          </div>
         )}
       </div>
     </div>

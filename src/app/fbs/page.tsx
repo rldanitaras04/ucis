@@ -1,7 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { recordFBS } from './actions';
+import { createClient } from '@/lib/supabase/client';
+
+interface FBSRecord {
+  id: string;
+  patient_id: string;
+  recorded_at: string;
+  fbs_value: number;
+  fasting_hours: number | null;
+  notes: string | null;
+}
+
+function classifyFBS(value: number): { label: string; className: string } {
+  if (value < 100) return { label: 'Normal', className: 'badge-success' };
+  if (value < 126) return { label: 'Pre-diabetic', className: 'badge-warning' };
+  return { label: 'Diabetic', className: 'badge-error' };
+}
 
 export default function FBSPage() {
   const [patientId, setPatientId] = useState('');
@@ -11,6 +27,25 @@ export default function FBSPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [recentRecords, setRecentRecords] = useState<FBSRecord[]>([]);
+  const [recordsLoading, setRecordsLoading] = useState(false);
+
+  const fetchRecentRecords = useCallback(async () => {
+    setRecordsLoading(true);
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('fbs_records')
+      .select('id, patient_id, recorded_at, fbs_value, fasting_hours, notes')
+      .order('recorded_at', { ascending: false })
+      .limit(10);
+    setRecentRecords(data ?? []);
+    setRecordsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchRecentRecords();
+  }, [fetchRecentRecords]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +66,7 @@ export default function FBSPage() {
       setFastingHours('');
       setNotes('');
       setTimeout(() => setSuccess(false), 3000);
+      fetchRecentRecords();
     } else {
       setError(result.error || 'Failed to record FBS');
     }
@@ -38,74 +74,136 @@ export default function FBSPage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Record FBS</h1>
+    <div className="page-container max-w-2xl mx-auto">
+      <h1 className="text-heading text-[#0F172A] mb-6">Record FBS</h1>
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="alert-success mb-4" role="status">
           FBS recorded successfully!
         </div>
       )}
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="card space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID *</label>
+          <label htmlFor="patientId" className="label">Patient ID *</label>
           <input
+            id="patientId"
             type="text"
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
             required
-            className="w-full border rounded-lg px-3 py-2"
+            className="input-field"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">FBS Value (mg/dL) *</label>
+            <label htmlFor="fbsValue" className="label">FBS Value (mg/dL) *</label>
             <input
+              id="fbsValue"
               type="number"
               step="0.1"
               value={fbsValue}
               onChange={(e) => setFbsValue(e.target.value)}
               required
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field tabular-nums"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fasting Hours</label>
+            <label htmlFor="fastingHours" className="label">Fasting Hours</label>
             <input
+              id="fastingHours"
               type="number"
               value={fastingHours}
               onChange={(e) => setFastingHours(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field tabular-nums"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+          <label htmlFor="notes" className="label">Notes</label>
           <textarea
+            id="notes"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full border rounded-lg px-3 py-2"
+            className="input-field"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="w-full btn-primary"
         >
           {loading ? 'Recording...' : 'Record FBS'}
         </button>
       </form>
+
+      <div className="card mt-8">
+        <h2 className="text-subheading text-[#0F172A] mb-4">Recent FBS Records</h2>
+
+        {recordsLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <svg className="animate-spin h-6 w-6 text-[#64748B]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-body text-[#64748B] ml-3">Loading records...</span>
+          </div>
+        ) : recentRecords.length === 0 ? (
+          <p className="text-body text-[#94A3B8] py-8 text-center">No FBS records yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th className="text-small font-medium text-[#64748B] text-left">Patient ID</th>
+                  <th className="text-small font-medium text-[#64748B] text-left">Date</th>
+                  <th className="text-small font-medium text-[#64748B] text-left">FBS Value</th>
+                  <th className="text-small font-medium text-[#64748B] text-left">Fasting Hrs</th>
+                  <th className="text-small font-medium text-[#64748B] text-left">Classification</th>
+                  <th className="text-small font-medium text-[#64748B] text-left">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentRecords.map((record) => {
+                  const classification = classifyFBS(record.fbs_value);
+                  return (
+                    <tr key={record.id}>
+                      <td className="text-body text-[#0F172A]">{record.patient_id}</td>
+                      <td className="text-body text-[#334155]">
+                        {new Date(record.recorded_at).toLocaleDateString()}
+                      </td>
+                      <td className="text-body text-[#0F172A] tabular-nums font-medium">
+                        {record.fbs_value}
+                      </td>
+                      <td className="text-body text-[#334155] tabular-nums">
+                        {record.fasting_hours != null
+                          ? record.fasting_hours
+                          : <span className="badge-neutral">N/A</span>}
+                      </td>
+                      <td>
+                        <span className={classification.className}>{classification.label}</span>
+                      </td>
+                      <td className="text-body text-[#64748B] text-small max-w-[120px] truncate">
+                        {record.notes || '—'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

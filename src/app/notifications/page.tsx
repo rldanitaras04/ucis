@@ -70,19 +70,20 @@ export default function NotificationsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading notifications">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading notifications...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
+    <div className="page-container">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-heading text-[#0F172A]">
           Notifications
           {unreadCount > 0 && (
-            <span className="ml-2 text-sm font-normal text-gray-500">
+            <span className="ml-2 text-body font-normal text-[#64748B]">
               ({unreadCount} unread)
             </span>
           )}
@@ -91,7 +92,7 @@ export default function NotificationsPage() {
           <button
             onClick={handleMarkAllRead}
             disabled={actionLoading === 'all'}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="btn-primary"
           >
             {actionLoading === 'all' ? 'Marking...' : 'Mark All Read'}
           </button>
@@ -99,7 +100,7 @@ export default function NotificationsPage() {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
         </div>
       )}
@@ -108,26 +109,26 @@ export default function NotificationsPage() {
         {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`bg-white rounded-lg shadow p-4 border-l-4 ${
-              notification.is_read ? 'border-gray-300' : 'border-blue-500'
+            className={`card border-l-4 ${
+              notification.is_read ? 'border-l-[#E2E8F0]' : 'border-l-[#1E40AF]'
             }`}
           >
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="flex-1">
-                <h3 className={`font-medium ${notification.is_read ? 'text-gray-600' : 'text-gray-900'}`}>
+                <h3 className={`font-medium ${notification.is_read ? 'text-[#64748B]' : 'text-[#0F172A]'}`}>
                   {notification.title}
                 </h3>
-                <p className="text-sm text-gray-500 mt-1">{notification.message}</p>
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-body text-[#64748B] mt-1">{notification.message}</p>
+                <p className="text-small text-[#94A3B8] mt-2">
                   {new Date(notification.created_at).toLocaleString()}
                 </p>
               </div>
-              <div className="flex items-center gap-2 ml-4">
+              <div className="flex items-center gap-2">
                 {!notification.is_read && (
                   <button
                     onClick={() => handleMarkRead(notification.id)}
                     disabled={actionLoading === notification.id}
-                    className="text-blue-600 hover:text-blue-900 text-sm disabled:opacity-50"
+                    className="text-[#1E40AF] hover:text-[#1D4ED8] text-sm font-medium disabled:opacity-50"
                   >
                     Mark Read
                   </button>
@@ -135,7 +136,7 @@ export default function NotificationsPage() {
                 <button
                   onClick={() => handleDelete(notification.id)}
                   disabled={actionLoading === notification.id}
-                  className="text-red-600 hover:text-red-900 text-sm disabled:opacity-50"
+                  className="text-[#DC2626] hover:text-[#B91C1C] text-sm font-medium disabled:opacity-50"
                 >
                   Delete
                 </button>
@@ -144,7 +145,9 @@ export default function NotificationsPage() {
           </div>
         ))}
         {notifications.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No notifications</div>
+          <div className="text-center py-12 text-body text-[#64748B]">
+            No notifications
+          </div>
         )}
       </div>
     </div>

@@ -37,7 +37,6 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      // 1. Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -52,7 +51,6 @@ export default function RegisterPage() {
 
       if (authError) throw authError;
 
-      // 2. Create user profile
       if (authData.user) {
         const { error: profileError } = await supabase
           .from('user_profiles')
@@ -68,10 +66,9 @@ export default function RegisterPage() {
 
         if (profileError) throw profileError;
 
-        // 3. Assign default role based on user type
         let roleName = formData.userType;
         if (formData.userType === 'walk_in') {
-          roleName = 'student'; // Default walk-ins to student role
+          roleName = 'student';
         }
 
         const { data: role } = await supabase
@@ -103,11 +100,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h1 className="text-center text-3xl font-bold text-blue-600">UCIS</h1>
-          <h2 className="mt-2 text-center text-2xl font-bold text-gray-900">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-[#1E40AF] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-2xl">U</span>
+          </div>
+          <h1 className="text-display text-[#0F172A]">UCIS</h1>
+          <h2 className="text-heading text-[#0F172A] mt-2">
             Create an account
           </h2>
         </div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
               <select
                 id="userType"
                 name="userType"
-                className="input-field"
+                className="select-field"
                 value={formData.userType}
                 onChange={handleChange}
               >
@@ -193,7 +193,7 @@ export default function RegisterPage() {
                 onChange={handleChange}
                 minLength={12}
               />
-              <p className="mt-1 text-xs text-gray-500">At least 12 characters</p>
+              <p className="mt-1 text-small text-[#94A3B8]">At least 12 characters</p>
             </div>
             <div>
               <label htmlFor="confirmPassword" className="label">Confirm Password</label>
@@ -220,9 +220,9 @@ export default function RegisterPage() {
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-body text-[#64748B]">
               Already have an account?{' '}
-              <Link href="/auth/login" className="text-blue-600 hover:text-blue-500">
+              <Link href="/auth/login" className="text-[#1E40AF] hover:text-[#1D4ED8] font-medium">
                 Sign in
               </Link>
             </p>

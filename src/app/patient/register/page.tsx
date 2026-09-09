@@ -68,83 +68,89 @@ export default function PatientRegisterPage() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Register Patient</h1>
+    <div className="page-container max-w-2xl mx-auto">
+      <h1 className="text-heading text-[#0F172A] mb-6">Register Patient</h1>
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="alert-success mb-4" role="status">
           Patient registered successfully! ID: {patientId}
         </div>
       )}
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="card space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+            <label htmlFor="first_name" className="label">First Name *</label>
             <input
+              id="first_name"
               type="text"
               value={formData.first_name}
               onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
               required
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+            <label htmlFor="last_name" className="label">Last Name *</label>
             <input
+              id="last_name"
               type="text"
               value={formData.last_name}
               onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
               required
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label htmlFor="email" className="label">Email</label>
             <input
+              id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <label htmlFor="phone" className="label">Phone</label>
             <input
+              id="phone"
               type="tel"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <label htmlFor="date_of_birth" className="label">Date of Birth</label>
             <input
+              id="date_of_birth"
               type="date"
               value={formData.date_of_birth}
               onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sex *</label>
+            <label htmlFor="sex" className="label">Sex *</label>
             <select
+              id="sex"
               value={formData.sex}
               onChange={(e) => setFormData({ ...formData, sex: e.target.value })}
               required
-              className="w-full border rounded-lg px-3 py-2"
+              className="select-field"
             >
               <option value="">Select</option>
               <option value="M">Male</option>
@@ -153,11 +159,12 @@ export default function PatientRegisterPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Blood Type</label>
+            <label htmlFor="blood_type" className="label">Blood Type</label>
             <select
+              id="blood_type"
               value={formData.blood_type}
               onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              className="select-field"
             >
               <option value="">Select</option>
               <option value="A+">A+</option>
@@ -172,14 +179,15 @@ export default function PatientRegisterPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">User Type *</label>
+            <label htmlFor="user_type" className="label">User Type *</label>
             <select
+              id="user_type"
               value={formData.user_type}
               onChange={(e) => setFormData({ ...formData, user_type: e.target.value })}
               required
-              className="w-full border rounded-lg px-3 py-2"
+              className="select-field"
             >
               <option value="student">Student</option>
               <option value="employee">Employee</option>
@@ -187,43 +195,47 @@ export default function PatientRegisterPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">University ID</label>
+            <label htmlFor="university_id" className="label">University ID</label>
             <input
+              id="university_id"
               type="text"
               value={formData.university_id}
               onChange={(e) => setFormData({ ...formData, university_id: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Allergies</label>
+          <label htmlFor="allergies" className="label">Allergies</label>
           <textarea
+            id="allergies"
             value={formData.allergies}
             onChange={(e) => setFormData({ ...formData, allergies: e.target.value })}
             rows={2}
-            className="w-full border rounded-lg px-3 py-2"
+            className="input-field"
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Name</label>
+            <label htmlFor="emergency_contact_name" className="label">Emergency Contact Name</label>
             <input
+              id="emergency_contact_name"
               type="text"
               value={formData.emergency_contact_name}
               onChange={(e) => setFormData({ ...formData, emergency_contact_name: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact Phone</label>
+            <label htmlFor="emergency_contact_phone" className="label">Emergency Contact Phone</label>
             <input
+              id="emergency_contact_phone"
               type="tel"
               value={formData.emergency_contact_phone}
               onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
         </div>
@@ -231,7 +243,7 @@ export default function PatientRegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+          className="w-full btn-primary"
         >
           {loading ? 'Registering...' : 'Register Patient'}
         </button>

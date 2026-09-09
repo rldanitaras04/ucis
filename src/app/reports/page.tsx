@@ -79,20 +79,23 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading reports">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading reports...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Reports</h1>
+    <div className="page-container">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-heading text-[#0F172A]">Reports</h1>
+        <label htmlFor="dateRange" className="sr-only">Select date range</label>
         <select
+          id="dateRange"
           value={dateRange}
           onChange={(e) => setDateRange(e.target.value)}
-          className="border rounded-lg px-3 py-2"
+          className="select-field w-auto"
         >
           <option value="week">This Week</option>
           <option value="month">This Month</option>
@@ -101,7 +104,7 @@ export default function ReportsPage() {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
         </div>
       )}
@@ -109,34 +112,34 @@ export default function ReportsPage() {
       {stats && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-800">Total Patients</h3>
-              <p className="text-3xl font-bold text-blue-600">{stats.totalPatients}</p>
+            <div className="card border-l-4 border-l-[#1E40AF]">
+              <h3 className="text-subheading text-[#0F172A]">Total Patients</h3>
+              <p className="text-3xl font-bold text-[#1E40AF] tabular-nums">{stats.totalPatients}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-800">Encounters</h3>
-              <p className="text-3xl font-bold text-green-600">{stats.totalEncounters}</p>
+            <div className="card border-l-4 border-l-[#059669]">
+              <h3 className="text-subheading text-[#0F172A]">Encounters</h3>
+              <p className="text-3xl font-bold text-[#059669] tabular-nums">{stats.totalEncounters}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-800">Prescriptions</h3>
-              <p className="text-3xl font-bold text-purple-600">{stats.totalPrescriptions}</p>
+            <div className="card border-l-4 border-l-[#2563EB]">
+              <h3 className="text-subheading text-[#0F172A]">Prescriptions</h3>
+              <p className="text-3xl font-bold text-[#2563EB] tabular-nums">{stats.totalPrescriptions}</p>
             </div>
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-800">Referrals</h3>
-              <p className="text-3xl font-bold text-orange-600">{stats.totalReferrals}</p>
+            <div className="card border-l-4 border-l-[#D97706]">
+              <h3 className="text-subheading text-[#0F172A]">Referrals</h3>
+              <p className="text-3xl font-bold text-[#D97706] tabular-nums">{stats.totalReferrals}</p>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">Clinic Breakdown</h2>
+          <div className="card">
+            <h2 className="text-subheading text-[#0F172A] mb-4">Clinic Breakdown</h2>
             {stats.clinicBreakdown.length === 0 ? (
-              <p className="text-gray-500">No data available for this period</p>
+              <p className="text-body text-[#64748B]">No data available for this period</p>
             ) : (
               <div className="space-y-3">
                 {stats.clinicBreakdown.map((clinic) => (
-                  <div key={clinic.name} className="flex items-center justify-between py-2 border-b">
-                    <span className="font-medium">{clinic.name}</span>
-                    <span className="text-blue-600 font-semibold">{clinic.count} encounters</span>
+                  <div key={clinic.name} className="flex items-center justify-between py-2 border-b border-[#E2E8F0] last:border-0">
+                    <span className="font-medium text-[#0F172A]">{clinic.name}</span>
+                    <span className="text-[#1E40AF] font-semibold tabular-nums">{clinic.count} encounters</span>
                   </div>
                 ))}
               </div>

@@ -3,7 +3,7 @@ import { getCurrentUser } from '@/lib/supabase/auth-guard';
 import Sidebar from './sidebar';
 
 export const metadata = {
-  title: 'UCIS Dashboard',
+  title: 'Dashboard',
   description: 'University Medical and Dental Clinic Information System',
 };
 
@@ -19,9 +19,9 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-[#F8FAFC]">
       <Sidebar userId={user.id} roles={user.roles} />
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto" role="main" aria-label="Dashboard content">
         {children}
       </main>
     </div>

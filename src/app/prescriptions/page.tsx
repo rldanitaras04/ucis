@@ -108,194 +108,201 @@ export default function PrescriptionsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'dispensed': return 'bg-blue-100 text-blue-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      case 'expired': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'badge-success';
+      case 'dispensed': return 'badge-info';
+      case 'cancelled': return 'badge-danger';
+      case 'expired': return 'badge-neutral';
+      default: return 'badge-neutral';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading prescriptions">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading prescriptions...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Prescriptions</h1>
+    <div className="page-container">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-heading text-[#0F172A]">Prescriptions</h1>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          className="btn-primary"
         >
           {showForm ? 'Cancel' : 'New Prescription'}
         </button>
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
-          <button onClick={() => setError(null)} className="float-right">&times;</button>
+          <button onClick={() => setError(null)} className="float-right font-bold" aria-label="Dismiss error">&times;</button>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="alert-success mb-4" role="status">
           {success}
         </div>
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 mb-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="card mb-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID *</label>
+              <label htmlFor="patient_id" className="label">Patient ID *</label>
               <input
+                id="patient_id"
                 type="text"
                 value={formData.patient_id}
                 onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })}
                 required
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Medication *</label>
+              <label htmlFor="medication_name" className="label">Medication *</label>
               <input
+                id="medication_name"
                 type="text"
                 value={formData.medication_name}
                 onChange={(e) => setFormData({ ...formData, medication_name: e.target.value })}
                 required
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Dosage *</label>
+              <label htmlFor="dosage" className="label">Dosage *</label>
               <input
+                id="dosage"
                 type="text"
                 value={formData.dosage}
                 onChange={(e) => setFormData({ ...formData, dosage: e.target.value })}
                 required
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Frequency *</label>
+              <label htmlFor="frequency" className="label">Frequency *</label>
               <input
+                id="frequency"
                 type="text"
                 value={formData.frequency}
                 onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
                 required
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+              <label htmlFor="duration" className="label">Duration</label>
               <input
+                id="duration"
                 type="text"
                 value={formData.duration}
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+              <label htmlFor="quantity" className="label">Quantity</label>
               <input
+                id="quantity"
                 type="number"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field tabular-nums"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Refills</label>
+              <label htmlFor="refills" className="label">Refills</label>
               <input
+                id="refills"
                 type="number"
                 value={formData.refills}
                 onChange={(e) => setFormData({ ...formData, refills: e.target.value })}
-                className="w-full border rounded-lg px-3 py-2"
+                className="input-field tabular-nums"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
+            <label htmlFor="instructions" className="label">Instructions</label>
             <textarea
+              id="instructions"
               value={formData.instructions}
               onChange={(e) => setFormData({ ...formData, instructions: e.target.value })}
               rows={2}
-              className="w-full border rounded-lg px-3 py-2"
+              className="input-field"
             />
           </div>
 
           <button
             type="submit"
             disabled={actionLoading === 'create'}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+            className="btn-primary"
           >
             {actionLoading === 'create' ? 'Creating...' : 'Create Prescription'}
           </button>
         </form>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Medication</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dosage</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {prescriptions.map((rx) => (
-              <tr key={rx.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.patient?.last_name}, {rx.patient?.first_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.medication_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.dosage}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.frequency}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(rx.status)}`}>
-                    {rx.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {rx.status === 'active' && (
-                    <button
-                      onClick={() => handleCancel(rx.id)}
-                      disabled={actionLoading === rx.id}
-                      className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </td>
+      <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">Patient</th>
+                <th scope="col">Medication</th>
+                <th scope="col">Dosage</th>
+                <th scope="col">Frequency</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {prescriptions.map((rx) => (
+                <tr key={rx.id} className="hover:bg-[#F8FAFC]">
+                  <td>
+                    {rx.patient?.last_name}, {rx.patient?.first_name}
+                  </td>
+                  <td className="font-medium">{rx.medication_name}</td>
+                  <td>{rx.dosage}</td>
+                  <td>{rx.frequency}</td>
+                  <td>
+                    <span className={`badge ${getStatusColor(rx.status)}`}>
+                      {rx.status}
+                    </span>
+                  </td>
+                  <td>
+                    {rx.status === 'active' && (
+                      <button
+                        onClick={() => handleCancel(rx.id)}
+                        disabled={actionLoading === rx.id}
+                        className="text-[#DC2626] hover:text-[#B91C1C] font-medium disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {prescriptions.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No prescriptions found</div>
+          <div className="text-center py-12 text-body text-[#64748B]">
+            No prescriptions found
+          </div>
         )}
       </div>
     </div>

@@ -42,57 +42,62 @@ export default function DentalPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading dental records">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading dental records...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dental Records</h1>
+    <div className="page-container">
+      <h1 className="text-heading text-[#0F172A] mb-6">Dental Records</h1>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Procedures</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Findings</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {records.map((record) => (
-              <tr key={record.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {record.patient?.last_name}, {record.patient?.first_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {new Date(record.encounter_date).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {record.procedures || 'N/A'}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {record.findings || 'N/A'}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {record.notes || 'N/A'}
-                </td>
+      <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">Patient</th>
+                <th scope="col">Date</th>
+                <th scope="col">Procedures</th>
+                <th scope="col">Findings</th>
+                <th scope="col">Notes</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {records.map((record) => (
+                <tr key={record.id} className="hover:bg-[#F8FAFC]">
+                  <td>
+                    {record.patient?.last_name}, {record.patient?.first_name}
+                  </td>
+                  <td>
+                    {new Date(record.encounter_date).toLocaleDateString()}
+                  </td>
+                  <td className="max-w-xs truncate">
+                    {record.procedures || 'N/A'}
+                  </td>
+                  <td className="max-w-xs truncate">
+                    {record.findings || 'N/A'}
+                  </td>
+                  <td className="max-w-xs truncate">
+                    {record.notes || 'N/A'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {records.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No dental records found</div>
+          <div className="text-center py-12 text-body text-[#64748B]">
+            No dental records found
+          </div>
         )}
       </div>
     </div>

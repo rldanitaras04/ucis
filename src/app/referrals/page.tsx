@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { createReferral, acceptReferral, rejectReferral, fetchClinics } from './actions';
 
 interface Referral {
   id: string;
@@ -17,11 +18,29 @@ interface Referral {
   to_clinic?: { name: string };
 }
 
+interface Clinic {
+  id: string;
+  name: string;
+}
+
 export default function ReferralsPage() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ id: string; action: 'reject' } | null>(null);
   const supabase = createClient();
+
+  const [formData, setFormData] = useState({
+    patient_id: '',
+    from_clinic_id: '',
+    to_clinic_id: '',
+    reason: '',
+    notes: '',
+  });
 
   const fetchReferrals = async () => {
     const { data, error: fetchError } = await supabase
@@ -37,82 +56,277 @@ export default function ReferralsPage() {
     setReferrals(data || []);
   };
 
+  const loadClinics = async () => {
+    const result = await fetchClinics();
+    if (result.success) {
+      setClinics(result.data);
+    }
+  };
+
   useEffect(() => {
-    fetchReferrals();
-    setLoading(false);
+    Promise.all([fetchReferrals(), loadClinics()]).then(() => setLoading(false));
   }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading('create');
+    setError(null);
+    setSuccess(null);
+
+    const result = await createReferral({
+      patient_id: formData.patient_id,
+      from_clinic_id: formData.from_clinic_id,
+      to_clinic_id: formData.to_clinic_id,
+      reason: formData.reason,
+      notes: formData.notes || undefined,
+    });
+
+    if (result.success) {
+      setSuccess('Referral created successfully');
+      setShowForm(false);
+      setFormData({ patient_id: '', from_clinic_id: '', to_clinic_id: '', reason: '', notes: '' });
+      await fetchReferrals();
+    } else {
+      setError(result.error || 'Failed to create referral');
+    }
+    setActionLoading(null);
+  };
+
+  const handleAccept = async (id: string) => {
+    setActionLoading(id);
+    const result = await acceptReferral(id);
+    if (result.success) {
+      setSuccess('Referral accepted');
+      await fetchReferrals();
+    } else {
+      setError(result.error || 'Failed to accept referral');
+    }
+    setActionLoading(null);
+  };
+
+  const handleReject = async (id: string) => {
+    setConfirmDialog({ id, action: 'reject' });
+  };
+
+  const confirmReject = async () => {
+    if (!confirmDialog) return;
+    setActionLoading(confirmDialog.id);
+    setConfirmDialog(null);
+    const result = await rejectReferral(confirmDialog.id);
+    if (result.success) {
+      setSuccess('Referral rejected');
+      await fetchReferrals();
+    } else {
+      setError(result.error || 'Failed to reject referral');
+    }
+    setActionLoading(null);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'badge-warning';
+      case 'accepted': return 'badge-success';
+      case 'completed': return 'badge-info';
+      case 'rejected': return 'badge-danger';
+      default: return 'badge-neutral';
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading referrals">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading referrals...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Referrals</h1>
+    <div className="page-container">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-heading text-[#0F172A]">Referrals</h1>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="btn-primary"
+        >
+          {showForm ? 'Cancel' : 'Create Referral'}
+        </button>
+      </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
+          <button onClick={() => setError(null)} className="float-right font-bold" aria-label="Dismiss error">&times;</button>
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">To</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {referrals.map((referral) => (
-              <tr key={referral.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {referral.patient?.last_name}, {referral.patient?.first_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {referral.from_clinic?.name || 'N/A'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {referral.to_clinic?.name || 'N/A'}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                  {referral.reason}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(referral.status)}`}>
-                    {referral.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {new Date(referral.referral_date).toLocaleDateString()}
-                </td>
+      {success && (
+        <div className="alert-success mb-4" role="status">
+          {success}
+        </div>
+      )}
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="card mb-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="patient_id" className="label">Patient ID *</label>
+              <input
+                id="patient_id"
+                type="text"
+                value={formData.patient_id}
+                onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })}
+                required
+                className="input-field"
+              />
+            </div>
+            <div>
+              <label htmlFor="from_clinic_id" className="label">From Clinic *</label>
+              <select
+                id="from_clinic_id"
+                value={formData.from_clinic_id}
+                onChange={(e) => setFormData({ ...formData, from_clinic_id: e.target.value })}
+                required
+                className="select-field"
+              >
+                <option value="">Select clinic</option>
+                {clinics.map((clinic) => (
+                  <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="to_clinic_id" className="label">To Clinic *</label>
+              <select
+                id="to_clinic_id"
+                value={formData.to_clinic_id}
+                onChange={(e) => setFormData({ ...formData, to_clinic_id: e.target.value })}
+                required
+                className="select-field"
+              >
+                <option value="">Select clinic</option>
+                {clinics.map((clinic) => (
+                  <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="reason" className="label">Reason *</label>
+            <textarea
+              id="reason"
+              value={formData.reason}
+              onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
+              required
+              rows={3}
+              className="input-field"
+            />
+          </div>
+          <div>
+            <label htmlFor="notes" className="label">Notes</label>
+            <textarea
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={2}
+              className="input-field"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={actionLoading === 'create'}
+            className="btn-primary"
+          >
+            {actionLoading === 'create' ? 'Creating...' : 'Create Referral'}
+          </button>
+        </form>
+      )}
+
+      <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">Patient</th>
+                <th scope="col">From</th>
+                <th scope="col">To</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Status</th>
+                <th scope="col">Date</th>
+                <th scope="col">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {referrals.map((referral) => (
+                <tr key={referral.id} className="hover:bg-[#F8FAFC]">
+                  <td>
+                    {referral.patient?.last_name}, {referral.patient?.first_name}
+                  </td>
+                  <td>{referral.from_clinic?.name || 'N/A'}</td>
+                  <td>{referral.to_clinic?.name || 'N/A'}</td>
+                  <td className="max-w-xs truncate">{referral.reason}</td>
+                  <td>
+                    <span className={`badge ${getStatusColor(referral.status)}`}>
+                      {referral.status}
+                    </span>
+                  </td>
+                  <td>
+                    {new Date(referral.referral_date).toLocaleDateString()}
+                  </td>
+                  <td>
+                    {referral.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleAccept(referral.id)}
+                          disabled={actionLoading === referral.id}
+                          className="btn-secondary text-sm"
+                        >
+                          {actionLoading === referral.id ? 'Processing...' : 'Accept'}
+                        </button>
+                        <button
+                          onClick={() => handleReject(referral.id)}
+                          disabled={actionLoading === referral.id}
+                          className="btn-danger text-sm"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {referrals.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No referrals found</div>
+          <div className="text-center py-12 text-body text-[#64748B]">
+            No referrals found
+          </div>
         )}
       </div>
+
+      {confirmDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">
+            <h3 className="text-lg font-semibold text-[#0F172A] mb-4">Confirm Reject</h3>
+            <p className="text-[#64748B] mb-6">Are you sure you want to reject this referral?</p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmDialog(null)}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmReject}
+                className="btn-danger"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

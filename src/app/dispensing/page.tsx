@@ -69,95 +69,94 @@ export default function DispensingPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading dispensing">
+        <div className="spinner"></div>
+        <span className="sr-only">Loading dispensing...</span>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dispensing</h1>
+    <div className="page-container">
+      <h1 className="text-heading text-[#0F172A] mb-6">Dispensing</h1>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="alert-error mb-4" role="alert">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        <div className="alert-success mb-4" role="status">
           {success}
         </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Medication</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dosage</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {prescriptions.map((rx) => (
-              <tr key={rx.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.patient?.last_name}, {rx.patient?.first_name}
-                  <br />
-                  <span className="text-xs text-gray-500">{rx.patient?.patient_id}</span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.medication_name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.dosage}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {rx.frequency}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {selectedRx === rx.id ? (
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={batchNumber}
-                        onChange={(e) => setBatchNumber(e.target.value)}
-                        placeholder="Batch #"
-                        className="border rounded px-2 py-1 text-sm w-24"
-                      />
-                      <button
-                        onClick={() => handleDispense(rx.id)}
-                        disabled={actionLoading === rx.id}
-                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50"
-                      >
-                        {actionLoading === rx.id ? '...' : 'Confirm'}
-                      </button>
-                      <button
-                        onClick={() => { setSelectedRx(null); setBatchNumber(''); }}
-                        className="text-gray-600 hover:text-gray-900 text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setSelectedRx(rx.id)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
-                    >
-                      Dispense
-                    </button>
-                  )}
-                </td>
+      <div className="card p-0 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th scope="col">Patient</th>
+                <th scope="col">Medication</th>
+                <th scope="col">Dosage</th>
+                <th scope="col">Frequency</th>
+                <th scope="col">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E2E8F0]">
+              {prescriptions.map((rx) => (
+                <tr key={rx.id} className="hover:bg-[#F8FAFC]">
+                  <td>
+                    {rx.patient?.last_name}, {rx.patient?.first_name}
+                    <br />
+                    <span className="text-small text-[#94A3B8]">{rx.patient?.patient_id}</span>
+                  </td>
+                  <td className="font-medium">{rx.medication_name}</td>
+                  <td>{rx.dosage}</td>
+                  <td>{rx.frequency}</td>
+                  <td>
+                    {selectedRx === rx.id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={batchNumber}
+                          onChange={(e) => setBatchNumber(e.target.value)}
+                          placeholder="Batch #"
+                          className="input-field w-24 py-1 px-2 text-sm"
+                        />
+                        <button
+                          onClick={() => handleDispense(rx.id)}
+                          disabled={actionLoading === rx.id}
+                          className="btn-primary py-1 px-3 text-sm"
+                        >
+                          {actionLoading === rx.id ? '...' : 'Confirm'}
+                        </button>
+                        <button
+                          onClick={() => { setSelectedRx(null); setBatchNumber(''); }}
+                          className="btn-ghost py-1 px-3 text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setSelectedRx(rx.id)}
+                        className="btn-primary py-1 px-3 text-sm"
+                      >
+                        Dispense
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         {prescriptions.length === 0 && (
-          <div className="text-center py-8 text-gray-500">No active prescriptions to dispense</div>
+          <div className="text-center py-12 text-body text-[#64748B]">
+            No active prescriptions to dispense
+          </div>
         )}
       </div>
     </div>
