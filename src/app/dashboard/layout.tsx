@@ -19,33 +19,55 @@ const adminNav: NavItem[] = [
   { label: 'Users', href: '/admin/users', icon: '👥' },
   { label: 'Clinics', href: '/admin/clinics', icon: '🏥' },
   { label: 'Queue', href: '/queue', icon: '📋' },
+  { label: 'Medicines', href: '/medicines', icon: '💊' },
+  { label: 'Dispensing', href: '/dispensing', icon: '🏥' },
   { label: 'Reports', href: '/reports', icon: '📈' },
+  { label: 'Notifications', href: '/notifications', icon: '🔔' },
 ];
 
 const doctorNav: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: '📊' },
   { label: 'Queue', href: '/queue', icon: '📋' },
   { label: 'Records', href: '/records', icon: '📁' },
+  { label: 'Dental', href: '/dental', icon: '🦷' },
   { label: 'Prescriptions', href: '/prescriptions', icon: '💊' },
+  { label: 'Referrals', href: '/referrals', icon: '🔄' },
+  { label: 'Clearances', href: '/clearances', icon: '📜' },
+  { label: 'Follow-ups', href: '/follow-ups', icon: '📅' },
+  { label: 'Incidents', href: '/incidents', icon: '🚨' },
+];
+
+const dentistNav: NavItem[] = [
+  { label: 'Dashboard', href: '/dashboard', icon: '📊' },
+  { label: 'Queue', href: '/queue', icon: '📋' },
+  { label: 'Dental', href: '/dental', icon: '🦷' },
+  { label: 'Referrals', href: '/referrals', icon: '🔄' },
+  { label: 'Clearances', href: '/clearances', icon: '📜' },
+  { label: 'Follow-ups', href: '/follow-ups', icon: '📅' },
 ];
 
 const nurseNav: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: '📊' },
   { label: 'Queue', href: '/queue', icon: '📋' },
+  { label: 'Vitals', href: '/vitals', icon: '🩺' },
+  { label: 'FBS', href: '/fbs', icon: '🩸' },
   { label: 'Patients', href: '/patient', icon: '👤' },
+  { label: 'Follow-ups', href: '/follow-ups', icon: '📅' },
 ];
 
 const clinicStaffNav: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: '📊' },
   { label: 'Queue', href: '/queue', icon: '📋' },
   { label: 'Register', href: '/patient/register', icon: '➕' },
+  { label: 'Clearances', href: '/clearances', icon: '📜' },
+  { label: 'Dispensing', href: '/dispensing', icon: '💊' },
 ];
 
 const patientNav: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-  { label: 'My Records', href: '/patient/records', icon: '📁' },
-  { label: 'My Prescriptions', href: '/patient/prescriptions', icon: '💊' },
+  { label: 'My Portal', href: '/patient', icon: '👤' },
   { label: 'Queue', href: '/queue', icon: '📋' },
+  { label: 'Notifications', href: '/notifications', icon: '🔔' },
 ];
 
 export default function DashboardLayout({
@@ -94,7 +116,7 @@ export default function DashboardLayout({
       return doctorNav;
     }
     if (roles.includes('dentist')) {
-      return doctorNav; // Same as doctor for now
+      return dentistNav;
     }
     if (roles.includes('nurse')) {
       return nurseNav;
