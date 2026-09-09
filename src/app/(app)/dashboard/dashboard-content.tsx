@@ -65,8 +65,8 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
             .select('id', { count: 'exact', head: true });
           setTotalPatients(count || 0);
         }
-      } catch (err) {
-        console.error('Dashboard load error:', err);
+      } catch {
+        // Dashboard load failed silently
       } finally {
         setLoading(false);
       }
@@ -112,7 +112,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
           <StatCard
             title="Total Patients"
             value={totalPatients.toString()}
-            change="+12.5%"
+            change="Registered"
             trend="up"
             icon={<Users size={20} className="text-[#6B7280]" />}
             href="/records"

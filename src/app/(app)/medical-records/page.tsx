@@ -1,7 +1,33 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { fetchMedicalRecords, fetchMedicalRecordDetail, fetchClinicsAndPatients, createEncounter, updateEncounterStatus, upsertMedicalRecord } from './actions';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import {
+  FirstAid,
+  Plus,
+  X,
+  MagnifyingGlass,
+  PencilSimple,
+  CheckCircle,
+  Clock,
+  ArrowRight,
+  WarningCircle,
+  FileText,
+  User,
+  Buildings,
+  Stethoscope,
+  FloppyDisk,
+  SealCheck,
+} from '@phosphor-icons/react';
+import {
+  fetchMedicalRecords,
+  fetchMedicalRecordDetail,
+  fetchClinicsAndPatients,
+  createEncounter,
+  updateEncounterStatus,
+  upsertMedicalRecord,
+} from './actions';
+import PatientSearch from '@/components/PatientSearch';
 
 interface MedicalRecordRow {
   id: string;
@@ -30,7 +56,8 @@ interface RecordDetail {
   } | null;
 }
 
-export default function MedicalRecordsPage() {
+function MedicalRecordsPageContent() {
+  const searchParams = useSearchParams();
   const [records, setRecords] = useState<MedicalRecordRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +70,12 @@ export default function MedicalRecordsPage() {
   const [filteredServices, setFilteredServices] = useState<{ id: string; name: string }[]>([]);
   const [creating, setCreating] = useState(false);
 
-  const [createForm, setCreateForm] = useState({ patient_id: '', clinic_id: '', service_id: '', chief_complaint: '' });
+  const [createForm, setCreateForm] = useState({
+    patient_id: searchParams.get('patient') || '',
+    clinic_id: '',
+    service_id: '',
+    chief_complaint: '',
+  });
 
   const [selectedRecord, setSelectedRecord] = useState<RecordDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -176,13 +208,23 @@ export default function MedicalRecordsPage() {
     );
   });
 
-  const getStatusBadge = (status: string) => {
+  const getEncounterStatusBadge = (status: string) => {
     switch (status) {
       case 'open': return 'badge-info';
       case 'in_progress': return 'badge-warning';
       case 'completed': return 'badge-success';
       case 'cancelled': return 'badge-neutral';
       default: return 'badge-neutral';
+    }
+  };
+
+  const getEncounterStatusIcon = (status: string) => {
+    switch (status) {
+      case 'open': return <Clock size={14} className="text-[#0284C7]" />;
+      case 'in_progress': return <ArrowRight size={14} className="text-[#D97706]" />;
+      case 'completed': return <CheckCircle size={14} className="text-[#059669]" />;
+      case 'cancelled': return <WarningCircle size={14} className="text-[#6B7280]" />;
+      default: return null;
     }
   };
 
@@ -207,45 +249,52 @@ export default function MedicalRecordsPage() {
   return (
     <div className="page-container">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-heading text-[#0F172A]">Medical Records</h1>
-        <button onClick={() => setShowCreate(!showCreate)} className="btn-primary">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#EEF2FF] rounded-lg flex items-center justify-center">
+            <FirstAid size={22} className="text-[#1E40AF]" />
+          </div>
+          <h1 className="text-heading text-[#0F172A]">Medical Records</h1>
+        </div>
+        <button onClick={() => setShowCreate(!showCreate)} className="btn-primary flex items-center gap-2">
+          {showCreate ? <X size={16} /> : <Plus size={16} />}
           {showCreate ? 'Cancel' : 'New Encounter'}
         </button>
       </div>
 
       {error && (
-        <div className="alert-error mb-4" role="alert">
+        <div className="alert-error mb-4 flex items-center gap-2" role="alert">
+          <WarningCircle size={18} />
           {error}
-          <button onClick={() => setError(null)} className="ml-2 text-[#94A3B8] hover:text-[#0F172A]">&times;</button>
+          <button onClick={() => setError(null)} className="ml-auto text-[#94A3B8] hover:text-[#0F172A]" aria-label="Dismiss">
+            <X size={16} />
+          </button>
         </div>
       )}
       {success && (
-        <div className="alert-success mb-4" role="status">
+        <div className="alert-success mb-4 flex items-center gap-2" role="status">
+          <CheckCircle size={18} />
           {success}
-          <button onClick={() => setSuccess(null)} className="ml-2 text-[#94A3B8] hover:text-[#0F172A]">&times;</button>
+          <button onClick={() => setSuccess(null)} className="ml-auto text-[#94A3B8] hover:text-[#0F172A]" aria-label="Dismiss">
+            <X size={16} />
+          </button>
         </div>
       )}
 
       {showCreate && (
         <div className="card p-6 mb-6">
-          <h2 className="text-subheading text-[#0F172A] mb-4">New Encounter</h2>
+          <h2 className="text-subheading text-[#0F172A] mb-4 flex items-center gap-2">
+            <Plus size={18} className="text-[#1E40AF]" />
+            New Encounter
+          </h2>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="patient" className="label">Patient *</label>
-                <select
-                  id="patient"
-                  required
-                  value={createForm.patient_id}
-                  onChange={e => setCreateForm({ ...createForm, patient_id: e.target.value })}
-                  className="select-field w-full"
-                >
-                  <option value="">Select patient...</option>
-                  {patients.map(p => (
-                    <option key={p.id} value={p.id}>{p.last_name}, {p.first_name} ({p.patient_id})</option>
-                  ))}
-                </select>
-              </div>
+              <PatientSearch
+                id="mr-patient-search"
+                label="Patient"
+                required
+                value={createForm.patient_id}
+                onChange={(patientId) => setCreateForm({ ...createForm, patient_id: patientId })}
+              />
               <div>
                 <label htmlFor="clinic" className="label">Clinic *</label>
                 <select
@@ -290,8 +339,11 @@ export default function MedicalRecordsPage() {
               </div>
             </div>
             <div className="flex justify-end gap-3">
-              <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary">Cancel</button>
-              <button type="submit" disabled={creating} className="btn-primary">
+              <button type="button" onClick={() => setShowCreate(false)} className="btn-secondary flex items-center gap-2">
+                <X size={14} /> Cancel
+              </button>
+              <button type="submit" disabled={creating} className="btn-primary flex items-center gap-2">
+                {creating ? <div className="spinner" /> : <Plus size={14} />}
                 {creating ? 'Creating...' : 'Create Encounter'}
               </button>
             </div>
@@ -301,14 +353,17 @@ export default function MedicalRecordsPage() {
 
       <div className="mb-4">
         <label htmlFor="search-medical" className="sr-only">Search medical records</label>
-        <input
-          id="search-medical"
-          type="text"
-          placeholder="Search by patient name, ID, complaint, or clinic..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="input-field max-w-md"
-        />
+        <div className="relative max-w-md">
+          <MagnifyingGlass size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" />
+          <input
+            id="search-medical"
+            type="text"
+            placeholder="Search by patient name, ID, complaint, or clinic..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="input-field pl-10 w-full"
+          />
+        </div>
       </div>
 
       <div className="card p-0 overflow-hidden">
@@ -332,14 +387,25 @@ export default function MedicalRecordsPage() {
                     {new Date(row.visit_date).toLocaleDateString()}
                   </td>
                   <td className="font-medium">
-                    {row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : '—'}
+                    <div className="flex items-center gap-2">
+                      <User size={14} className="text-[#94A3B8]" />
+                      {row.patient ? `${row.patient.last_name}, ${row.patient.first_name}` : '—'}
+                    </div>
                   </td>
-                  <td>{row.clinic?.name || '—'}</td>
+                  <td>
+                    <div className="flex items-center gap-1.5">
+                      <Buildings size={14} className="text-[#94A3B8]" />
+                      {row.clinic?.name || '—'}
+                    </div>
+                  </td>
                   <td className="max-w-[200px] truncate text-[#64748B]">
                     {row.chief_complaint || '—'}
                   </td>
                   <td>
-                    <span className={`badge ${getStatusBadge(row.status)}`}>{row.status}</span>
+                    <span className={`badge ${getEncounterStatusBadge(row.status)} flex items-center gap-1`}>
+                      {getEncounterStatusIcon(row.status)}
+                      {row.status}
+                    </span>
                   </td>
                   <td>
                     {row.medical_record ? (
@@ -352,17 +418,17 @@ export default function MedicalRecordsPage() {
                   </td>
                   <td>
                     <div className="flex gap-2">
-                      <button onClick={() => openDetail(row.id)} className="btn-secondary text-xs">
-                        View
+                      <button onClick={() => openDetail(row.id)} className="btn-secondary text-xs flex items-center gap-1">
+                        <FileText size={12} /> View
                       </button>
                       {row.status === 'open' && (
-                        <button onClick={() => handleStatusChange(row.id, 'in_progress')} className="btn-secondary text-xs">
-                          Start
+                        <button onClick={() => handleStatusChange(row.id, 'in_progress')} className="btn-secondary text-xs flex items-center gap-1">
+                          <ArrowRight size={12} /> Start
                         </button>
                       )}
                       {row.status === 'in_progress' && (
-                        <button onClick={() => handleStatusChange(row.id, 'completed')} className="btn-primary text-xs">
-                          Complete
+                        <button onClick={() => handleStatusChange(row.id, 'completed')} className="btn-primary text-xs flex items-center gap-1">
+                          <CheckCircle size={12} /> Complete
                         </button>
                       )}
                     </div>
@@ -373,8 +439,9 @@ export default function MedicalRecordsPage() {
           </table>
         </div>
         {filteredRecords.length === 0 && (
-          <div className="text-center py-12 text-body text-[#64748B]">
-            No medical records found
+          <div className="text-center py-12">
+            <FirstAid size={48} className="mx-auto text-[#D1D5DB] mb-3" />
+            <p className="text-body text-[#64748B]">No medical records found</p>
           </div>
         )}
       </div>
@@ -383,9 +450,16 @@ export default function MedicalRecordsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
-              <h2 className="text-subheading text-[#0F172A]">Encounter Details</h2>
-              <button onClick={() => { setSelectedRecord(null); setEditMode(false); }} className="text-[#6B7280] hover:text-[#0F172A]" aria-label="Close">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5l-10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
+              <h2 className="text-subheading text-[#0F172A] flex items-center gap-2">
+                <Stethoscope size={18} className="text-[#1E40AF]" />
+                Encounter Details
+              </h2>
+              <button
+                onClick={() => { setSelectedRecord(null); setEditMode(false); }}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] text-[#6B7280] hover:text-[#0F172A] transition-colors"
+                aria-label="Close"
+              >
+                <X size={20} />
               </button>
             </div>
 
@@ -395,7 +469,7 @@ export default function MedicalRecordsPage() {
               <div className="p-6 space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-small text-[#64748B]">Patient</p>
+                    <p className="text-small text-[#64748B] flex items-center gap-1"><User size={12} /> Patient</p>
                     <p className="font-medium text-[#0F172A]">{selectedRecord.patient?.last_name}, {selectedRecord.patient?.first_name}</p>
                   </div>
                   <div>
@@ -403,7 +477,7 @@ export default function MedicalRecordsPage() {
                     <p className="font-medium text-[#0F172A] font-mono">{selectedRecord.patient?.patient_id}</p>
                   </div>
                   <div>
-                    <p className="text-small text-[#64748B]">Clinic</p>
+                    <p className="text-small text-[#64748B] flex items-center gap-1"><Buildings size={12} /> Clinic</p>
                     <p className="font-medium text-[#0F172A]">{selectedRecord.clinic?.name}</p>
                   </div>
                   <div>
@@ -413,7 +487,10 @@ export default function MedicalRecordsPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className={`badge ${getStatusBadge(selectedRecord.status)}`}>{selectedRecord.status}</span>
+                  <span className={`badge ${getEncounterStatusBadge(selectedRecord.status)} flex items-center gap-1`}>
+                    {getEncounterStatusIcon(selectedRecord.status)}
+                    {selectedRecord.status}
+                  </span>
                   {selectedRecord.medical_record && (
                     <span className={`badge ${getRecordStatusBadge(selectedRecord.medical_record.status)}`}>
                       Record: {selectedRecord.medical_record.status}
@@ -448,9 +525,13 @@ export default function MedicalRecordsPage() {
                       <p className="text-body text-[#0F172A] whitespace-pre-wrap">{selectedRecord.medical_record?.notes || '—'}</p>
                     </div>
                     <div className="flex gap-3 pt-4 border-t border-[#E5E7EB]">
-                      <button onClick={() => setEditMode(true)} className="btn-primary">Edit Record</button>
+                      <button onClick={() => setEditMode(true)} className="btn-primary flex items-center gap-2">
+                        <PencilSimple size={14} /> Edit Record
+                      </button>
                       {selectedRecord.status !== 'completed' && (
-                        <button onClick={() => handleStatusChange(selectedRecord.id, 'completed')} className="btn-secondary">Mark Completed</button>
+                        <button onClick={() => handleStatusChange(selectedRecord.id, 'completed')} className="btn-secondary flex items-center gap-2">
+                          <CheckCircle size={14} /> Mark Completed
+                        </button>
                       )}
                     </div>
                   </div>
@@ -481,13 +562,17 @@ export default function MedicalRecordsPage() {
                       <textarea id="edit-notes" value={editForm.notes} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="input-field w-full" rows={2} />
                     </div>
                     <div className="flex gap-3 pt-4 border-t border-[#E5E7EB]">
-                      <button onClick={() => handleSaveRecord(false)} disabled={saving} className="btn-primary">
+                      <button onClick={() => handleSaveRecord(false)} disabled={saving} className="btn-primary flex items-center gap-2">
+                        {saving ? <div className="spinner" /> : <FloppyDisk size={14} />}
                         {saving ? 'Saving...' : 'Save Draft'}
                       </button>
-                      <button onClick={() => handleSaveRecord(true)} disabled={saving} className="btn-primary bg-[#059669] hover:bg-[#047857]">
+                      <button onClick={() => handleSaveRecord(true)} disabled={saving} className="btn-primary bg-[#059669] hover:bg-[#047857] flex items-center gap-2">
+                        {saving ? <div className="spinner" /> : <SealCheck size={14} />}
                         {saving ? 'Saving...' : 'Finalize'}
                       </button>
-                      <button onClick={() => setEditMode(false)} className="btn-secondary">Cancel</button>
+                      <button onClick={() => setEditMode(false)} className="btn-secondary flex items-center gap-2">
+                        <X size={14} /> Cancel
+                      </button>
                     </div>
                   </div>
                 )}
@@ -497,5 +582,13 @@ export default function MedicalRecordsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MedicalRecordsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="spinner" /></div>}>
+      <MedicalRecordsPageContent />
+    </Suspense>
   );
 }

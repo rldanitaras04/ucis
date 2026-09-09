@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createFollowUp, completeFollowUp, cancelFollowUp, fetchFollowUps } from './actions';
+import PatientSearch from '@/components/PatientSearch';
 
 interface FollowUp {
   id: string;
@@ -143,17 +144,13 @@ export default function FollowUpsPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="card mb-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="patient_id" className="label">Patient ID *</label>
-              <input
-                id="patient_id"
-                type="text"
-                value={formData.patient_id}
-                onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })}
-                required
-                className="input-field"
-              />
-            </div>
+            <PatientSearch
+              id="followup-patient-search"
+              label="Patient"
+              required
+              value={formData.patient_id}
+              onChange={(patientId) => setFormData({ ...formData, patient_id: patientId })}
+            />
             <div>
               <label htmlFor="scheduled_date" className="label">Scheduled Date *</label>
               <input

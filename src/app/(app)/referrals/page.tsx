@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createReferral, acceptReferral, rejectReferral, fetchClinics, fetchReferrals } from './actions';
+import PatientSearch from '@/components/PatientSearch';
 
 interface Referral {
   id: string;
@@ -162,17 +163,13 @@ export default function ReferralsPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="card mb-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="patient_id" className="label">Patient ID *</label>
-              <input
-                id="patient_id"
-                type="text"
-                value={formData.patient_id}
-                onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })}
-                required
-                className="input-field"
-              />
-            </div>
+            <PatientSearch
+              id="referral-patient-search"
+              label="Patient"
+              required
+              value={formData.patient_id}
+              onChange={(patientId) => setFormData({ ...formData, patient_id: patientId })}
+            />
             <div>
               <label htmlFor="from_clinic_id" className="label">From Clinic *</label>
               <select

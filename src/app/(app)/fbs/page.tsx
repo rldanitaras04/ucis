@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { recordFBS, fetchFBSRecords } from './actions';
+import PatientSearch from '@/components/PatientSearch';
+import { useSearchParams } from 'next/navigation';
 
 interface FBSRecord {
   id: string;
@@ -18,8 +20,10 @@ function classifyFBS(value: number): { label: string; className: string } {
   return { label: 'Diabetic', className: 'badge-error' };
 }
 
-export default function FBSPage() {
-  const [patientId, setPatientId] = useState('');
+function FBSPageContent() {
+  const searchParams = useSearchParams();
+  const [patientId, setPatientId] = useState(searchParams.get('patient') || '');
+  const [encounterId] = useState(searchParams.get('encounter') || '');
   const [fbsValue, setFbsValue] = useState('');
   const [fastingHours, setFastingHours] = useState('');
   const [notes, setNotes] = useState('');
@@ -51,6 +55,7 @@ export default function FBSPage() {
 
     const result = await recordFBS({
       patient_id: patientId,
+      encounter_id: encounterId || undefined,
       fbs_value: Number(fbsValue),
       fasting_hours: fastingHours ? Number(fastingHours) : undefined,
       notes: notes || undefined,
@@ -86,17 +91,13 @@ export default function FBSPage() {
       )}
 
       <form onSubmit={handleSubmit} className="card space-y-4">
-        <div>
-          <label htmlFor="patientId" className="label">Patient ID *</label>
-          <input
-            id="patientId"
-            type="text"
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-            required
-            className="input-field"
-          />
-        </div>
+        <PatientSearch
+          id="fbs-patient-search"
+          label="Patient"
+          required
+          value={patientId}
+          onChange={(patientId) => setPatientId(patientId)}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -201,5 +202,13 @@ export default function FBSPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function FBSPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="spinner" /></div>}>
+      <FBSPageContent />
+    </Suspense>
   );
 }

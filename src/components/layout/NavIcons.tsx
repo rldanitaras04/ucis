@@ -20,6 +20,7 @@ import {
   UsersThree,
   Buildings,
   Sparkle,
+  FirstAid,
 } from '@phosphor-icons/react';
 import { ElementType } from 'react';
 
@@ -28,6 +29,7 @@ export const NAV_ICON_MAP: Record<string, ElementType> = {
   queue: Queue,
   'patient-register': UserPlus,
   'patient-records': Users,
+  'medical-records': FirstAid,
   vitals: Heartbeat,
   fbs: TestTube,
   prescriptions: NotePencil,

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { callNextPatient, startQueueService, completeQueueService, cancelQueueEntry, addToQueue, fetchQueue, fetchClinicsList, fetchServices } from './actions';
+import PatientSearch from '@/components/PatientSearch';
+import Link from 'next/link';
 
 interface QueueEntry {
   id: string;
@@ -15,6 +17,7 @@ interface QueueEntry {
   called_at?: string;
   started_at?: string;
   completed_at?: string;
+  encounter_id?: string;
   patient?: { first_name: string; last_name: string; patient_id: string };
   clinic?: { name: string };
   service?: { name: string };
@@ -195,10 +198,13 @@ export default function QueuePage() {
       {showAddForm && (
         <form onSubmit={handleAddToQueue} className="card mb-6 space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="patient_id" className="label">Patient ID *</label>
-              <input id="patient_id" type="text" required value={formData.patient_id} onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })} className="input-field" />
-            </div>
+            <PatientSearch
+              id="queue-patient-search"
+              label="Patient"
+              required
+              value={formData.patient_id}
+              onChange={(patientId) => setFormData({ ...formData, patient_id: patientId })}
+            />
             <div>
               <label htmlFor="clinic_id" className="label">Clinic *</label>
               <select id="clinic_id" required value={formData.clinic_id} onChange={(e) => setFormData({ ...formData, clinic_id: e.target.value, service_id: '' })} className="select-field">
@@ -267,6 +273,13 @@ export default function QueuePage() {
                   </td>
                   <td>
                     <div className="flex items-center gap-2">
+                      {entry.status === 'in_service' && entry.encounter_id && (
+                        <>
+                          <Link href={`/vitals?encounter=${entry.encounter_id}&patient=${entry.patient_id}`} className="text-[#1E40AF] hover:text-[#1D4ED8] font-medium text-sm">Vitals</Link>
+                          <Link href={`/fbs?encounter=${entry.encounter_id}&patient=${entry.patient_id}`} className="text-[#1E40AF] hover:text-[#1D4ED8] font-medium text-sm">FBS</Link>
+                          <Link href={`/prescriptions?encounter=${entry.encounter_id}&patient=${entry.patient_id}`} className="text-[#1E40AF] hover:text-[#1D4ED8] font-medium text-sm">Rx</Link>
+                        </>
+                      )}
                       {entry.status === 'waiting' && (
                         <button onClick={() => handleStartService(entry.id)} disabled={actionLoading === entry.id} className="text-[#1E40AF] hover:text-[#1D4ED8] font-medium disabled:opacity-50">Start</button>
                       )}

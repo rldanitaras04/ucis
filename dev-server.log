@@ -5232,3 +5232,1372 @@ Require stack:
  ✓ Compiled in 1656ms (5068 modules)
 <w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz_' -> 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz'
  ✓ Compiled in 1442ms (5066 modules)
+ ○ Compiling /api/ai/carina ...
+ ✓ Compiled /api/ai/carina in 2.4s (511 modules)
+ POST /api/ai/carina 200 in 7568ms
+ POST /api/ai/carina 200 in 7157ms
+ ✓ Compiled in 2s (5066 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\dev\UCIS\.next\cache\webpack\client-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+ ✓ Compiled in 1572ms (5066 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\dev\UCIS\.next\cache\webpack\client-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+ ✓ Compiled in 1242ms (5066 modules)
+ ✓ Compiled in 1483ms (5066 modules)
+ ✓ Compiled in 1393ms (5066 modules)
+ ✓ Compiled in 601ms (5066 modules)
+ ✓ Compiled in 813ms (5066 modules)
+ ✓ Compiled in 802ms (5066 modules)
+ ✓ Compiled in 1542ms (5066 modules)
+ ✓ Compiled in 1893ms (5066 modules)
+ ✓ Compiled in 917ms (5066 modules)
+ ✓ Compiled in 1044ms (5066 modules)
+ ✓ Compiled in 940ms (5066 modules)
+ ✓ Compiled in 861ms (5066 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz_' -> 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz'
+ ✓ Compiled in 5.2s (5066 modules)
+ ✓ Compiled in 3.5s (5066 modules)
+ ✓ Compiled in 775ms (5066 modules)
+ ✓ Compiled in 1045ms (5066 modules)
+ ✓ Compiled in 587ms (5066 modules)
+ ✓ Compiled in 789ms (5066 modules)
+ ✓ Compiled in 663ms (5066 modules)
+ ✓ Compiled in 595ms (5066 modules)
+ ✓ Compiled in 801ms (5066 modules)
+ ✓ Compiled in 632ms (5066 modules)
+ ✓ Compiled in 578ms (5066 modules)
+ ✓ Compiled in 1029ms (5066 modules)
+ ✓ Compiled in 798ms (5066 modules)
+ ✓ Compiled in 598ms (5066 modules)
+ ✓ Compiled in 1182ms (5066 modules)
+ ✓ Compiled in 910ms (5066 modules)
+ ✓ Compiled in 1205ms (5066 modules)
+ ✓ Compiled in 1214ms (5066 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz_' -> 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz'
+ ✓ Compiled in 1954ms (5066 modules)
+ ✓ Compiled in 1343ms (5066 modules)
+ ✓ Compiled in 5s (5066 modules)
+ ✓ Compiled in 2s (5066 modules)
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\api\ai\carina\route.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:203:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:116:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:115:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:167:22)
+    at C:\dev\UCIS\.next\server\app\page.js:1:6851
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\page.js:1:6905)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1905:24)
+    at async DevServer.renderToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1957:32)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:811:17)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:353:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\api\\ai\\carina\\route.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './682.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\api\ai\carina\route.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:203:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:116:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:115:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:167:22)
+    at C:\dev\UCIS\.next\server\pages\_document.js:1:340
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\pages\_document.js:1:382)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\api\\ai\\carina\\route.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET / 500 in 1454ms
+ GET / 500 in 87ms
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\api\ai\carina\route.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:203:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:116:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:115:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:167:22)
+    at C:\dev\UCIS\.next\server\app\page.js:1:6851
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\page.js:1:6905)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1905:24)
+    at async DevServer.renderToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1957:32)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:811:17)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:353:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\api\\ai\\carina\\route.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/'
+}
+ ⨯ Error: Cannot find module './682.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\api\ai\carina\route.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:203:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:116:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:115:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:167:22)
+    at C:\dev\UCIS\.next\server\pages\_document.js:1:340
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\pages\_document.js:1:382)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\api\\ai\\carina\\route.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET / 500 in 354ms
+ GET / 500 in 18ms
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\dev\UCIS\.next\cache\webpack\client-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 1612ms (5409 modules)
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 1748ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 1745ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 1669ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 1671ms
+ GET /_next/static/chunks/fallback/main.js 500 in 1658ms
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 705ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 8ms
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET /login 500 in 4280ms
+ GET /login 500 in 170ms
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET /_next/static/chunks/fallback/webpack.js 500 in 79ms
+ GET /_next/static/chunks/fallback/react-refresh.js 500 in 53ms
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET /_next/static/chunks/fallback/main.js 500 in 97ms
+ GET /_next/static/chunks/fallback/pages/_app.js 500 in 82ms
+ GET /_next/static/chunks/fallback/pages/_error.js 500 in 84ms
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2905
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\_not-found\page.js:1:2955)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderErrorToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2085:30)
+    at async pipe.req.req (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:2051:30)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:368:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 765ms
+ GET /.well-known/appspecific/com.chrome.devtools.json 500 in 6ms
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\dev\UCIS\.next\cache\webpack\client-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+ ✓ Compiled in 5.5s (5068 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\dev\UCIS\.next\cache\webpack\client-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+ ✓ Compiled in 5.2s (5068 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\dev\UCIS\.next\cache\webpack\client-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+ ✓ Compiled in 6.7s (5068 modules)
+ ✓ Compiled in 1530ms (5068 modules)
+ ✓ Compiled in 1820ms (5068 modules)
+ ✓ Compiled in 1099ms (5068 modules)
+ ✓ Compiled in 2.4s (5068 modules)
+ ✓ Compiled in 887ms (5068 modules)
+ ✓ Compiled in 2.6s (5068 modules)
+ ✓ Compiled in 800ms (5068 modules)
+ ✓ Compiled in 1134ms (5068 modules)
+ ✓ Compiled in 1667ms (5068 modules)
+ ✓ Compiled in 1804ms (5068 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz_' -> 'C:\dev\UCIS\.next\cache\webpack\client-development\0.pack.gz'
+ ✓ Compiled in 1211ms (5068 modules)
+ ✓ Compiled in 3s (5068 modules)
+ ✓ Compiled in 1232ms (5068 modules)
+ ✓ Compiled in 1030ms (5068 modules)
+ ✓ Compiled in 2.1s (5068 modules)
+ ○ Compiling /auth/login ...
+ ✓ Compiled /auth/login in 3.3s (360 modules)
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 2.1s (5417 modules)
+ GET /auth/login?redirect=%2Fdashboard 404 in 6698ms
+ GET /auth/login?redirect=%2Fdashboard 404 in 5729ms
+ ⨯ Error: Cannot find module './948.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\app\auth\login\page.js:1:5182
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\app\auth\login\page.js:1:5236)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:84
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:98:26)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36)
+    at async DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:577:20)
+    at async DevServer.renderPageComponent (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1905:24)
+    at async DevServer.renderToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1957:32)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:811:17)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:353:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ],
+  page: '/auth/login'
+}
+ ⨯ Error: Cannot find module './682.js'
+Require stack:
+- C:\dev\UCIS\.next\server\webpack-runtime.js
+- C:\dev\UCIS\.next\server\app\_not-found\page.js
+- C:\dev\UCIS\node_modules\next\dist\server\require.js
+- C:\dev\UCIS\node_modules\next\dist\server\load-components.js
+- C:\dev\UCIS\node_modules\next\dist\build\utils.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-middleware.js
+- C:\dev\UCIS\node_modules\next\dist\server\dev\hot-reloader-webpack.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-utils\setup-dev-bundler.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js
+- C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1421:15)
+    at C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+    at Module._load (node:internal/modules/cjs/loader:1227:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at __webpack_require__.f.require (C:\dev\UCIS\.next\server\webpack-runtime.js:198:28)
+    at C:\dev\UCIS\.next\server\webpack-runtime.js:111:40
+    at Array.reduce (<anonymous>)
+    at __webpack_require__.e (C:\dev\UCIS\.next\server\webpack-runtime.js:110:67)
+    at Array.map (<anonymous>)
+    at __webpack_require__.X (C:\dev\UCIS\.next\server\webpack-runtime.js:162:22)
+    at C:\dev\UCIS\.next\server\pages\_document.js:1:340
+    at Object.<anonymous> (C:\dev\UCIS\.next\server\pages\_document.js:1:382)
+    at Module._compile (node:internal/modules/cjs/loader:1761:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1504:12)
+    at mod.require (C:\dev\UCIS\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+    at requirePage (C:\dev\UCIS\node_modules\next\dist\server\require.js:109:84)
+    at C:\dev\UCIS\node_modules\next\dist\server\load-components.js:72:65
+    at async Promise.all (index 0)
+    at async loadComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\load-components.js:71:33)
+    at async DevServer.findPageComponentsImpl (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:710:36) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\dev\\UCIS\\.next\\server\\webpack-runtime.js',
+    'C:\\dev\\UCIS\\.next\\server\\app\\_not-found\\page.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-middleware.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\dev\\hot-reloader-webpack.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-utils\\setup-dev-bundler.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\router-server.js',
+    'C:\\dev\\UCIS\\node_modules\\next\\dist\\server\\lib\\start-server.js'
+  ]
+}
+ GET /auth/login?redirect=%2Fdashboard 500 in 135ms
+ GET /auth/login?redirect=%2Fdashboard 500 in 118ms
+ ✓ Compiled in 11.1s (5422 modules)

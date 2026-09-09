@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createPrescription, cancelPrescription, fetchPrescriptions } from './actions';
+import PatientSearch from '@/components/PatientSearch';
 
 interface Prescription {
   id: string;
@@ -18,7 +20,8 @@ interface Prescription {
   patient?: { first_name: string; last_name: string; patient_id: string };
 }
 
-export default function PrescriptionsPage() {
+function PrescriptionsPageContent() {
+  const searchParams = useSearchParams();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -27,7 +30,8 @@ export default function PrescriptionsPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    patient_id: '',
+    patient_id: searchParams.get('patient') || '',
+    encounter_id: searchParams.get('encounter') || '',
     medication_name: '',
     dosage: '',
     frequency: '',
@@ -59,6 +63,7 @@ export default function PrescriptionsPage() {
 
     const result = await createPrescription({
       patient_id: formData.patient_id,
+      encounter_id: formData.encounter_id || undefined,
       medication_name: formData.medication_name,
       dosage: formData.dosage,
       frequency: formData.frequency,
@@ -73,6 +78,7 @@ export default function PrescriptionsPage() {
       setShowForm(false);
       setFormData({
         patient_id: '',
+        encounter_id: '',
         medication_name: '',
         dosage: '',
         frequency: '',
@@ -145,18 +151,19 @@ export default function PrescriptionsPage() {
 
       {showForm && (
         <form onSubmit={handleSubmit} className="card mb-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="patient_id" className="label">Patient ID *</label>
-              <input
-                id="patient_id"
-                type="text"
-                value={formData.patient_id}
-                onChange={(e) => setFormData({ ...formData, patient_id: e.target.value })}
-                required
-                className="input-field"
-              />
+          {formData.encounter_id && (
+            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-lg px-4 py-2 text-sm text-[#1E40AF]">
+              Linked to active encounter
             </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <PatientSearch
+              id="rx-patient-search"
+              label="Patient"
+              required
+              value={formData.patient_id}
+              onChange={(patientId) => setFormData({ ...formData, patient_id: patientId })}
+            />
             <div>
               <label htmlFor="medication_name" className="label">Medication *</label>
               <input
@@ -299,5 +306,13 @@ export default function PrescriptionsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PrescriptionsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="spinner" /></div>}>
+      <PrescriptionsPageContent />
+    </Suspense>
   );
 }

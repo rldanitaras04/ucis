@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   },
   description: 'Medical and Dental Clinic Information System for Philippine State Universities',
   keywords: ['clinic', 'medical', 'dental', 'university', 'healthcare', 'UCIS'],
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export const viewport: Viewport = {

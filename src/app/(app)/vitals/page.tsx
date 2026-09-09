@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { recordVitalSigns, fetchVitalSigns } from './actions';
+import PatientSearch from '@/components/PatientSearch';
 
 interface VitalRecord {
   id: string;
@@ -14,8 +16,10 @@ interface VitalRecord {
   oxygen_saturation: number | null;
 }
 
-export default function VitalsPage() {
-  const [patientId, setPatientId] = useState('');
+function VitalsPageContent() {
+  const searchParams = useSearchParams();
+  const [patientId, setPatientId] = useState(searchParams.get('patient') || '');
+  const [encounterId, setEncounterId] = useState(searchParams.get('encounter') || '');
   const [formData, setFormData] = useState({
     blood_pressure_systolic: '',
     blood_pressure_diastolic: '',
@@ -55,6 +59,7 @@ export default function VitalsPage() {
 
     const result = await recordVitalSigns({
       patient_id: patientId,
+      encounter_id: encounterId || undefined,
       blood_pressure_systolic: formData.blood_pressure_systolic ? Number(formData.blood_pressure_systolic) : undefined,
       blood_pressure_diastolic: formData.blood_pressure_diastolic ? Number(formData.blood_pressure_diastolic) : undefined,
       pulse_rate: formData.pulse_rate ? Number(formData.pulse_rate) : undefined,
@@ -104,17 +109,13 @@ export default function VitalsPage() {
       )}
 
       <form onSubmit={handleSubmit} className="card space-y-4">
-        <div>
-          <label htmlFor="patientId" className="label">Patient ID *</label>
-          <input
-            id="patientId"
-            type="text"
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-            required
-            className="input-field"
-          />
-        </div>
+        <PatientSearch
+          id="vitals-patient-search"
+          label="Patient"
+          required
+          value={patientId}
+          onChange={(patientId) => setPatientId(patientId)}
+        />
 
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -298,5 +299,13 @@ export default function VitalsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function VitalsPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><div className="spinner" /></div>}>
+      <VitalsPageContent />
+    </Suspense>
   );
 }
