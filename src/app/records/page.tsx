@@ -1,150 +1,124 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { formatDate, getStatusColor } from '@/lib/utils';
 
-interface MedicalRecord {
+interface Patient {
   id: string;
-  encounter_id: string;
   patient_id: string;
-  created_by: string;
-  chief_complaint?: string;
-  diagnosis?: string;
+  first_name: string;
+  last_name: string;
+  email?: string;
+  phone?: string;
+  date_of_birth?: string;
+  sex: string;
+  blood_type?: string;
+  user_type: string;
   status: string;
   created_at: string;
-  patient_profiles?: {
-    first_name: string;
-    last_name: string;
-  };
 }
 
 export default function RecordsPage() {
-  const [records, setRecords] = useState<MedicalRecord[]>([]);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRecord, setSelectedRecord] = useState<MedicalRecord | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    loadRecords();
-  }, []);
+  const fetchPatients = async () => {
+    let query = supabase
+      .from('patient_profiles')
+      .select('*')
+      .order('last_name', { ascending: true });
 
-  const loadRecords = async () => {
-    const { data, error } = await supabase
-      .from('medical_records')
-      .select(`
-        *,
-        patient_profiles(first_name, last_name)
-      `)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Failed to load records');
-    } else {
-      setRecords(data || []);
+    if (searchQuery) {
+      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,patient_id.ilike.%${searchQuery}%`);
     }
-    setLoading(false);
+
+    const { data, error: fetchError } = await query;
+
+    if (fetchError) {
+      setError('Failed to fetch patient records');
+      return;
+    }
+
+    setPatients(data || []);
   };
 
-  return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Medical Records</h1>
+  useEffect(() => {
+    fetchPatients();
+    setLoading(false);
+  }, [searchQuery]);
 
-      <div className="card">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : records.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">No records found</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Chief Complaint</th>
-                  <th>Diagnosis</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((record) => (
-                  <tr key={record.id}>
-                    <td>
-                      {record.patient_profiles?.first_name} {record.patient_profiles?.last_name}
-                    </td>
-                    <td>{record.chief_complaint || '-'}</td>
-                    <td>{record.diagnosis || '-'}</td>
-                    <td>
-                      <span className={`badge ${getStatusColor(record.status)}`}>
-                        {record.status}
-                      </span>
-                    </td>
-                    <td>{formatDate(record.created_at)}</td>
-                    <td>
-                      <button
-                        onClick={() => setSelectedRecord(record)}
-                        className="text-sm text-blue-600 hover:text-blue-800"
-                      >
-                        View
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
+    );
+  }
 
-      {/* Record Detail Modal */}
-      {selectedRecord && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Medical Record</h2>
-                <button
-                  onClick={() => setSelectedRecord(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-500">Patient</p>
-                  <p className="font-medium">
-                    {selectedRecord.patient_profiles?.first_name}{' '}
-                    {selectedRecord.patient_profiles?.last_name}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Chief Complaint</p>
-                  <p>{selectedRecord.chief_complaint || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Diagnosis</p>
-                  <p>{selectedRecord.diagnosis || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Status</p>
-                  <span className={`badge ${getStatusColor(selectedRecord.status)}`}>
-                    {selectedRecord.status}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Date</p>
-                  <p>{formatDate(selectedRecord.created_at)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Patient Records</h1>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
         </div>
       )}
+
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by name or ID..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full md:w-96 border rounded-lg px-4 py-2"
+        />
+      </div>
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sex</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {patients.map((patient) => (
+              <tr key={patient.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                  {patient.patient_id}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {patient.last_name}, {patient.first_name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {patient.sex}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {patient.user_type}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    patient.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {patient.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {patients.length === 0 && (
+          <div className="text-center py-8 text-gray-500">No patients found</div>
+        )}
+      </div>
     </div>
   );
 }

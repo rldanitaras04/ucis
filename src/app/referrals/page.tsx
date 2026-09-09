@@ -1,166 +1,116 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { formatDate, getStatusColor } from '@/lib/utils';
-import toast from 'react-hot-toast';
 
 interface Referral {
   id: string;
   patient_id: string;
-  encounter_id: string;
-  referred_by: string;
-  referral_reason: string;
-  destination: string;
-  urgency: string;
-  instructions?: string;
+  referral_date: string;
+  from_clinic_id?: string;
+  to_clinic_id?: string;
+  reason: string;
   status: string;
-  created_at: string;
-  patient_profiles?: { first_name: string; last_name: string };
+  notes?: string;
+  patient?: { first_name: string; last_name: string; patient_id: string };
+  from_clinic?: { name: string };
+  to_clinic?: { name: string };
 }
 
 export default function ReferralsPage() {
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    patient_id: '',
-    encounter_id: '',
-    referral_reason: '',
-    destination: '',
-    urgency: 'routine',
-    instructions: '',
-  });
-  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => { loadReferrals(); }, []);
+  const fetchReferrals = async () => {
+    const { data, error: fetchError } = await supabase
+      .from('referrals')
+      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id), from_clinic:clinics!from_clinic_id(name), to_clinic:clinics!to_clinic_id(name)')
+      .order('referral_date', { ascending: false });
 
-  const loadReferrals = async () => {
-    const { data } = await supabase
-      .from('clinical_referrals')
-      .select('*, patient_profiles(first_name, last_name)')
-      .order('created_at', { ascending: false });
+    if (fetchError) {
+      setError('Failed to fetch referrals');
+      return;
+    }
+
     setReferrals(data || []);
-    setLoading(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+  useEffect(() => {
+    fetchReferrals();
+    setLoading(false);
+  }, []);
 
-      const { error } = await supabase.from('clinical_referrals').insert({
-        patient_id: formData.patient_id,
-        encounter_id: formData.encounter_id || null,
-        referred_by: user.id,
-        referral_reason: formData.referral_reason,
-        destination: formData.destination,
-        urgency: formData.urgency,
-        instructions: formData.instructions || null,
-        status: 'pending',
-        created_at: new Date().toISOString(),
-      });
-      if (error) throw error;
-      toast.success('Referral created');
-      setShowForm(false);
-      setFormData({ patient_id: '', encounter_id: '', referral_reason: '', destination: '', urgency: 'routine', instructions: '' });
-      loadReferrals();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed');
-    } finally {
-      setSubmitting(false);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'accepted': return 'bg-green-100 text-green-800';
+      case 'completed': return 'bg-blue-100 text-blue-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Referrals</h1>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
-          {showForm ? 'Cancel' : 'New Referral'}
-        </button>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
+    );
+  }
 
-      {showForm && (
-        <div className="card mb-6">
-          <h2 className="text-lg font-semibold mb-4">Create Referral</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label">Patient ID *</label>
-                <input name="patient_id" required className="input-field" value={formData.patient_id} onChange={(e) => setFormData({...formData, patient_id: e.target.value})} />
-              </div>
-              <div>
-                <label className="label">Encounter ID</label>
-                <input name="encounter_id" className="input-field" value={formData.encounter_id} onChange={(e) => setFormData({...formData, encounter_id: e.target.value})} />
-              </div>
-            </div>
-            <div>
-              <label className="label">Referral Reason *</label>
-              <textarea name="referral_reason" rows={3} required className="input-field" value={formData.referral_reason} onChange={(e) => setFormData({...formData, referral_reason: e.target.value})} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="label">Destination *</label>
-                <input name="destination" required className="input-field" placeholder="e.g., City Hospital" value={formData.destination} onChange={(e) => setFormData({...formData, destination: e.target.value})} />
-              </div>
-              <div>
-                <label className="label">Urgency</label>
-                <select name="urgency" className="input-field" value={formData.urgency} onChange={(e) => setFormData({...formData, urgency: e.target.value})}>
-                  <option value="routine">Routine</option>
-                  <option value="urgent">Urgent</option>
-                  <option value="emergency">Emergency</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="label">Instructions</label>
-              <textarea name="instructions" rows={2} className="input-field" value={formData.instructions} onChange={(e) => setFormData({...formData, instructions: e.target.value})} />
-            </div>
-            <button type="submit" disabled={submitting} className="btn-primary">
-              {submitting ? 'Creating...' : 'Create Referral'}
-            </button>
-          </form>
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Referrals</h1>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
         </div>
       )}
 
-      <div className="card">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : referrals.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">No referrals</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Patient</th>
-                  <th>Reason</th>
-                  <th>Destination</th>
-                  <th>Urgency</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {referrals.map((r) => (
-                  <tr key={r.id}>
-                    <td>{r.patient_profiles?.first_name} {r.patient_profiles?.last_name}</td>
-                    <td className="max-w-xs truncate">{r.referral_reason}</td>
-                    <td>{r.destination}</td>
-                    <td className="capitalize">{r.urgency}</td>
-                    <td><span className={`badge ${getStatusColor(r.status)}`}>{r.status}</span></td>
-                    <td>{formatDate(r.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">From</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">To</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {referrals.map((referral) => (
+              <tr key={referral.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {referral.patient?.last_name}, {referral.patient?.first_name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {referral.from_clinic?.name || 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {referral.to_clinic?.name || 'N/A'}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                  {referral.reason}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(referral.status)}`}>
+                    {referral.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {new Date(referral.referral_date).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {referrals.length === 0 && (
+          <div className="text-center py-8 text-gray-500">No referrals found</div>
         )}
       </div>
     </div>

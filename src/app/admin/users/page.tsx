@@ -1,134 +1,134 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { formatDate, getStatusColor } from '@/lib/utils';
-import toast from 'react-hot-toast';
 
 interface UserProfile {
   id: string;
   auth_user_id: string;
   first_name: string;
   last_name: string;
-  email?: string;
-  user_type: string;
+  email: string;
   status: string;
-  campus_id?: string;
   created_at: string;
-  user_roles?: { roles: { name: string } }[];
+}
+
+interface UserRole {
+  user_id: string;
+  role_id: string;
+  is_active: string;
+  roles: { name: string };
 }
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
+  const fetchData = async () => {
+    const { data: usersData, error: usersError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .order('last_name', { ascending: true });
+
+    const { data: rolesData, error: rolesError } = await supabase
+      .from('user_roles')
+      .select('*, roles(name)')
+      .eq('is_active', true);
+
+    if (usersError || rolesError) {
+      setError('Failed to fetch user data');
+      return;
+    }
+
+    setUsers(usersData || []);
+    setUserRoles(rolesData || []);
+  };
+
   useEffect(() => {
-    loadUsers();
+    fetchData();
+    setLoading(false);
   }, []);
 
-  const loadUsers = async () => {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select(`
-        *,
-        user_roles(roles(name))
-      `)
-      .order('created_at', { ascending: false });
+  const getUserRoles = (authUserId: string) => {
+    return userRoles
+      .filter(ur => ur.user_id === authUserId)
+      .map(ur => ur.roles?.name)
+      .filter(Boolean);
+  };
 
-    if (error) {
-      toast.error('Failed to load users');
-    } else {
-      setUsers(data || []);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-gray-100 text-gray-800';
+      case 'suspended': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
-    setLoading(false);
   };
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch = 
-      user.first_name.toLowerCase().includes(search.toLowerCase()) ||
-      user.last_name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email?.toLowerCase().includes(search.toLowerCase());
-    
-    const matchesRole = !roleFilter || 
-      user.user_roles?.some((ur) => ur.roles?.name === roleFilter);
-    
-    return matchesSearch && matchesRole;
-  });
-
-  const getPrimaryRole = (user: UserProfile) => {
-    return user.user_roles?.[0]?.roles?.name || 'user';
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">User Management</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">User Management</h1>
 
-      {/* Filters */}
-      <div className="flex gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search users..."
-          className="input-field max-w-xs"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <select
-          className="input-field max-w-xs"
-          value={roleFilter}
-          onChange={(e) => setRoleFilter(e.target.value)}
-        >
-          <option value="">All Roles</option>
-          <option value="doctor">Doctor</option>
-          <option value="dentist">Dentist</option>
-          <option value="nurse">Nurse</option>
-          <option value="clinic_staff">Clinic Staff</option>
-          <option value="student">Student</option>
-          <option value="faculty">Faculty</option>
-        </select>
-      </div>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
 
-      {/* Users Table */}
-      <div className="card">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Type</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.map((user) => (
-                  <tr key={user.id}>
-                    <td className="font-medium">
-                      {user.first_name} {user.last_name}
-                    </td>
-                    <td>{user.email || '-'}</td>
-                    <td className="capitalize">{user.user_type.replace('_', ' ')}</td>
-                    <td className="capitalize">{getPrimaryRole(user)}</td>
-                    <td>
-                      <span className={`badge ${getStatusColor(user.status)}`}>
-                        {user.status}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Roles</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {users.map((user) => (
+              <tr key={user.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {user.last_name}, {user.first_name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {user.email}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex flex-wrap gap-1">
+                    {getUserRoles(user.auth_user_id).map((role, idx) => (
+                      <span key={idx} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                        {role}
                       </span>
-                    </td>
-                    <td>{formatDate(user.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    ))}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(user.status)}`}>
+                    {user.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {new Date(user.created_at).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {users.length === 0 && (
+          <div className="text-center py-8 text-gray-500">No users found</div>
         )}
       </div>
     </div>

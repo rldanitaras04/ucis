@@ -1,101 +1,91 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { formatDate } from '@/lib/utils';
-import toast from 'react-hot-toast';
 
 interface Clinic {
   id: string;
   name: string;
   description?: string;
   location?: string;
-  contact_phone?: string;
+  capacity?: number;
   operating_hours?: string;
   is_active: boolean;
-  campus_id: string;
-  created_at: string;
-  clinic_services?: { name: string; category: string }[];
 }
 
 export default function AdminClinicsPage() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => {
-    loadClinics();
-  }, []);
-
-  const loadClinics = async () => {
-    const { data, error } = await supabase
+  const fetchClinics = async () => {
+    const { data, error: fetchError } = await supabase
       .from('clinics')
-      .select(`
-        *,
-        clinic_services(name, category)
-      `)
-      .order('name');
+      .select('*')
+      .order('name', { ascending: true });
 
-    if (error) {
-      toast.error('Failed to load clinics');
-    } else {
-      setClinics(data || []);
+    if (fetchError) {
+      setError('Failed to fetch clinics');
+      return;
     }
-    setLoading(false);
+
+    setClinics(data || []);
   };
 
+  useEffect(() => {
+    fetchClinics();
+    setLoading(false);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Clinic Management</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Clinic Management</h1>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {clinics.map((clinic) => (
+          <div key={clinic.id} className="bg-white rounded-lg shadow p-6">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-semibold text-gray-800">{clinic.name}</h3>
+              <span className={`px-2 py-1 text-xs rounded-full ${
+                clinic.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+              }`}>
+                {clinic.is_active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+            {clinic.description && (
+              <p className="text-gray-600 text-sm mb-2">{clinic.description}</p>
+            )}
+            {clinic.location && (
+              <p className="text-gray-500 text-sm mb-1">📍 {clinic.location}</p>
+            )}
+            {clinic.capacity && (
+              <p className="text-gray-500 text-sm mb-1">👥 Capacity: {clinic.capacity}</p>
+            )}
+            {clinic.operating_hours && (
+              <p className="text-gray-500 text-sm">🕐 {clinic.operating_hours}</p>
+            )}
+          </div>
+        ))}
       </div>
 
-      <div className="card">
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : clinics.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">No clinics found</p>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {clinics.map((clinic) => (
-              <div key={clinic.id} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">{clinic.name}</h3>
-                  <span className={`badge ${clinic.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {clinic.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                {clinic.description && (
-                  <p className="text-sm text-gray-600 mb-2">{clinic.description}</p>
-                )}
-                {clinic.location && (
-                  <p className="text-sm text-gray-500 mb-2">📍 {clinic.location}</p>
-                )}
-                {clinic.operating_hours && (
-                  <p className="text-sm text-gray-500 mb-2">🕐 {clinic.operating_hours}</p>
-                )}
-                {clinic.clinic_services && clinic.clinic_services.length > 0 && (
-                  <div className="mt-3">
-                    <p className="text-xs text-gray-500 mb-1">Services:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {clinic.clinic_services.map((service, idx) => (
-                        <span
-                          key={idx}
-                          className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded"
-                        >
-                          {service.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {clinics.length === 0 && (
+        <div className="text-center py-8 text-gray-500">No clinics configured</div>
+      )}
     </div>
   );
 }

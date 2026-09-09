@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { formatDate, getStatusColor } from '@/lib/utils';
-import toast from 'react-hot-toast';
+import { dispenseMedication } from './actions';
 
 interface Prescription {
   id: string;
@@ -11,208 +10,156 @@ interface Prescription {
   medication_name: string;
   dosage: string;
   frequency: string;
-  quantity?: number;
   status: string;
   prescribed_date: string;
-  patient_profiles?: { first_name: string; last_name: string };
-}
-
-interface DispensingRecord {
-  id: string;
-  prescription_id: string;
-  dispensed_by: string;
-  quantity_dispensed: number;
-  batch_number?: string;
-  dispensed_at: string;
-  prescriptions?: { medication_name: string; dosage: string };
-  patient_profiles?: { first_name: string; last_name: string };
+  patient?: { first_name: string; last_name: string; patient_id: string };
 }
 
 export default function DispensingPage() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [dispensingHistory, setDispensingHistory] = useState<DispensingRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
-  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
-  const [quantityDispensed, setQuantityDispensed] = useState('');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [batchNumber, setBatchNumber] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [selectedRx, setSelectedRx] = useState<string | null>(null);
   const supabase = createClient();
 
-  useEffect(() => { loadData(); }, []);
+  const fetchActivePrescriptions = async () => {
+    const { data, error: fetchError } = await supabase
+      .from('prescriptions')
+      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
+      .eq('status', 'active')
+      .order('prescribed_date', { ascending: false });
 
-  const loadData = async () => {
-    const [rxResult, dispResult] = await Promise.all([
-      supabase
-        .from('prescriptions')
-        .select('*, patient_profiles(first_name, last_name)')
-        .eq('status', 'active')
-        .order('prescribed_date', { ascending: false }),
-      supabase
-        .from('dispensing')
-        .select('*, prescriptions(medication_name, dosage), patient_profiles(first_name, last_name)')
-        .order('dispensed_at', { ascending: false })
-        .limit(50),
-    ]);
-    setPrescriptions(rxResult.data || []);
-    setDispensingHistory(dispResult.data || []);
-    setLoading(false);
-  };
-
-  const handleDispense = async () => {
-    if (!selectedPrescription || !quantityDispensed) return;
-    setSubmitting(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
-      const { error } = await supabase.from('dispensing').insert({
-        prescription_id: selectedPrescription.id,
-        patient_id: selectedPrescription.patient_id,
-        dispensed_by: user.id,
-        quantity_dispensed: parseInt(quantityDispensed),
-        batch_number: batchNumber || null,
-        dispensed_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-      });
-      if (error) throw error;
-
-      await supabase.from('prescriptions').update({ status: 'dispensed' }).eq('id', selectedPrescription.id);
-
-      toast.success('Dispensed successfully');
-      setSelectedPrescription(null);
-      setQuantityDispensed('');
-      setBatchNumber('');
-      loadData();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed');
-    } finally {
-      setSubmitting(false);
+    if (fetchError) {
+      setError('Failed to fetch prescriptions');
+      return;
     }
+
+    setPrescriptions(data || []);
   };
+
+  useEffect(() => {
+    fetchActivePrescriptions();
+    setLoading(false);
+  }, []);
+
+  const handleDispense = async (prescriptionId: string) => {
+    setActionLoading(prescriptionId);
+    setError(null);
+    setSuccess(null);
+
+    const result = await dispenseMedication({
+      prescription_id: prescriptionId,
+      quantity_dispensed: 1,
+      batch_number: batchNumber || undefined,
+    });
+
+    if (result.success) {
+      setSuccess('Medication dispensed successfully');
+      setBatchNumber('');
+      setSelectedRx(null);
+      await fetchActivePrescriptions();
+    } else {
+      setError(result.error || 'Failed to dispense medication');
+    }
+    setActionLoading(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-8">Pharmacy Dispensing</h1>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Dispensing</h1>
 
-      <div className="flex gap-4 mb-6">
-        <button onClick={() => setActiveTab('pending')} className={`px-4 py-2 rounded-lg ${activeTab === 'pending' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
-          Pending Prescriptions ({prescriptions.length})
-        </button>
-        <button onClick={() => setActiveTab('history')} className={`px-4 py-2 rounded-lg ${activeTab === 'history' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}>
-          Dispensing History
-        </button>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+          {success}
+        </div>
+      )}
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Medication</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dosage</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {prescriptions.map((rx) => (
+              <tr key={rx.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {rx.patient?.last_name}, {rx.patient?.first_name}
+                  <br />
+                  <span className="text-xs text-gray-500">{rx.patient?.patient_id}</span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {rx.medication_name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {rx.dosage}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {rx.frequency}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  {selectedRx === rx.id ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={batchNumber}
+                        onChange={(e) => setBatchNumber(e.target.value)}
+                        placeholder="Batch #"
+                        className="border rounded px-2 py-1 text-sm w-24"
+                      />
+                      <button
+                        onClick={() => handleDispense(rx.id)}
+                        disabled={actionLoading === rx.id}
+                        className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 disabled:opacity-50"
+                      >
+                        {actionLoading === rx.id ? '...' : 'Confirm'}
+                      </button>
+                      <button
+                        onClick={() => { setSelectedRx(null); setBatchNumber(''); }}
+                        className="text-gray-600 hover:text-gray-900 text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setSelectedRx(rx.id)}
+                      className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                    >
+                      Dispense
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {prescriptions.length === 0 && (
+          <div className="text-center py-8 text-gray-500">No active prescriptions to dispense</div>
+        )}
       </div>
-
-      {activeTab === 'pending' && (
-        <div className="card">
-          {loading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-          ) : prescriptions.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No pending prescriptions</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Patient</th>
-                    <th>Medication</th>
-                    <th>Dosage</th>
-                    <th>Frequency</th>
-                    <th>Quantity</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {prescriptions.map((rx) => (
-                    <tr key={rx.id}>
-                      <td>{rx.patient_profiles?.first_name} {rx.patient_profiles?.last_name}</td>
-                      <td className="font-medium">{rx.medication_name}</td>
-                      <td>{rx.dosage}</td>
-                      <td className="capitalize">{rx.frequency.replace(/_/g, ' ')}</td>
-                      <td>{rx.quantity || '-'}</td>
-                      <td>{formatDate(rx.prescribed_date)}</td>
-                      <td>
-                        <button onClick={() => setSelectedPrescription(rx)} className="text-sm text-blue-600 hover:text-blue-800">
-                          Dispense
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'history' && (
-        <div className="card">
-          {dispensingHistory.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No dispensing history</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Patient</th>
-                    <th>Medication</th>
-                    <th>Qty Dispensed</th>
-                    <th>Batch</th>
-                    <th>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dispensingHistory.map((d) => (
-                    <tr key={d.id}>
-                      <td>{d.patient_profiles?.first_name} {d.patient_profiles?.last_name}</td>
-                      <td>{d.prescriptions?.medication_name}</td>
-                      <td>{d.quantity_dispensed}</td>
-                      <td>{d.batch_number || '-'}</td>
-                      <td>{formatDate(d.dispensed_at)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {selectedPrescription && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4 p-6">
-            <h2 className="text-xl font-bold mb-4">Dispense Medication</h2>
-            <div className="space-y-3 mb-4">
-              <p><span className="text-gray-500">Patient:</span> {selectedPrescription.patient_profiles?.first_name} {selectedPrescription.patient_profiles?.last_name}</p>
-              <p><span className="text-gray-500">Medication:</span> {selectedPrescription.medication_name}</p>
-              <p><span className="text-gray-500">Dosage:</span> {selectedPrescription.dosage}</p>
-              <p><span className="text-gray-500">Prescribed Qty:</span> {selectedPrescription.quantity || 'N/A'}</p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <label className="label">Quantity to Dispense *</label>
-                <input type="number" className="input-field" value={quantityDispensed} onChange={(e) => setQuantityDispensed(e.target.value)} />
-              </div>
-              <div>
-                <label className="label">Batch Number</label>
-                <input type="text" className="input-field" value={batchNumber} onChange={(e) => setBatchNumber(e.target.value)} />
-              </div>
-            </div>
-            <div className="flex gap-4 mt-6">
-              <button onClick={handleDispense} disabled={submitting || !quantityDispensed} className="btn-primary flex-1">
-                {submitting ? 'Dispensing...' : 'Confirm Dispense'}
-              </button>
-              <button onClick={() => setSelectedPrescription(null)} className="btn-secondary flex-1">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
