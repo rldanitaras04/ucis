@@ -1,14 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { checkSuperadminExists } from './actions';
 
 export default function SetupPage() {
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [alreadySetup, setAlreadySetup] = useState(false);
+
+  useEffect(() => {
+    checkSuperadminExists().then(exists => {
+      if (exists) {
+        setAlreadySetup(true);
+        toast.success('Superadmin already exists. Redirecting to login...');
+        setTimeout(() => router.push('/auth/login'), 2000);
+      }
+      setLoading(false);
+    });
+  }, [router]);
 
   const createSuperAdmin = async () => {
-    setLoading(true);
+    setCreating(true);
     setResult(null);
 
     try {
@@ -23,9 +39,31 @@ export default function SetupPage() {
       setResult({ success: false, error: error.message });
       toast.error(error.message);
     } finally {
-      setLoading(false);
+      setCreating(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  if (alreadySetup) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <div className="max-w-md w-full space-y-8 p-8 text-center">
+          <div className="w-16 h-16 bg-[#059669] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span className="text-white font-bold text-2xl">✓</span>
+          </div>
+          <h1 className="text-display text-[#0F172A]">Already Configured</h1>
+          <p className="text-body text-[#64748B]">Redirecting to login...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
@@ -48,10 +86,10 @@ export default function SetupPage() {
 
           <button
             onClick={createSuperAdmin}
-            disabled={loading}
+            disabled={creating}
             className="w-full btn-primary"
           >
-            {loading ? 'Creating...' : 'Create Superadmin Account'}
+            {creating ? 'Creating...' : 'Create Superadmin Account'}
           </button>
 
           {result && (

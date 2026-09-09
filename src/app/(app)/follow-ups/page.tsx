@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { createFollowUp, completeFollowUp, cancelFollowUp } from './actions';
+import { createFollowUp, completeFollowUp, cancelFollowUp, fetchFollowUps } from './actions';
 
 interface FollowUp {
   id: string;
@@ -22,7 +21,6 @@ export default function FollowUpsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ id: string; action: 'cancel' } | null>(null);
-  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -31,22 +29,17 @@ export default function FollowUpsPage() {
     notes: '',
   });
 
-  const fetchFollowUps = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('follow_ups')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
-      .order('scheduled_date', { ascending: true });
-
-    if (fetchError) {
-      setError('Failed to fetch follow-ups');
-      return;
+  const loadFollowUps = async () => {
+    const result = await fetchFollowUps();
+    if (result.success) {
+      setFollowUps(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setFollowUps(data || []);
   };
 
   useEffect(() => {
-    fetchFollowUps().then(() => setLoading(false));
+    loadFollowUps().then(() => setLoading(false));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +59,7 @@ export default function FollowUpsPage() {
       setSuccess('Follow-up scheduled successfully');
       setShowForm(false);
       setFormData({ patient_id: '', scheduled_date: '', reason: '', notes: '' });
-      await fetchFollowUps();
+      await loadFollowUps();
     } else {
       setError(result.error || 'Failed to schedule follow-up');
     }
@@ -78,7 +71,7 @@ export default function FollowUpsPage() {
     const result = await completeFollowUp(id);
     if (result.success) {
       setSuccess('Follow-up completed');
-      await fetchFollowUps();
+      await loadFollowUps();
     } else {
       setError(result.error || 'Failed to complete follow-up');
     }
@@ -96,7 +89,7 @@ export default function FollowUpsPage() {
     const result = await cancelFollowUp(confirmDialog.id);
     if (result.success) {
       setSuccess('Follow-up cancelled');
-      await fetchFollowUps();
+      await loadFollowUps();
     } else {
       setError(result.error || 'Failed to cancel follow-up');
     }

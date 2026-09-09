@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { createClinic, updateClinic, deleteClinic } from './actions';
+import { useRouter } from 'next/navigation';
+import { createClinic, updateClinic, deleteClinic, fetchAllClinics, checkAdminAccess } from './actions';
 
 interface Clinic {
   id: string;
@@ -25,6 +25,7 @@ const emptyClinic: Clinic = {
 };
 
 export default function AdminClinicsPage() {
+  const router = useRouter();
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,25 +35,27 @@ export default function AdminClinicsPage() {
   const [formData, setFormData] = useState<Clinic>(emptyClinic);
   const [confirmDelete, setConfirmDelete] = useState<Clinic | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
-  const supabase = createClient();
 
-  const fetchClinics = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('clinics')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (fetchError) {
-      setError('Failed to fetch clinics');
-      return;
+  const loadClinics = async () => {
+    const result = await fetchAllClinics();
+    if (result.success) {
+      setClinics(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setClinics(data || []);
   };
 
   useEffect(() => {
-    fetchClinics();
-    setLoading(false);
+    const checkAccess = async () => {
+      const accessResult = await checkAdminAccess();
+      if (!accessResult.success || !accessResult.isAdmin) {
+        router.push('/dashboard');
+        return;
+      }
+      await loadClinics();
+      setLoading(false);
+    };
+    checkAccess();
   }, []);
 
   const resetForm = () => {
@@ -77,7 +80,7 @@ export default function AdminClinicsPage() {
       if (result.success) {
         setSuccess('Clinic updated successfully');
         resetForm();
-        fetchClinics();
+        loadClinics();
       } else {
         setError(result.error);
       }
@@ -86,7 +89,7 @@ export default function AdminClinicsPage() {
       if (result.success) {
         setSuccess('Clinic created successfully');
         resetForm();
-        fetchClinics();
+        loadClinics();
       } else {
         setError(result.error);
       }
@@ -101,7 +104,7 @@ export default function AdminClinicsPage() {
     if (result.success) {
       setSuccess('Clinic deleted successfully');
       setConfirmDelete(null);
-      fetchClinics();
+      loadClinics();
     } else {
       setError(result.error);
     }

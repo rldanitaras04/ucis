@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -11,22 +11,37 @@ import {
   GearSix,
   UserCircle,
 } from '@phosphor-icons/react';
+import { NAVIGATION_REGISTRY } from '@/lib/navigation/registry';
+import { UserRole } from '@/lib/navigation/types';
 
 interface AppHeaderProps {
   userName?: string;
   userRoles?: string[];
 }
 
-const HEADER_LINKS = [
-  { label: 'Home', href: '/dashboard' },
-  { label: 'Queue', href: '/queue' },
-  { label: 'Patients', href: '/records' },
-  { label: 'Reports', href: '/reports' },
-];
+const HEADER_ITEM_IDS = ['dashboard', 'queue', 'patient-records', 'reports'];
 
 export default function AppHeader({ userName, userRoles }: AppHeaderProps) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const headerLinks = useMemo(() => {
+    if (!userRoles) return HEADER_ITEM_IDS
+      .map(id => NAVIGATION_REGISTRY.find(item => item.id === id))
+      .filter(Boolean)
+      .map(item => ({ label: item!.label, href: item!.href }));
+
+    return HEADER_ITEM_IDS
+      .map(id => NAVIGATION_REGISTRY.find(item => item.id === id))
+      .filter(Boolean)
+      .filter(item => {
+        if (!item!.requiredRoles) return true;
+        return (userRoles as UserRole[]).some(role =>
+          item!.requiredRoles!.includes(role) || role === 'super_admin'
+        );
+      })
+      .map(item => ({ label: item!.label, href: item!.href }));
+  }, [userRoles]);
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-[#E5E7EB] h-16 flex items-center px-4 lg:px-6">
@@ -52,7 +67,7 @@ export default function AppHeader({ userName, userRoles }: AppHeaderProps) {
 
       {/* Navigation links */}
       <nav className="hidden md:flex items-center gap-1" aria-label="Header navigation">
-        {HEADER_LINKS.map(link => {
+        {headerLinks.map(link => {
           const isActive = pathname === link.href || pathname.startsWith(link.href + '/');
           return (
             <Link

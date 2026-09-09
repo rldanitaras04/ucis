@@ -1,7 +1,51 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export async function fetchAdminUsers(): Promise<{ success: true; data: { users: any[]; userRoles: any[]; roles: any[] } } | { success: false; error: string }> {
+  try {
+    await requireAnyRole('admin', 'super_admin');
+    const supabase = createServerSupabaseClient();
+
+    const [usersResult, userRolesResult, rolesResult] = await Promise.all([
+      supabase.from('user_profiles').select('*').order('last_name', { ascending: true }),
+      supabase.from('user_roles').select('*, roles(name)').eq('is_active', true),
+      supabase.from('roles').select('id, name').order('name'),
+    ]);
+
+    if (usersResult.error) throw usersResult.error;
+    if (userRolesResult.error) throw userRolesResult.error;
+
+    return {
+      success: true,
+      data: {
+        users: usersResult.data || [],
+        userRoles: userRolesResult.data || [],
+        roles: rolesResult.data || [],
+      },
+    };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function checkAdminAccess(): Promise<{ success: true; isAdmin: boolean } | { success: false; error: string }> {
+  try {
+    const user = await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('roles(name)')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+    const roleNames = (roles as unknown as { roles: Record<string, unknown> }[])?.map(r => r.roles?.name as string) || [];
+    const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin');
+    return { success: true, isAdmin };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
 
 export async function updateUserRole(userId: string, roleId: string): Promise<{ success: true } | { success: false; error: string }> {
   try {

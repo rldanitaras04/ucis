@@ -1,7 +1,36 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export async function fetchAllClinics(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAnyRole('admin', 'super_admin');
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase.from('clinics').select('*').order('name', { ascending: true });
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function checkAdminAccess(): Promise<{ success: true; isAdmin: boolean } | { success: false; error: string }> {
+  try {
+    const user = await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data: roles } = await supabase
+      .from('user_roles')
+      .select('roles(name)')
+      .eq('user_id', user.id)
+      .eq('is_active', true);
+    const roleNames = (roles as unknown as { roles: Record<string, unknown> }[])?.map(r => r.roles?.name as string) || [];
+    const isAdmin = roleNames.includes('admin') || roleNames.includes('super_admin');
+    return { success: true, isAdmin };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
 
 export async function createClinic(data: {
   name: string;

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { issueClearance, revokeClearance } from './actions';
+import { issueClearance, revokeClearance, fetchClearances } from './actions';
 
 interface Clearance {
   id: string;
@@ -22,7 +21,6 @@ export default function ClearancesPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -30,22 +28,17 @@ export default function ClearancesPage() {
     expiry_date: '',
   });
 
-  const fetchClearances = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('clearances')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
-      .order('issue_date', { ascending: false });
-
-    if (fetchError) {
-      setError('Failed to fetch clearances');
-      return;
+  const loadClearances = async () => {
+    const result = await fetchClearances();
+    if (result.success) {
+      setClearances(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setClearances(data || []);
   };
 
   useEffect(() => {
-    fetchClearances();
+    loadClearances();
     setLoading(false);
   }, []);
 
@@ -65,7 +58,7 @@ export default function ClearancesPage() {
       setSuccess(`Clearance issued. Control #: ${result.controlNumber}`);
       setShowForm(false);
       setFormData({ patient_id: '', clearance_type: '', expiry_date: '' });
-      await fetchClearances();
+      await loadClearances();
     } else {
       setError(result.error || 'Failed to issue clearance');
     }
@@ -76,7 +69,7 @@ export default function ClearancesPage() {
     setActionLoading(id);
     const result = await revokeClearance(id);
     if (result.success) {
-      await fetchClearances();
+      await loadClearances();
     } else {
       setError(result.error || 'Failed to revoke clearance');
     }

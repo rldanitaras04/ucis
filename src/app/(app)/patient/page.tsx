@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { formatDate, getStatusColor } from '@/lib/utils';
 
 export default function PatientPortalPage() {
+  const router = useRouter();
   const [patient, setPatient] = useState<any>(null);
   const [encounters, setEncounters] = useState<any[]>([]);
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
@@ -18,7 +20,10 @@ export default function PatientPortalPage() {
 
   const loadPatientData = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      router.push('/auth/login?redirect=/patient');
+      return;
+    }
 
     const { data: patientData } = await supabase
       .from('patient_profiles')

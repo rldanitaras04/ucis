@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Protected routes
-  const protectedPaths = ['/dashboard', '/admin', '/doctor', '/dentist', '/nurse', '/clinic-staff', '/records', '/prescriptions', '/queue', '/patient', '/reports', '/vitals', '/fbs', '/dental', '/referrals', '/follow-ups', '/clearances', '/incidents', '/medicines', '/dispensing', '/notifications'];
+  const protectedPaths = ['/dashboard', '/admin', '/doctor', '/dentist', '/nurse', '/clinic-staff', '/records', '/medical-records', '/prescriptions', '/queue', '/patient', '/reports', '/vitals', '/fbs', '/dental', '/referrals', '/follow-ups', '/clearances', '/incidents', '/medicines', '/dispensing', '/notifications'];
   const isProtected = protectedPaths.some((path) => request.nextUrl.pathname.startsWith(path));
 
   if (isProtected && !user) {

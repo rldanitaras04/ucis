@@ -1,7 +1,22 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export async function fetchIncidents(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('incidents')
+      .select('*, patient:patient_profiles!patient_id(first_name, last_name), reporter:user_profiles!reported_by(first_name, last_name)')
+      .order('incident_date', { ascending: false });
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
 
 export async function createIncident(data: {
   incident_type: string;

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { callNextPatient, startQueueService, completeQueueService, cancelQueueEntry, addToQueue } from './actions';
+import { callNextPatient, startQueueService, completeQueueService, cancelQueueEntry, addToQueue, fetchQueue, fetchClinicsList, fetchServices } from './actions';
 
 interface QueueEntry {
   id: string;
@@ -43,42 +42,39 @@ export default function QueuePage() {
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [services, setServices] = useState<ClinicService[]>([]);
   const [formData, setFormData] = useState({ patient_id: '', clinic_id: '', service_id: '' });
-  const supabase = createClient();
 
-  const fetchQueue = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const { data, error: fetchError } = await supabase
-      .from('queue_entries')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id), clinic:clinics!clinic_id(name), service:clinic_services!service_id(name)')
-      .eq('queue_date', today)
-      .order('queue_number', { ascending: true });
-
-    if (fetchError) {
-      setError('Failed to fetch queue entries');
+  const loadQueue = async () => {
+    const result = await fetchQueue();
+    if (result.success) {
+      setQueueEntries(result.data);
     } else {
-      setQueueEntries(data || []);
+      setError(result.error);
     }
     setLoading(false);
   };
 
-  const fetchClinics = async () => {
-    const { data } = await supabase.from('clinics').select('id, name').eq('is_active', true);
-    setClinics(data || []);
+  const loadClinics = async () => {
+    const result = await fetchClinicsList();
+    if (result.success) {
+      setClinics(result.data);
+    }
   };
 
-  const fetchServices = async (clinicId: string) => {
-    const { data } = await supabase.from('clinic_services').select('id, name, clinic_id').eq('clinic_id', clinicId);
-    setServices(data || []);
+  const loadServices = async (clinicId: string) => {
+    const result = await fetchServices(clinicId);
+    if (result.success) {
+      setServices(result.data);
+    }
   };
 
   useEffect(() => {
-    fetchQueue();
-    fetchClinics();
+    loadQueue();
+    loadClinics();
   }, []);
 
   useEffect(() => {
     if (formData.clinic_id) {
-      fetchServices(formData.clinic_id);
+      loadServices(formData.clinic_id);
     }
   }, [formData.clinic_id]);
 
@@ -98,7 +94,7 @@ export default function QueuePage() {
       setSuccess('Patient added to queue');
       setShowAddForm(false);
       setFormData({ patient_id: '', clinic_id: '', service_id: '' });
-      await fetchQueue();
+      await loadQueue();
     } else {
       setError(result.error || 'Failed to add to queue');
     }
@@ -109,7 +105,7 @@ export default function QueuePage() {
     setActionLoading('call');
     const result = await callNextPatient();
     if (result.success) {
-      await fetchQueue();
+      await loadQueue();
     } else {
       setError(result.error || 'Failed to call next patient');
     }
@@ -120,7 +116,7 @@ export default function QueuePage() {
     setActionLoading(entryId);
     const result = await startQueueService(entryId);
     if (result.success) {
-      await fetchQueue();
+      await loadQueue();
     } else {
       setError(result.error || 'Failed to start service');
     }
@@ -131,7 +127,7 @@ export default function QueuePage() {
     setActionLoading(entryId);
     const result = await completeQueueService(entryId);
     if (result.success) {
-      await fetchQueue();
+      await loadQueue();
     } else {
       setError(result.error || 'Failed to complete service');
     }
@@ -144,7 +140,7 @@ export default function QueuePage() {
     if (result.success) {
       setSuccess('Queue entry cancelled');
       setConfirmCancel(null);
-      await fetchQueue();
+      await loadQueue();
     } else {
       setError(result.error || 'Failed to cancel entry');
     }

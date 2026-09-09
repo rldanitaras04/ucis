@@ -3,6 +3,25 @@
 import { requireAuth, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 
+export async function fetchNotifications(): Promise<{ success: true; data: { id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }[] } | { success: false; error: string }> {
+  try {
+    const user = await requireAuth();
+    const supabase = createServerSupabaseClient();
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
 export async function markNotificationRead(notificationId: string): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAuth();

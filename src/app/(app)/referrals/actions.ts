@@ -1,7 +1,22 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export async function fetchReferrals(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('referrals')
+      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id), from_clinic:clinics!from_clinic_id(name), to_clinic:clinics!to_clinic_id(name)')
+      .order('referral_date', { ascending: false });
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
 
 export async function createReferral(data: {
   patient_id: string;
@@ -99,6 +114,7 @@ export async function rejectReferral(referralId: string): Promise<{ success: tru
 
 export async function fetchClinics(): Promise<{ success: true; data: { id: string; name: string }[] } | { success: false; error: string }> {
   try {
+    await requireAnyRole('doctor', 'dentist', 'nurse', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('clinics')

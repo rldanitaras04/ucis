@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { markNotificationRead, markAllNotificationsRead, deleteNotification } from './actions';
+import { fetchNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification } from './actions';
 
 interface Notification {
   id: string;
@@ -18,24 +17,18 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
 
-  const fetchNotifications = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('notifications')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (fetchError) {
+  const fetchNotificationsData = async () => {
+    const result = await fetchNotifications();
+    if (result.success) {
+      setNotifications(result.data);
+    } else {
       setError('Failed to fetch notifications');
-      return;
     }
-
-    setNotifications(data || []);
   };
 
   useEffect(() => {
-    fetchNotifications();
+    fetchNotificationsData();
     setLoading(false);
   }, []);
 
@@ -43,7 +36,7 @@ export default function NotificationsPage() {
     setActionLoading(id);
     const result = await markNotificationRead(id);
     if (result.success) {
-      await fetchNotifications();
+      await fetchNotificationsData();
     }
     setActionLoading(null);
   };
@@ -52,7 +45,7 @@ export default function NotificationsPage() {
     setActionLoading('all');
     const result = await markAllNotificationsRead();
     if (result.success) {
-      await fetchNotifications();
+      await fetchNotificationsData();
     }
     setActionLoading(null);
   };
@@ -61,7 +54,7 @@ export default function NotificationsPage() {
     setActionLoading(id);
     const result = await deleteNotification(id);
     if (result.success) {
-      await fetchNotifications();
+      await fetchNotificationsData();
     }
     setActionLoading(null);
   };

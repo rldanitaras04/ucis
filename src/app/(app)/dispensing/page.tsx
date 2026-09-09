@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { dispenseMedication } from './actions';
+import { dispenseMedication, fetchActivePrescriptions } from './actions';
 
 interface Prescription {
   id: string;
@@ -23,25 +22,18 @@ export default function DispensingPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [batchNumber, setBatchNumber] = useState('');
   const [selectedRx, setSelectedRx] = useState<string | null>(null);
-  const supabase = createClient();
 
-  const fetchActivePrescriptions = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('prescriptions')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
-      .eq('status', 'active')
-      .order('prescribed_date', { ascending: false });
-
-    if (fetchError) {
-      setError('Failed to fetch prescriptions');
-      return;
+  const loadPrescriptions = async () => {
+    const result = await fetchActivePrescriptions();
+    if (result.success) {
+      setPrescriptions(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setPrescriptions(data || []);
   };
 
   useEffect(() => {
-    fetchActivePrescriptions();
+    loadPrescriptions();
     setLoading(false);
   }, []);
 
@@ -60,7 +52,7 @@ export default function DispensingPage() {
       setSuccess('Medication dispensed successfully');
       setBatchNumber('');
       setSelectedRx(null);
-      await fetchActivePrescriptions();
+      await loadPrescriptions();
     } else {
       setError(result.error || 'Failed to dispense medication');
     }

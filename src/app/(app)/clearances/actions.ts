@@ -1,7 +1,22 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export async function fetchClearances(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('clearances')
+      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
+      .order('issue_date', { ascending: false });
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
 
 function generateControlNumber() {
   const now = new Date();

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { createIncident, updateIncidentStatus } from './actions';
+import { createIncident, updateIncidentStatus, fetchIncidents } from './actions';
 
 interface Incident {
   id: string;
@@ -26,7 +25,6 @@ export default function IncidentsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ incidentId: string; status: string } | null>(null);
-  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     incident_type: 'clinical',
@@ -36,22 +34,17 @@ export default function IncidentsPage() {
     status: 'open',
   });
 
-  const fetchIncidents = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('incidents')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name), reporter:user_profiles!reported_by(first_name, last_name)')
-      .order('incident_date', { ascending: false });
-
-    if (fetchError) {
-      setError('Failed to fetch incidents');
-      return;
+  const loadIncidents = async () => {
+    const result = await fetchIncidents();
+    if (result.success) {
+      setIncidents(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setIncidents(data || []);
   };
 
   useEffect(() => {
-    fetchIncidents();
+    loadIncidents();
     setLoading(false);
   }, []);
 
@@ -93,7 +86,7 @@ export default function IncidentsPage() {
       setSuccess('Incident reported successfully');
       setShowForm(false);
       setFormData({ incident_type: 'clinical', severity: 'medium', description: '', patient_id: '', status: 'open' });
-      fetchIncidents();
+      loadIncidents();
     } else {
       setError(result.error);
     }
@@ -111,7 +104,7 @@ export default function IncidentsPage() {
 
     if (result.success) {
       setSuccess(`Incident status updated to ${confirmDialog.status}`);
-      fetchIncidents();
+      loadIncidents();
     } else {
       setError(result.error);
     }

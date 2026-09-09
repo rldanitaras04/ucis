@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { fetchDentalRecords } from './actions';
 
 interface DentalRecord {
   id: string;
@@ -18,26 +18,18 @@ export default function DentalPage() {
   const [records, setRecords] = useState<DentalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
-
-  const fetchRecords = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('encounters')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
-      .eq('encounter_type', 'dental')
-      .order('encounter_date', { ascending: false });
-
-    if (fetchError) {
-      setError('Failed to fetch dental records');
-      return;
-    }
-
-    setRecords(data || []);
-  };
 
   useEffect(() => {
-    fetchRecords();
-    setLoading(false);
+    const loadData = async () => {
+      const result = await fetchDentalRecords();
+      if (result.success) {
+        setRecords(result.data);
+      } else {
+        setError(result.error);
+      }
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   if (loading) {

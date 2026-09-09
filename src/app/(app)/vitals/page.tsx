@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { recordVitalSigns } from './actions';
-import { createClient } from '@/lib/supabase/client';
+import { recordVitalSigns, fetchVitalSigns } from './actions';
 
 interface VitalRecord {
   id: string;
@@ -37,13 +36,10 @@ export default function VitalsPage() {
 
   const fetchRecentRecords = useCallback(async () => {
     setRecordsLoading(true);
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('vital_signs')
-      .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, temperature, oxygen_saturation')
-      .order('recorded_at', { ascending: false })
-      .limit(10);
-    setRecentRecords(data ?? []);
+    const result = await fetchVitalSigns();
+    if (result.success) {
+      setRecentRecords(result.data);
+    }
     setRecordsLoading(false);
   }, []);
 

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { createPrescription, cancelPrescription } from './actions';
+import { createPrescription, cancelPrescription, fetchPrescriptions } from './actions';
 
 interface Prescription {
   id: string;
@@ -26,7 +25,6 @@ export default function PrescriptionsPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -39,22 +37,17 @@ export default function PrescriptionsPage() {
     instructions: '',
   });
 
-  const fetchPrescriptions = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('prescriptions')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
-      .order('prescribed_date', { ascending: false });
-
-    if (fetchError) {
-      setError('Failed to fetch prescriptions');
-      return;
+  const loadPrescriptions = async () => {
+    const result = await fetchPrescriptions();
+    if (result.success) {
+      setPrescriptions(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setPrescriptions(data || []);
   };
 
   useEffect(() => {
-    fetchPrescriptions();
+    loadPrescriptions();
     setLoading(false);
   }, []);
 
@@ -88,7 +81,7 @@ export default function PrescriptionsPage() {
         refills: '0',
         instructions: '',
       });
-      await fetchPrescriptions();
+      await loadPrescriptions();
     } else {
       setError(result.error || 'Failed to create prescription');
     }
@@ -99,7 +92,7 @@ export default function PrescriptionsPage() {
     setActionLoading(id);
     const result = await cancelPrescription(id);
     if (result.success) {
-      await fetchPrescriptions();
+      await loadPrescriptions();
     } else {
       setError(result.error || 'Failed to cancel prescription');
     }

@@ -1,7 +1,23 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export async function fetchActivePrescriptions(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('prescriptions')
+      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
+      .eq('status', 'active')
+      .order('prescribed_date', { ascending: false });
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
 
 export async function dispenseMedication(data: {
   prescription_id: string;

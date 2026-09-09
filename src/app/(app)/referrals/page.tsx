@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { createReferral, acceptReferral, rejectReferral, fetchClinics } from './actions';
+import { createReferral, acceptReferral, rejectReferral, fetchClinics, fetchReferrals } from './actions';
 
 interface Referral {
   id: string;
@@ -32,7 +31,6 @@ export default function ReferralsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ id: string; action: 'reject' } | null>(null);
-  const supabase = createClient();
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -42,18 +40,13 @@ export default function ReferralsPage() {
     notes: '',
   });
 
-  const fetchReferrals = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('referrals')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id), from_clinic:clinics!from_clinic_id(name), to_clinic:clinics!to_clinic_id(name)')
-      .order('referral_date', { ascending: false });
-
-    if (fetchError) {
-      setError('Failed to fetch referrals');
-      return;
+  const loadReferrals = async () => {
+    const result = await fetchReferrals();
+    if (result.success) {
+      setReferrals(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setReferrals(data || []);
   };
 
   const loadClinics = async () => {
@@ -64,7 +57,7 @@ export default function ReferralsPage() {
   };
 
   useEffect(() => {
-    Promise.all([fetchReferrals(), loadClinics()]).then(() => setLoading(false));
+    Promise.all([loadReferrals(), loadClinics()]).then(() => setLoading(false));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,7 +78,7 @@ export default function ReferralsPage() {
       setSuccess('Referral created successfully');
       setShowForm(false);
       setFormData({ patient_id: '', from_clinic_id: '', to_clinic_id: '', reason: '', notes: '' });
-      await fetchReferrals();
+      await loadReferrals();
     } else {
       setError(result.error || 'Failed to create referral');
     }
@@ -97,7 +90,7 @@ export default function ReferralsPage() {
     const result = await acceptReferral(id);
     if (result.success) {
       setSuccess('Referral accepted');
-      await fetchReferrals();
+      await loadReferrals();
     } else {
       setError(result.error || 'Failed to accept referral');
     }
@@ -115,7 +108,7 @@ export default function ReferralsPage() {
     const result = await rejectReferral(confirmDialog.id);
     if (result.success) {
       setSuccess('Referral rejected');
-      await fetchReferrals();
+      await loadReferrals();
     } else {
       setError(result.error || 'Failed to reject referral');
     }

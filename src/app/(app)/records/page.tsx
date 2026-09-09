@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { fetchPatients } from './actions';
 
 interface Patient {
   id: string;
@@ -23,32 +23,33 @@ export default function RecordsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchPatients = async () => {
+  const loadPatients = useCallback(async (query: string) => {
     setLoading(true);
-    let query = supabase
-      .from('patient_profiles')
-      .select('*')
-      .order('last_name', { ascending: true });
-
-    if (searchQuery) {
-      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,patient_id.ilike.%${searchQuery}%`);
-    }
-
-    const { data, error: fetchError } = await query;
-
-    if (fetchError) {
-      setError('Failed to fetch patient records');
+    const result = await fetchPatients(query);
+    if (result.success) {
+      setPatients(result.data);
     } else {
-      setPatients(data || []);
+      setError(result.error);
     }
     setLoading(false);
-  };
+  }, []);
 
   useEffect(() => {
-    fetchPatients();
-  }, [searchQuery]);
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    debounceTimer.current = setTimeout(() => {
+      loadPatients(searchQuery);
+    }, 300);
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [searchQuery, loadPatients]);
 
   if (loading) {
     return (

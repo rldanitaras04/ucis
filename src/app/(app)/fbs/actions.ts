@@ -1,7 +1,23 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export async function fetchFBSRecords(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('fbs_records')
+      .select('id, patient_id, recorded_at, fbs_value, fasting_hours, notes')
+      .order('recorded_at', { ascending: false })
+      .limit(10);
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
 
 export async function recordFBS(data: {
   patient_id: string;

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { updateUserRole, updateUserStatus } from './actions';
+import { useRouter } from 'next/navigation';
+import { updateUserRole, updateUserStatus, fetchAdminUsers, checkAdminAccess } from './actions';
 
 interface UserProfile {
   id: string;
@@ -27,6 +27,7 @@ interface Role {
 }
 
 export default function AdminUsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -38,37 +39,27 @@ export default function AdminUsersPage() {
   const [selectedRoleId, setSelectedRoleId] = useState('');
   const [confirmSuspend, setConfirmSuspend] = useState<UserProfile | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const supabase = createClient();
 
-  const fetchData = async () => {
-    const { data: usersData, error: usersError } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .order('last_name', { ascending: true });
-
-    const { data: rolesData, error: rolesError } = await supabase
-      .from('user_roles')
-      .select('*, roles(name)')
-      .eq('is_active', true);
-
-    const { data: allRoles } = await supabase
-      .from('roles')
-      .select('id, name')
-      .order('name');
-
-    if (usersError || rolesError) {
-      setError('Failed to fetch user data');
+  const loadData = async () => {
+    const accessResult = await checkAdminAccess();
+    if (!accessResult.success || !accessResult.isAdmin) {
+      router.push('/dashboard');
       return;
     }
 
-    setUsers(usersData || []);
-    setUserRoles(rolesData || []);
-    setRoles(allRoles || []);
+    const result = await fetchAdminUsers();
+    if (result.success) {
+      setUsers(result.data.users);
+      setUserRoles(result.data.userRoles);
+      setRoles(result.data.roles);
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchData();
-    setLoading(false);
+    loadData();
   }, []);
 
   const getUserRoles = (authUserId: string) => {
@@ -103,7 +94,7 @@ export default function AdminUsersPage() {
     if (result.success) {
       setSuccess('Role updated successfully');
       setEditingRole(null);
-      fetchData();
+      loadData();
     } else {
       setError(result.error);
     }
@@ -117,7 +108,7 @@ export default function AdminUsersPage() {
     if (result.success) {
       setSuccess(`User ${newStatus === 'suspended' ? 'suspended' : 'activated'} successfully`);
       setConfirmSuspend(null);
-      fetchData();
+      loadData();
     } else {
       setError(result.error);
     }

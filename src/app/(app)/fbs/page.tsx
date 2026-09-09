@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { recordFBS } from './actions';
-import { createClient } from '@/lib/supabase/client';
+import { recordFBS, fetchFBSRecords } from './actions';
 
 interface FBSRecord {
   id: string;
@@ -33,13 +32,10 @@ export default function FBSPage() {
 
   const fetchRecentRecords = useCallback(async () => {
     setRecordsLoading(true);
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('fbs_records')
-      .select('id, patient_id, recorded_at, fbs_value, fasting_hours, notes')
-      .order('recorded_at', { ascending: false })
-      .limit(10);
-    setRecentRecords(data ?? []);
+    const result = await fetchFBSRecords();
+    if (result.success) {
+      setRecentRecords(result.data);
+    }
     setRecordsLoading(false);
   }, []);
 

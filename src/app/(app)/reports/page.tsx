@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { fetchReportStats } from './actions';
 
 interface ReportStats {
   totalPatients: number;
@@ -17,56 +17,23 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState('month');
-  const supabase = createClient();
 
   const fetchStats = async () => {
     setLoading(true);
     try {
-      const now = new Date();
-      let startDate: Date;
-
-      switch (dateRange) {
-        case 'week':
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case 'month':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          break;
-        case 'year':
-          startDate = new Date(now.getFullYear(), 0, 1);
-          break;
-        default:
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      const result = await fetchReportStats(dateRange as 'week' | 'month' | 'year');
+      if (result.success) {
+        setStats({
+          totalPatients: result.data.totalPatients,
+          totalEncounters: result.data.periodEncounters,
+          totalPrescriptions: result.data.periodPrescriptions,
+          totalReferrals: result.data.periodReferrals,
+          clinicBreakdown: result.data.clinicBreakdown,
+          recentActivity: [],
+        });
+      } else {
+        setError(result.error);
       }
-
-      const startDateStr = startDate.toISOString();
-
-      const [patientsResult, encountersResult, prescriptionsResult, referralsResult, clinicResult] = await Promise.all([
-        supabase.from('patient_profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('encounters').select('id', { count: 'exact', head: true }).gte('encounter_date', startDateStr),
-        supabase.from('prescriptions').select('id', { count: 'exact', head: true }).gte('prescribed_date', startDateStr),
-        supabase.from('referrals').select('id', { count: 'exact', head: true }).gte('referral_date', startDateStr),
-        supabase.from('encounters').select('clinic:clinics!clinic_id(name)').gte('encounter_date', startDateStr),
-      ]);
-
-      const clinicCounts: Record<string, number> = {};
-      clinicResult.data?.forEach((e: any) => {
-        const name = e.clinic?.name || 'Unknown';
-        clinicCounts[name] = (clinicCounts[name] || 0) + 1;
-      });
-
-      const clinicBreakdown = Object.entries(clinicCounts)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count);
-
-      setStats({
-        totalPatients: patientsResult.count || 0,
-        totalEncounters: encountersResult.count || 0,
-        totalPrescriptions: prescriptionsResult.count || 0,
-        totalReferrals: referralsResult.count || 0,
-        clinicBreakdown,
-        recentActivity: [],
-      });
     } catch (err) {
       setError('Failed to load report data');
     }

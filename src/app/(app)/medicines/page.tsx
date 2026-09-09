@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import { createMedicine, updateMedicine } from './actions';
+import { createMedicine, updateMedicine, deleteMedicine, fetchMedicines } from './actions';
 
 interface Medicine {
   id: string;
@@ -26,7 +25,6 @@ export default function MedicinesPage() {
   const [editingMedicine, setEditingMedicine] = useState<Medicine | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{ medicineId: string; medicineName: string } | null>(null);
-  const supabase = createClient();
 
   const defaultFormData = {
     name: '',
@@ -41,22 +39,17 @@ export default function MedicinesPage() {
 
   const [formData, setFormData] = useState(defaultFormData);
 
-  const fetchMedicines = async () => {
-    const { data, error: fetchError } = await supabase
-      .from('medicines')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (fetchError) {
-      setError('Failed to fetch medicines inventory');
-      return;
+  const loadMedicines = async () => {
+    const result = await fetchMedicines();
+    if (result.success) {
+      setMedicines(result.data);
+    } else {
+      setError(result.error);
     }
-
-    setMedicines(data || []);
   };
 
   useEffect(() => {
-    fetchMedicines();
+    loadMedicines();
     setLoading(false);
   }, []);
 
@@ -121,7 +114,7 @@ export default function MedicinesPage() {
     if (result.success) {
       setSuccess(editingMedicine ? 'Medicine updated successfully' : 'Medicine added successfully');
       resetForm();
-      fetchMedicines();
+      loadMedicines();
     } else {
       setError(result.error);
     }
@@ -139,17 +132,13 @@ export default function MedicinesPage() {
     setError(null);
     setSuccess(null);
 
-    const supabase = createClient();
-    const { error: deleteError } = await supabase
-      .from('medicines')
-      .delete()
-      .eq('id', confirmDialog.medicineId);
+    const result = await deleteMedicine(confirmDialog.medicineId);
 
-    if (deleteError) {
-      setError('Failed to delete medicine');
-    } else {
+    if (result.success) {
       setSuccess('Medicine deleted successfully');
-      fetchMedicines();
+      loadMedicines();
+    } else {
+      setError(result.error);
     }
 
     setSubmitting(false);

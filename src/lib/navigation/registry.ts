@@ -33,6 +33,14 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     requiredRoles: ['doctor', 'dentist', 'nurse', 'admin', 'super_admin'],
   },
   {
+    id: 'medical-records',
+    label: 'Medical Records',
+    href: '/medical-records',
+    section: 'Clinical',
+    priority: 13,
+    requiredRoles: ['doctor', 'dentist', 'nurse', 'admin', 'super_admin'],
+  },
+  {
     id: 'vitals',
     label: 'Vital Signs',
     href: '/vitals',
