@@ -1,7 +1,7 @@
 import Groq from 'groq-sdk';
 import { CarinaMessage, GroqChatResponse, RateLimitEntry } from './types';
 
-const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
+const DEFAULT_MODEL = 'openai/gpt-oss-120b';
 const DEFAULT_TEMPERATURE = 0.3;
 const DEFAULT_MAX_TOKENS = 2048;
 const RATE_LIMIT_WINDOW_MS = 60000;

@@ -1,0 +1,46 @@
+'use client';
+
+import {
+  House,
+  Queue,
+  UserPlus,
+  Users,
+  Heartbeat,
+  TestTube,
+  NotePencil,
+  Tooth,
+  Pill,
+  Package,
+  ArrowSquareOut,
+  CalendarCheck,
+  Certificate,
+  Warning,
+  ChartBar,
+  Bell,
+  UsersThree,
+  Buildings,
+  Sparkle,
+} from '@phosphor-icons/react';
+import { ElementType } from 'react';
+
+export const NAV_ICON_MAP: Record<string, ElementType> = {
+  dashboard: House,
+  queue: Queue,
+  'patient-register': UserPlus,
+  'patient-records': Users,
+  vitals: Heartbeat,
+  fbs: TestTube,
+  prescriptions: NotePencil,
+  dental: Tooth,
+  dispensing: Pill,
+  medicines: Package,
+  referrals: ArrowSquareOut,
+  'follow-ups': CalendarCheck,
+  clearances: Certificate,
+  incidents: Warning,
+  notifications: Bell,
+  reports: ChartBar,
+  'admin-users': UsersThree,
+  'admin-clinics': Buildings,
+  carina: Sparkle,
+};

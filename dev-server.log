@@ -1,0 +1,90 @@
+
+> ucis@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.0
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 6.5s
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 698ms (127 modules)
+ ○ Compiling /api/ai/carina ...
+ ✓ Compiled /api/ai/carina in 666ms (184 modules)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (113kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (267kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ POST /api/ai/carina 200 in 4121ms
+ POST /api/ai/carina 200 in 3986ms
+ POST /api/ai/carina 200 in 2096ms
+ POST /api/ai/carina 200 in 2089ms
+ POST /api/ai/carina 200 in 2787ms
+ POST /api/ai/carina 200 in 2777ms
+ ○ Compiling / ...
+The user aborted a request.
+
+Retrying 1/3...
+The user aborted a request.
+
+Retrying 1/3...
+The user aborted a request.
+
+Retrying 1/3...
+The user aborted a request.
+
+Retrying 1/3...
+The user aborted a request.
+
+Retrying 1/3...
+ ✓ Compiled / in 9.3s (794 modules)
+ GET / 200 in 5987ms
+ GET / 200 in 5979ms
+ ✓ Compiled in 518ms (324 modules)
+ POST /api/ai/carina 200 in 4045ms
+ POST /api/ai/carina 200 in 4007ms
+ POST /api/ai/carina 200 in 3955ms
+ POST /api/ai/carina 200 in 3940ms
+ ✓ Compiled in 771ms (324 modules)
+ ✓ Compiled in 273ms (324 modules)
+ ✓ Compiled in 531ms (324 modules)
+ ✓ Compiled in 387ms (324 modules)
+ ✓ Compiled in 208ms (324 modules)
+ ✓ Compiled in 240ms (324 modules)
+ ✓ Compiled in 311ms (324 modules)
+ ✓ Compiled in 444ms (324 modules)
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at loadManifest (C:\dev\UCIS\node_modules\next\dist\server\load-manifest.js:35:27)
+    at DevServer.getNextFontManifest (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:745:47)
+    at DevServer.findPageComponents (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:571:43)
+    at async DevServer.renderPageComponent (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1905:24)
+    at async DevServer.renderToResponseImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:1957:32)
+    at async DevServer.pipeImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:915:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\dev\UCIS\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\dev\UCIS\node_modules\next\dist\server\base-server.js:811:17)
+    at async C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\dev\UCIS\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\dev\UCIS\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:174:21)
+    at async handleRequest (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:353:24)
+    at async requestHandlerImpl (C:\dev\UCIS\node_modules\next\dist\server\lib\router-server.js:377:13)
+    at async Server.requestListener (C:\dev\UCIS\node_modules\next\dist\server\lib\start-server.js:141:13) {
+  page: '/'
+}
+ ✓ Compiled in 451ms (324 modules)
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 1445ms (861 modules)
+ GET / 200 in 138ms
+ GET / 200 in 131ms
+ ✓ Compiled in 411ms (507 modules)
+ ✓ Compiled in 352ms (506 modules)
+ ✓ Compiled /api/ai/carina in 222ms (510 modules)
+ POST /api/ai/carina 200 in 4950ms
+ POST /api/ai/carina 200 in 4931ms
+ ○ Compiling /auth/register ...
+ ✓ Compiled /auth/register in 769ms (855 modules)
+ ✓ Compiled in 394ms (510 modules)
+ ✓ Compiled in 226ms (510 modules)
+ ✓ Compiled in 256ms (510 modules)
+ ✓ Compiled in 1564ms (510 modules)
+ ✓ Compiled in 290ms (510 modules)

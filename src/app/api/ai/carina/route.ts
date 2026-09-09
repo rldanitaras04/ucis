@@ -92,6 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json(carinaResponse);
   } catch (error) {
+    console.error('[Carina]', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
 
     if (message === 'RATE_LIMITED') {
