@@ -18,7 +18,10 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ userId, roles, profile }: DashboardContentProps) {
-  const [stats, setStats] = useState<any>(null);
+  const [waitingCount, setWaitingCount] = useState(0);
+  const [inServiceCount, setInServiceCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [totalPatients, setTotalPatients] = useState(0);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
@@ -28,33 +31,37 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
       try {
         const today = new Date().toISOString().split('T')[0];
 
-        // Load queue stats
-        const { data: queueData } = await supabase
+        // Load queue stats — catch RLS errors gracefully
+        const { data: queueData, error: queueErr } = await supabase
           .from('queue_entries')
           .select('id, status')
           .eq('queue_date', today);
 
-        // Load patient stats
-        const { data: patientData } = await supabase
-          .from('patient_profiles')
-          .select('id')
-          .eq('status', 'active');
+        if (!queueErr && queueData) {
+          setWaitingCount(queueData.filter(q => q.status === 'waiting').length);
+          setInServiceCount(queueData.filter(q => q.status === 'in_service').length);
+          setCompletedCount(queueData.filter(q => q.status === 'completed').length);
+        }
 
-        // Load recent audit logs
-        const { data: auditData } = await supabase
+        // Load patient count — catch RLS errors gracefully
+        const { count, error: patientErr } = await supabase
+          .from('patient_profiles')
+          .select('id', { count: 'exact', head: true });
+
+        if (!patientErr && count !== null) {
+          setTotalPatients(count);
+        }
+
+        // Load recent audit logs — just action + timestamp, no join
+        const { data: auditData, error: auditErr } = await supabase
           .from('audit_logs')
-          .select('id, action, created_at, actor:auth_user_profiles!actor_user_id(first_name, last_name)')
+          .select('id, action, created_at')
           .order('created_at', { ascending: false })
           .limit(10);
 
-        setStats({
-          waitingCount: queueData?.filter(q => q.status === 'waiting').length || 0,
-          inServiceCount: queueData?.filter(q => q.status === 'in_service').length || 0,
-          completedCount: queueData?.filter(q => q.status === 'completed').length || 0,
-          totalPatients: patientData?.length || 0,
-        });
-
-        setRecentActivity(auditData || []);
+        if (!auditErr && auditData) {
+          setRecentActivity(auditData);
+        }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
       } finally {
@@ -73,17 +80,24 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
     );
   }
 
-  const getRoleBasedContent = () => {
-    const isClinician = ['doctor', 'dentist', 'nurse'].some(r => roles.includes(r));
-    const isAdmin = ['super_admin', 'admin'].some(r => roles.includes(r));
-    const isFrontDesk = ['clinic_staff', 'receptionist'].some(r => roles.includes(r));
+  const isClinician = ['doctor', 'dentist', 'nurse'].some(r => roles.includes(r));
+  const isAdmin = ['super_admin', 'admin'].some(r => roles.includes(r));
+  const isFrontDesk = ['clinic_staff', 'receptionist'].some(r => roles.includes(r));
 
-    return (
+  return (
+    <div className="p-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-800">Welcome back, {profile.first_name}</h1>
+        <p className="text-gray-600">
+          {roles.map(r => r.replace('_', ' ')).join(', ') || 'User'} &bull; Dashboard
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {isFrontDesk && (
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <h3 className="text-lg font-semibold text-gray-800">Patients Waiting</h3>
-            <p className="text-3xl font-bold text-blue-600">{stats?.waitingCount || 0}</p>
+            <p className="text-3xl font-bold text-blue-600">{waitingCount}</p>
             <p className="text-sm text-gray-500 mt-2">Currently in queue</p>
           </div>
         )}
@@ -91,38 +105,25 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
         {isClinician && (
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-lg font-semibold text-gray-800">In Service</h3>
-            <p className="text-3xl font-bold text-green-600">{stats?.inServiceCount || 0}</p>
+            <p className="text-3xl font-bold text-green-600">{inServiceCount}</p>
             <p className="text-sm text-gray-500 mt-2">Active consultations</p>
           </div>
         )}
 
         <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
           <h3 className="text-lg font-semibold text-gray-800">Completed Today</h3>
-          <p className="text-3xl font-bold text-purple-600">{stats?.completedCount || 0}</p>
+          <p className="text-3xl font-bold text-purple-600">{completedCount}</p>
           <p className="text-sm text-gray-500 mt-2">Consultations done</p>
         </div>
 
         {isAdmin && (
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
             <h3 className="text-lg font-semibold text-gray-800">Total Patients</h3>
-            <p className="text-3xl font-bold text-orange-600">{stats?.totalPatients || 0}</p>
+            <p className="text-3xl font-bold text-orange-600">{totalPatients}</p>
             <p className="text-sm text-gray-500 mt-2">Registered patients</p>
           </div>
         )}
       </div>
-    );
-  };
-
-  return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Welcome back, {profile.first_name}</h1>
-        <p className="text-gray-600">
-          {roles.map(r => r.replace('_', ' ')).join(', ')} • Dashboard
-        </p>
-      </div>
-
-      {getRoleBasedContent()}
 
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h2>
@@ -133,10 +134,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
             {recentActivity.map((activity) => (
               <div key={activity.id} className="flex items-center justify-between py-2 border-b">
                 <div>
-                  <span className="font-medium">
-                    {activity.actor?.first_name} {activity.actor?.last_name}
-                  </span>
-                  <span className="text-gray-500 ml-2">{activity.action}</span>
+                  <span className="text-gray-500">{activity.action}</span>
                 </div>
                 <span className="text-sm text-gray-400">
                   {new Date(activity.created_at).toLocaleString()}
