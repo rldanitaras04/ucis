@@ -38,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Reports', href: '/reports', icon: '📊', roles: ['admin', 'super_admin'], priority: 15 },
   { label: 'User Management', href: '/admin/users', icon: '👥', roles: ['admin', 'super_admin'], priority: 16 },
   { label: 'Clinic Management', href: '/admin/clinics', icon: '🏥', roles: ['admin', 'super_admin'], priority: 17 },
+  { label: 'Carina Assistant', href: '#carina', icon: '🤖', roles: [], priority: 18 },
 ];
 
 export default function Sidebar({ userId, roles }: SidebarProps) {
@@ -59,6 +60,14 @@ export default function Sidebar({ userId, roles }: SidebarProps) {
     router.push('/auth/login');
   };
 
+  const handleNavClick = (href: string) => {
+    if (href === '#carina') {
+      window.dispatchEvent(new CustomEvent('carina:toggle'));
+      return;
+    }
+    router.push(href);
+  };
+
   return (
     <div className="w-64 bg-gray-900 text-white flex flex-col">
       <div className="p-4 border-b border-gray-700">
@@ -68,18 +77,29 @@ export default function Sidebar({ userId, roles }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto p-2">
         {visibleItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`flex items-center px-4 py-3 rounded-lg mb-1 transition-colors ${
-              pathname === item.href
-                ? 'bg-blue-600 text-white'
-                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-            }`}
-          >
-            <span className="mr-3 text-lg">{item.icon}</span>
-            <span className="text-sm">{item.label}</span>
-          </Link>
+          item.href === '#carina' ? (
+            <button
+              key={item.href}
+              onClick={() => handleNavClick(item.href)}
+              className={`w-full flex items-center px-4 py-3 rounded-lg mb-1 transition-colors text-gray-300 hover:bg-gray-800 hover:text-white`}
+            >
+              <span className="mr-3 text-lg">{item.icon}</span>
+              <span className="text-sm">{item.label}</span>
+            </button>
+          ) : (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center px-4 py-3 rounded-lg mb-1 transition-colors ${
+                pathname === item.href
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+              }`}
+            >
+              <span className="mr-3 text-lg">{item.icon}</span>
+              <span className="text-sm">{item.label}</span>
+            </Link>
+          )
         ))}
       </nav>
 
