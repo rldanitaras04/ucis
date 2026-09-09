@@ -87,7 +87,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
   return (
     <div className="p-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Welcome back, {profile.first_name}</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Welcome back, {profile?.first_name || 'User'}</h1>
         <p className="text-gray-600">
           {roles.map(r => r.replace('_', ' ')).join(', ') || 'User'} &bull; Dashboard
         </p>
