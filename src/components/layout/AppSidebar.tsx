@@ -103,7 +103,7 @@ export default function AppSidebar({
 
       {/* Navigation */}
       <nav
-        className={`flex-1 py-4 space-y-6 ${collapsed ? 'px-2' : 'px-3 overflow-y-auto'}`}
+        className={`flex-1 py-4 space-y-6 ${collapsed ? 'px-2 overflow-y-auto' : 'px-3 overflow-y-auto'}`}
         aria-label="Main navigation"
       >
         {sections.map(section => (
