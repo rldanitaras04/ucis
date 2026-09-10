@@ -4,8 +4,10 @@
 -- Add avatar_url column
 ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
--- Make ucis-bucket PRIVATE (not public)
-UPDATE storage.buckets SET public = false WHERE id = 'ucis-bucket';
+-- Create bucket if not exists, and set private
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('ucis-bucket', 'ucis-bucket', false)
+ON CONFLICT (id) DO UPDATE SET public = false;
 
 -- Drop ALL existing policies on ucis-bucket to avoid conflicts
 DO $$ BEGIN
@@ -70,7 +72,7 @@ FOR SELECT
 TO authenticated
 USING (
   bucket_id = 'ucis-bucket'
-  AND (storage.foldername(name))[0] = 'avatars'
+  AND name LIKE 'avatars/%'
 );
 
 -- Policy 2: Owner can INSERT (upload) their own avatars
@@ -80,8 +82,7 @@ FOR INSERT
 TO authenticated
 WITH CHECK (
   bucket_id = 'ucis-bucket'
-  AND (storage.foldername(name))[0] = 'avatars'
-  AND (storage.foldername(name))[1] = auth.uid()::text
+  AND name LIKE 'avatars/' || auth.uid()::text || '/%'
 );
 
 -- Policy 3: Owner can UPDATE their own avatars
@@ -91,8 +92,7 @@ FOR UPDATE
 TO authenticated
 USING (
   bucket_id = 'ucis-bucket'
-  AND (storage.foldername(name))[0] = 'avatars'
-  AND (storage.foldername(name))[1] = auth.uid()::text
+  AND name LIKE 'avatars/' || auth.uid()::text || '/%'
 );
 
 -- Policy 4: Owner can DELETE their own avatars
@@ -102,6 +102,5 @@ FOR DELETE
 TO authenticated
 USING (
   bucket_id = 'ucis-bucket'
-  AND (storage.foldername(name))[0] = 'avatars'
-  AND (storage.foldername(name))[1] = auth.uid()::text
+  AND name LIKE 'avatars/' || auth.uid()::text || '/%'
 );

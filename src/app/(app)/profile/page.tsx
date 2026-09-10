@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { fetchProfile, updateProfile, uploadAvatar, UserProfileData } from './actions';
-import { Camera, Check } from '@phosphor-icons/react';
+import { fetchProfile, updateProfile, uploadAvatar, removeAvatar, UserProfileData } from './actions';
+import { Camera, Check, Trash } from '@phosphor-icons/react';
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfileData | null>(null);
@@ -60,8 +60,20 @@ export default function ProfilePage() {
 
     const result = await uploadAvatar(formData);
     if (result.success) {
-      // Upload returns signed URL, update profile state with it
       setProfile(prev => prev ? { ...prev, avatar_signed_url: result.url } : null);
+    } else {
+      setError(result.error);
+    }
+    setUploading(false);
+  };
+
+  const handleRemoveAvatar = async () => {
+    setUploading(true);
+    setError(null);
+
+    const result = await removeAvatar();
+    if (result.success) {
+      setProfile(prev => prev ? { ...prev, avatar_signed_url: null, avatar_url: null } : null);
     } else {
       setError(result.error);
     }
@@ -147,14 +159,27 @@ export default function ProfilePage() {
               onChange={handleAvatarChange}
               className="hidden"
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#1E40AF] bg-[#EEF2FF] rounded-lg hover:bg-[#E0E7FF] transition-colors disabled:opacity-50"
-            >
-              <Camera size={16} weight="regular" />
-              {uploading ? 'Uploading...' : 'Change photo'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#1E40AF] bg-[#EEF2FF] rounded-lg hover:bg-[#E0E7FF] transition-colors disabled:opacity-50"
+              >
+                <Camera size={16} weight="regular" />
+                {uploading ? 'Uploading...' : 'Change photo'}
+              </button>
+              {profile?.avatar_signed_url && (
+                <button
+                  type="button"
+                  onClick={handleRemoveAvatar}
+                  disabled={uploading}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                >
+                  <Trash size={16} weight="regular" />
+                  Remove
+                </button>
+              )}
+            </div>
             <p className="text-xs text-[#9CA3AF] mt-1">JPEG, PNG, WebP, or GIF. Max 5MB.</p>
           </div>
         </div>
@@ -235,8 +260,8 @@ export default function ProfilePage() {
             <input
               type="email"
               value={form.email}
-              onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              readOnly
+              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
             />
           </div>
 

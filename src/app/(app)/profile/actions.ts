@@ -31,21 +31,26 @@ export interface UserProfileData {
 async function getAvatarSignedUrl(supabase: any, avatarUrl: string | null): Promise<string | null> {
   if (!avatarUrl) return null;
 
-  // Extract path from the stored URL
-  // Stored URL format: https://xxx.supabase.co/storage/v1/object/public/ucis-bucket/avatars/{userId}/avatar.{ext}
-  // Or just: avatars/{userId}/avatar.{ext}
-  const pathMatch = avatarUrl.match(/avatars\/(.+)/);
-  if (!pathMatch) return null;
+  let path: string;
 
-  const path = `avatars/${pathMatch[1]}`;
+  if (avatarUrl.startsWith('avatars/')) {
+    path = avatarUrl;
+  } else {
+    const pathMatch = avatarUrl.match(/avatars\/(.+)/);
+    if (!pathMatch) return null;
+    path = `avatars/${pathMatch[1]}`;
+  }
 
   const { data, error } = await supabase.storage
     .from(BUCKET_NAME)
     .createSignedUrl(path, SIGNED_URL_EXPIRY);
 
-  if (error || !data?.signedUrl) return null;
+  if (error) {
+    console.error('Signed URL error:', error.message);
+    return null;
+  }
 
-  return data.signedUrl;
+  return data?.signedUrl || null;
 }
 
 export async function fetchProfile(): Promise<{ success: true; data: UserProfileData } | { success: false; error: string }> {
@@ -154,30 +159,34 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
     const fileExt = file.name.split('.').pop();
     const filePath = `avatars/${user.id}/avatar.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(filePath, file, { upsert: true });
 
     if (uploadError) throw uploadError;
 
     // Get signed URL
-    const { data: signedUrlData } = await supabase.storage
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from(BUCKET_NAME)
       .createSignedUrl(filePath, SIGNED_URL_EXPIRY);
 
+    if (signedUrlError) throw signedUrlError;
     if (!signedUrlData?.signedUrl) {
       return { success: false, error: 'Failed to generate avatar URL' };
     }
 
     const avatarUrl = signedUrlData.signedUrl;
 
-    // Update profile with storage path (not the signed URL, as it expires)
+    // Update profile with storage path
     const { error: updateError } = await supabase
       .from('user_profiles')
       .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
       .eq('auth_user_id', user.id);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Profile update error:', updateError.message);
+      throw updateError;
+    }
 
     await supabase.rpc('write_audit_log', {
       p_action: 'profile.upload_avatar',
@@ -189,6 +198,48 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
     revalidatePath('/profile');
     revalidatePath('/');
     return { success: true, url: avatarUrl };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function removeAvatar(): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const user = await requireAuth();
+    const supabase = createServerSupabaseClient();
+
+    // Get current avatar path
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('avatar_url')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (profile?.avatar_url) {
+      const pathMatch = profile.avatar_url.match(/avatars\/(.+)/);
+      if (pathMatch) {
+        await supabase.storage.from(BUCKET_NAME).remove([`avatars/${pathMatch[1]}`]);
+      }
+    }
+
+    // Clear avatar_url in profile
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ avatar_url: null, updated_at: new Date().toISOString() })
+      .eq('auth_user_id', user.id);
+
+    if (error) throw error;
+
+    await supabase.rpc('write_audit_log', {
+      p_action: 'profile.remove_avatar',
+      p_resource_type: 'user_profiles',
+      p_resource_id: user.id,
+      p_outcome: 'success'
+    });
+
+    revalidatePath('/profile');
+    revalidatePath('/');
+    return { success: true };
   } catch (error) {
     return handleAuthError(error);
   }
