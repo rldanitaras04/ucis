@@ -4,6 +4,9 @@ import { requireAuth, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
+const BUCKET_NAME = 'ucis-bucket';
+const SIGNED_URL_EXPIRY = 3600; // 1 hour
+
 export interface UserProfileData {
   id: string;
   first_name: string;
@@ -16,6 +19,33 @@ export interface UserProfileData {
   gender: string | null;
   address: string | null;
   avatar_url: string | null;
+  avatar_signed_url?: string | null;
+}
+
+/**
+ * Get a signed URL for an avatar stored in Supabase storage.
+ * @param supabase - Supabase client
+ * @param avatarUrl - The stored avatar URL (contains the path)
+ * @returns Signed URL or null
+ */
+async function getAvatarSignedUrl(supabase: any, avatarUrl: string | null): Promise<string | null> {
+  if (!avatarUrl) return null;
+
+  // Extract path from the stored URL
+  // Stored URL format: https://xxx.supabase.co/storage/v1/object/public/ucis-bucket/avatars/{userId}/avatar.{ext}
+  // Or just: avatars/{userId}/avatar.{ext}
+  const pathMatch = avatarUrl.match(/avatars\/(.+)/);
+  if (!pathMatch) return null;
+
+  const path = `avatars/${pathMatch[1]}`;
+
+  const { data, error } = await supabase.storage
+    .from(BUCKET_NAME)
+    .createSignedUrl(path, SIGNED_URL_EXPIRY);
+
+  if (error || !data?.signedUrl) return null;
+
+  return data.signedUrl;
 }
 
 export async function fetchProfile(): Promise<{ success: true; data: UserProfileData } | { success: false; error: string }> {
@@ -31,7 +61,16 @@ export async function fetchProfile(): Promise<{ success: true; data: UserProfile
 
     if (error) throw error;
 
-    return { success: true, data };
+    // Get signed URL for avatar
+    const avatarSignedUrl = await getAvatarSignedUrl(supabase, data.avatar_url);
+
+    return {
+      success: true,
+      data: {
+        ...data,
+        avatar_signed_url: avatarSignedUrl,
+      },
+    };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -76,8 +115,6 @@ export async function updateProfile(updates: Partial<UserProfileData>): Promise<
   }
 }
 
-const BUCKET_NAME = 'ucis-bucket';
-
 export async function uploadAvatar(formData: FormData): Promise<{ success: true; url: string } | { success: false; error: string }> {
   try {
     const user = await requireAuth();
@@ -107,9 +144,9 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
       .single();
 
     if (profile?.avatar_url) {
-      const oldPath = profile.avatar_url.split('/avatars/')[1];
-      if (oldPath) {
-        await supabase.storage.from(BUCKET_NAME).remove([`avatars/${user.id}/${oldPath}`]);
+      const pathMatch = profile.avatar_url.match(/avatars\/(.+)/);
+      if (pathMatch) {
+        await supabase.storage.from(BUCKET_NAME).remove([`avatars/${pathMatch[1]}`]);
       }
     }
 
@@ -123,17 +160,21 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
 
     if (uploadError) throw uploadError;
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
+    // Get signed URL
+    const { data: signedUrlData } = await supabase.storage
       .from(BUCKET_NAME)
-      .getPublicUrl(filePath);
+      .createSignedUrl(filePath, SIGNED_URL_EXPIRY);
 
-    const avatarUrl = urlData.publicUrl;
+    if (!signedUrlData?.signedUrl) {
+      return { success: false, error: 'Failed to generate avatar URL' };
+    }
 
-    // Update profile with new avatar URL
+    const avatarUrl = signedUrlData.signedUrl;
+
+    // Update profile with storage path (not the signed URL, as it expires)
     const { error: updateError } = await supabase
       .from('user_profiles')
-      .update({ avatar_url: avatarUrl, updated_at: new Date().toISOString() })
+      .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
       .eq('auth_user_id', user.id);
 
     if (updateError) throw updateError;

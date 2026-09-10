@@ -48,38 +48,53 @@ CREATE POLICY "admin_view_prescriptions"
 -- This prevents duplicate clinic-specialization assignments
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'clinic_specializations_clinic_id_specialization_id_key'
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_name = 'clinic_specializations'
   ) THEN
-    ALTER TABLE clinic_specializations
-    ADD CONSTRAINT clinic_specializations_clinic_id_specialization_id_key
-    UNIQUE (clinic_id, specialization_id);
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'clinic_specializations_clinic_id_specialization_id_key'
+    ) THEN
+      ALTER TABLE clinic_specializations
+      ADD CONSTRAINT clinic_specializations_clinic_id_specialization_id_key
+      UNIQUE (clinic_id, specialization_id);
+    END IF;
   END IF;
 END $$;
 
 -- 5. Add unique constraint for encounter diagnosis mapping
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'encounter_diagnoses_encounter_id_diagnosis_code_key'
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_name = 'encounter_diagnoses'
   ) THEN
-    ALTER TABLE encounter_diagnoses
-    ADD CONSTRAINT encounter_diagnoses_encounter_id_diagnosis_code_key
-    UNIQUE (encounter_id, diagnosis_code);
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'encounter_diagnoses_encounter_id_diagnosis_code_key'
+    ) THEN
+      ALTER TABLE encounter_diagnoses
+      ADD CONSTRAINT encounter_diagnoses_encounter_id_diagnosis_code_key
+      UNIQUE (encounter_id, diagnosis_code);
+    END IF;
   END IF;
 END $$;
 
 -- 6. Add unique constraint for encounter treatment mapping
 DO $$
 BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_constraint
-    WHERE conname = 'encounter_treatments_encounter_id_treatment_code_key'
+  IF EXISTS (
+    SELECT 1 FROM information_schema.tables
+    WHERE table_name = 'encounter_treatments'
   ) THEN
-    ALTER TABLE encounter_treatments
-    ADD CONSTRAINT encounter_treatments_encounter_id_treatment_code_key
-    UNIQUE (encounter_id, treatment_code);
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'encounter_treatments_encounter_id_treatment_code_key'
+    ) THEN
+      ALTER TABLE encounter_treatments
+      ADD CONSTRAINT encounter_treatments_encounter_id_treatment_code_key
+      UNIQUE (encounter_id, treatment_code);
+    END IF;
   END IF;
 END $$;

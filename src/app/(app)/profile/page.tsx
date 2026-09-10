@@ -60,7 +60,8 @@ export default function ProfilePage() {
 
     const result = await uploadAvatar(formData);
     if (result.success) {
-      setProfile(prev => prev ? { ...prev, avatar_url: result.url } : null);
+      // Upload returns signed URL, update profile state with it
+      setProfile(prev => prev ? { ...prev, avatar_signed_url: result.url } : null);
     } else {
       setError(result.error);
     }
@@ -116,9 +117,9 @@ export default function ProfilePage() {
       <div className="bg-white rounded-lg border border-[#E5E7EB] p-6 mb-6">
         <div className="flex items-center gap-6">
           <div className="relative">
-            {profile?.avatar_url ? (
+            {profile?.avatar_signed_url ? (
               <Image
-                src={profile.avatar_url}
+                src={profile.avatar_signed_url}
                 alt="Profile"
                 width={96}
                 height={96}
