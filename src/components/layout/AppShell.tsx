@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import AppSidebar from './AppSidebar';
 import AppHeader from './AppHeader';
 import { NavigationSection } from '@/lib/navigation/types';
@@ -17,6 +18,26 @@ export default function AppShell({
   userRoles,
   children,
 }: AppShellProps) {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkDesktop = () => setIsDesktop(window.innerWidth >= 1024);
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
+
+  useEffect(() => {
+    const handleCollapsed = (e: CustomEvent<{ collapsed: boolean }>) => {
+      setSidebarCollapsed(e.detail.collapsed);
+    };
+    window.addEventListener('sidebar:collapsed', handleCollapsed as EventListener);
+    return () => window.removeEventListener('sidebar:collapsed', handleCollapsed as EventListener);
+  }, []);
+
+  const sidebarWidth = isDesktop ? (sidebarCollapsed ? 72 : 260) : 0;
+
   return (
     <div className="flex h-screen bg-[#F4F6FA]">
       <AppSidebar
@@ -24,7 +45,10 @@ export default function AppShell({
         userName={userName}
         userRoles={userRoles}
       />
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-[260px] transition-all duration-200">
+      <div
+        className="flex-1 flex flex-col min-w-0 transition-all duration-200"
+        style={{ marginLeft: sidebarWidth }}
+      >
         <AppHeader userName={userName} userRoles={userRoles} />
         <main
           className="flex-1 overflow-auto"

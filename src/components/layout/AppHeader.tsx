@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import {
   List,
   MagnifyingGlass,
   Bell,
   GridFour,
   GearSix,
-  UserCircle,
+  SignOut,
+  CaretDown,
 } from '@phosphor-icons/react';
 import { NAVIGATION_REGISTRY } from '@/lib/navigation/registry';
 import { UserRole } from '@/lib/navigation/types';
@@ -23,7 +25,38 @@ const HEADER_ITEM_IDS = ['dashboard', 'queue', 'patient-records', 'reports'];
 
 export default function AppHeader({ userName, userRoles }: AppHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && userMenuOpen) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [userMenuOpen]);
+
+  const handleLogout = useCallback(async () => {
+    setLoggingOut(true);
+    await supabase.auth.signOut();
+    router.push('/auth/login');
+  }, [supabase, router]);
 
   const headerLinks = useMemo(() => {
     if (!userRoles) return HEADER_ITEM_IDS
@@ -127,15 +160,59 @@ export default function AppHeader({ userName, userRoles }: AppHeaderProps) {
         {/* Divider */}
         <div className="w-px h-8 bg-[#E5E7EB] mx-2" />
 
-        {/* User avatar */}
-        <button className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors">
-          <div className="w-8 h-8 bg-[#1E40AF] rounded-full flex items-center justify-center">
-            <UserCircle size={20} className="text-white" weight="fill" />
-          </div>
-          <span className="hidden sm:block text-sm font-medium text-[#374151] max-w-[100px] truncate">
-            {userName || 'User'}
-          </span>
-        </button>
+        {/* User avatar with dropdown */}
+        <div className="relative" ref={userMenuRef}>
+          <button
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#F3F4F6] transition-colors"
+            aria-expanded={userMenuOpen}
+            aria-haspopup="true"
+          >
+            <div className="w-8 h-8 bg-[#1E40AF] rounded-full flex items-center justify-center">
+              <span className="text-white text-xs font-medium">
+                {userName ? userName.charAt(0).toUpperCase() : 'U'}
+              </span>
+            </div>
+            <span className="hidden sm:block text-sm font-medium text-[#374151] max-w-[100px] truncate">
+              {userName || 'User'}
+            </span>
+            <CaretDown size={14} className={`text-[#6B7280] transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} weight="bold" />
+          </button>
+
+          {/* Dropdown menu */}
+          {userMenuOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-[#E5E7EB] py-2 z-50">
+              {/* User info */}
+              <div className="px-4 py-3 border-b border-[#E5E7EB]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#1E40AF] rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-sm font-medium">
+                      {userName ? userName.charAt(0).toUpperCase() : 'U'}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[#111827] truncate">{userName || 'User'}</p>
+                    {userRoles && userRoles.length > 0 && (
+                      <p className="text-xs text-[#9CA3AF] truncate">
+                        {userRoles.slice(0, 2).join(' · ')}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Logout button */}
+              <button
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-[#6B7280] hover:bg-[#F9FAFB] hover:text-[#111827] transition-colors disabled:opacity-50"
+              >
+                <SignOut size={18} weight="regular" />
+                <span className="text-sm font-medium">{loggingOut ? 'Logging out...' : 'Logout'}</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

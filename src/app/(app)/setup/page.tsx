@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import toast from 'react-hot-toast';
 import { checkSuperadminExists } from './actions';
 
@@ -69,9 +70,14 @@ export default function SetupPage() {
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
       <div className="max-w-md w-full space-y-8 p-8">
         <div className="text-center">
-          <div className="w-16 h-16 bg-[#1E40AF] rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">U</span>
-          </div>
+          <Image
+            src="/clinic_logo.png"
+            alt="UCIS Logo"
+            width={64}
+            height={64}
+            className="rounded-2xl mx-auto mb-4"
+            priority
+          />
           <h1 className="text-display text-[#0F172A]">UCIS Setup</h1>
           <p className="mt-2 text-body text-[#64748B]">
             Create the initial superadmin account

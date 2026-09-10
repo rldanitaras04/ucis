@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -8,9 +9,14 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#1E40AF] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">U</span>
-              </div>
+              <Image
+                src="/clinic_logo.png"
+                alt="UCIS Logo"
+                width={40}
+                height={40}
+                className="rounded-lg"
+                priority
+              />
               <span className="text-xl font-bold text-[#0F172A]">UCIS</span>
               <span className="hidden md:block text-body text-[#64748B] ml-4">
                 University Clinic Information System
