@@ -1,7 +1,8 @@
 'use server';
 
-import { requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
+import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function registerPatient(data: {
   first_name: string;
@@ -51,6 +52,7 @@ export async function registerPatient(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/patient');
     return { success: true, id: patient.id };
   } catch (error) {
     return handleAuthError(error);
@@ -104,45 +106,29 @@ export async function checkInPatient(data: {
       return { success: false, error: `Patient already in queue (#${existing.queue_number}, status: ${existing.status})` };
     }
 
-    // Get next queue number atomically
-    const { data: counter, error: counterError } = await supabase
-      .rpc('get_next_queue_number', {
-        p_clinic_id: data.clinic_id,
-        p_service_id: data.service_id,
-        p_queue_date: today,
-      });
+    // Use the atomic create_queue_entry RPC which handles:
+    // - Atomic queue number generation using queue_counters with upsert
+    // - Prevents race conditions with concurrent queue entries
+    const { data: queueNumber, error: queueError } = await supabase.rpc('create_queue_entry', {
+      p_clinic_id: data.clinic_id,
+      p_service_id: data.service_id,
+      p_patient_id: data.patient_id,
+    });
 
-    let nextNumber: number;
-    if (counterError || !counter) {
-      const { data: lastEntry } = await supabase
-        .from('queue_entries')
-        .select('queue_number')
-        .eq('clinic_id', data.clinic_id)
-        .eq('service_id', data.service_id)
-        .eq('queue_date', today)
-        .order('queue_number', { ascending: false })
-        .limit(1)
-        .single();
-      nextNumber = (lastEntry?.queue_number || 0) + 1;
-    } else {
-      nextNumber = counter as number;
-    }
+    if (queueError) throw queueError;
 
-    const { data: entry, error } = await supabase
+    // Get the created entry for the ID
+    const { data: entry, error: fetchError } = await supabase
       .from('queue_entries')
-      .insert({
-        patient_id: data.patient_id,
-        clinic_id: data.clinic_id,
-        service_id: data.service_id,
-        queue_date: today,
-        queue_number: nextNumber,
-        status: 'waiting',
-        priority: 1,
-      })
-      .select()
+      .select('id')
+      .eq('patient_id', data.patient_id)
+      .eq('clinic_id', data.clinic_id)
+      .eq('service_id', data.service_id)
+      .eq('queue_date', today)
+      .eq('queue_number', queueNumber)
       .single();
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
 
     await supabase.rpc('write_audit_log', {
       p_actor: user.id,
@@ -152,7 +138,152 @@ export async function checkInPatient(data: {
       p_outcome: 'success'
     });
 
-    return { success: true, queueNumber: nextNumber, entryId: entry.id };
+    revalidatePath('/patient');
+    revalidatePath('/queue');
+    return { success: true, queueNumber: queueNumber as number, entryId: entry.id };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function fetchPatientPortalData(): Promise<{
+  success: true;
+  data: {
+    patient: any;
+    encounters: any[];
+    prescriptions: any[];
+    queueEntry: any;
+  };
+} | { success: false; error: string }> {
+  try {
+    const user = await requireAuth();
+    const supabase = createServerSupabaseClient();
+
+    // Get patient profile
+    const { data: patientData, error: patientError } = await supabase
+      .from('patient_profiles')
+      .select('*')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (patientError || !patientData) {
+      return {
+        success: true,
+        data: {
+          patient: null,
+          encounters: [],
+          prescriptions: [],
+          queueEntry: null,
+        },
+      };
+    }
+
+    // Fetch encounters
+    const { data: encountersData, error: encountersError } = await supabase
+      .from('encounters')
+      .select('*')
+      .eq('patient_id', patientData.id)
+      .order('visit_date', { ascending: false })
+      .limit(10);
+
+    if (encountersError) throw encountersError;
+
+    // Fetch prescriptions with items
+    const { data: prescriptionsData, error: prescriptionsError } = await supabase
+      .from('prescriptions')
+      .select('*, items:prescription_items(*)')
+      .eq('patient_id', patientData.id)
+      .order('prescribed_date', { ascending: false })
+      .limit(10);
+
+    if (prescriptionsError) throw prescriptionsError;
+
+    // Fetch current queue entry
+    const today = new Date().toISOString().split('T')[0];
+    const { data: queueData, error: queueError } = await supabase
+      .from('queue_entries')
+      .select('*, clinic_services(name)')
+      .eq('patient_id', patientData.id)
+      .eq('queue_date', today)
+      .in('status', ['waiting', 'called', 'in_service'])
+      .single();
+
+    // Ignore error if no queue entry found
+    const queueEntry = queueError ? null : queueData;
+
+    return {
+      success: true,
+      data: {
+        patient: patientData,
+        encounters: encountersData || [],
+        prescriptions: prescriptionsData || [],
+        queueEntry,
+      },
+    };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function fetchPatientClearances(): Promise<{
+  success: true;
+  data: any[];
+} | { success: false; error: string }> {
+  try {
+    const user = await requireAuth();
+    const supabase = createServerSupabaseClient();
+
+    // Get patient profile
+    const { data: patientData } = await supabase
+      .from('patient_profiles')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!patientData) {
+      return { success: true, data: [] };
+    }
+
+    const { data, error } = await supabase
+      .from('clearances')
+      .select('*')
+      .eq('patient_id', patientData.id)
+      .order('issued_at', { ascending: false });
+
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function fetchPatientReferrals(): Promise<{
+  success: true;
+  data: any[];
+} | { success: false; error: string }> {
+  try {
+    const user = await requireAuth();
+    const supabase = createServerSupabaseClient();
+
+    // Get patient profile
+    const { data: patientData } = await supabase
+      .from('patient_profiles')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!patientData) {
+      return { success: true, data: [] };
+    }
+
+    const { data, error } = await supabase
+      .from('clinical_referrals')
+      .select('*')
+      .eq('patient_id', patientData.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return { success: true, data: data || [] };
   } catch (error) {
     return handleAuthError(error);
   }

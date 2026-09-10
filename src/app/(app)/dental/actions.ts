@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchDentalRecords(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -83,6 +84,7 @@ export async function createDentalRecord(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/dental');
     return { success: true, id: record.id };
   } catch (error) {
     return handleAuthError(error);
@@ -99,6 +101,17 @@ export async function updateDentalRecord(recordId: string, data: {
   try {
     const user = await requireAnyRole('dentist', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
+
+    // Check if record is finalized - cannot update finalized records
+    const { data: record } = await supabase
+      .from('dental_records')
+      .select('status')
+      .eq('id', recordId)
+      .single();
+
+    if (record?.status === 'finalized') {
+      return { success: false, error: 'Cannot modify a finalized record. Use amendment process instead.' };
+    }
 
     const { error } = await supabase
       .from('dental_records')
@@ -122,6 +135,7 @@ export async function updateDentalRecord(recordId: string, data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/dental');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -153,6 +167,7 @@ export async function finalizeDentalRecord(recordId: string): Promise<{ success:
       p_outcome: 'success'
     });
 
+    revalidatePath('/dental');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

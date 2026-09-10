@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchFollowUps(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -52,6 +53,7 @@ export async function createFollowUp(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/follow-ups');
     return { success: true, id: followUp.id };
   } catch (error) {
     return handleAuthError(error);
@@ -78,6 +80,7 @@ export async function completeFollowUp(followUpId: string): Promise<{ success: t
       p_outcome: 'success'
     });
 
+    revalidatePath('/follow-ups');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -104,6 +107,7 @@ export async function cancelFollowUp(followUpId: string): Promise<{ success: tru
       p_outcome: 'success'
     });
 
+    revalidatePath('/follow-ups');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

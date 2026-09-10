@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchIncidents(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -54,6 +55,7 @@ export async function createIncident(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/incidents');
     return { success: true, id: incident.id };
   } catch (error) {
     return handleAuthError(error);
@@ -83,6 +85,7 @@ export async function updateIncidentStatus(
       p_outcome: 'success'
     });
 
+    revalidatePath('/incidents');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

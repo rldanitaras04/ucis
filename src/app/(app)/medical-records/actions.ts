@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchMedicalRecords(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -112,6 +113,7 @@ export async function createEncounter(data: {
       p_outcome: 'success',
     });
 
+    revalidatePath('/medical-records');
     return { success: true, id: encounter.id };
   } catch (error) {
     return handleAuthError(error);
@@ -141,6 +143,7 @@ export async function updateEncounterStatus(
       p_outcome: 'success',
     });
 
+    revalidatePath('/medical-records');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -164,11 +167,16 @@ export async function upsertMedicalRecord(data: {
 
     const { data: existing } = await supabase
       .from('medical_records')
-      .select('id')
+      .select('id, status')
       .eq('encounter_id', data.encounter_id)
       .single();
 
     if (existing) {
+      // Check if record is finalized - cannot update finalized records
+      if (existing.status === 'finalized') {
+        return { success: false, error: 'Cannot modify a finalized record. Use amendment process instead.' };
+      }
+
       const updateData: Record<string, unknown> = {
         chief_complaint: data.chief_complaint || null,
         history_of_present_illness: data.history_of_present_illness || null,
@@ -202,6 +210,7 @@ export async function upsertMedicalRecord(data: {
         p_outcome: 'success',
       });
 
+      revalidatePath('/medical-records');
       return { success: true, id: existing.id };
     } else {
       const { data: record, error } = await supabase
@@ -231,6 +240,7 @@ export async function upsertMedicalRecord(data: {
         p_outcome: 'success',
       });
 
+      revalidatePath('/medical-records');
       return { success: true, id: record.id };
     }
   } catch (error) {

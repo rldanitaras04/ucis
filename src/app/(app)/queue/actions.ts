@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchQueue(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -91,6 +92,7 @@ export async function callNextPatient(clinicId?: string): Promise<{ success: tru
       p_outcome: 'success'
     });
 
+    revalidatePath('/queue');
     return { success: true, queueNumber: next.queue_number };
   } catch (error) {
     return handleAuthError(error);
@@ -147,6 +149,7 @@ export async function startQueueService(entryId: string): Promise<{ success: tru
       p_outcome: 'success'
     });
 
+    revalidatePath('/queue');
     return { success: true, encounterId: encounter.id };
   } catch (error) {
     return handleAuthError(error);
@@ -192,6 +195,7 @@ export async function completeQueueService(entryId: string): Promise<{ success: 
       p_outcome: 'success'
     });
 
+    revalidatePath('/queue');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -218,6 +222,7 @@ export async function cancelQueueEntry(entryId: string): Promise<{ success: true
       p_outcome: 'success'
     });
 
+    revalidatePath('/queue');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -234,48 +239,30 @@ export async function addToQueue(data: {
     const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'doctor', 'dentist', 'nurse');
     const supabase = createServerSupabaseClient();
 
+    // Use the atomic create_queue_entry RPC which handles:
+    // - Atomic queue number generation using queue_counters with upsert
+    // - Prevents race conditions with concurrent queue entries
+    const { data: queueNumber, error: queueError } = await supabase.rpc('create_queue_entry', {
+      p_clinic_id: data.clinic_id,
+      p_service_id: data.service_id,
+      p_patient_id: data.patient_id,
+    });
+
+    if (queueError) throw queueError;
+
+    // Get the created entry for the ID
     const today = new Date().toISOString().split('T')[0];
-
-    // Atomic queue number generation using queue_counters with FOR UPDATE
-    const { data: counter, error: counterError } = await supabase
-      .rpc('get_next_queue_number', {
-        p_clinic_id: data.clinic_id,
-        p_service_id: data.service_id,
-        p_queue_date: today,
-      });
-
-    let nextNumber: number;
-    if (counterError || !counter) {
-      // Fallback: manual counter with row-level lock simulation
-      const { data: lastEntry } = await supabase
-        .from('queue_entries')
-        .select('queue_number')
-        .eq('clinic_id', data.clinic_id)
-        .eq('service_id', data.service_id)
-        .eq('queue_date', today)
-        .order('queue_number', { ascending: false })
-        .limit(1)
-        .single();
-      nextNumber = (lastEntry?.queue_number || 0) + 1;
-    } else {
-      nextNumber = counter as number;
-    }
-
-    const { data: entry, error } = await supabase
+    const { data: entry, error: fetchError } = await supabase
       .from('queue_entries')
-      .insert({
-        patient_id: data.patient_id,
-        clinic_id: data.clinic_id,
-        service_id: data.service_id,
-        queue_date: today,
-        queue_number: nextNumber,
-        status: 'waiting',
-        priority: data.priority || 1,
-      })
-      .select()
+      .select('id')
+      .eq('patient_id', data.patient_id)
+      .eq('clinic_id', data.clinic_id)
+      .eq('service_id', data.service_id)
+      .eq('queue_date', today)
+      .eq('queue_number', queueNumber)
       .single();
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
 
     await supabase.rpc('write_audit_log', {
       p_actor: user.id,
@@ -285,7 +272,8 @@ export async function addToQueue(data: {
       p_outcome: 'success'
     });
 
-    return { success: true, queueNumber: nextNumber, entryId: entry.id };
+    revalidatePath('/queue');
+    return { success: true, queueNumber: queueNumber as number, entryId: entry.id };
   } catch (error) {
     return handleAuthError(error);
   }

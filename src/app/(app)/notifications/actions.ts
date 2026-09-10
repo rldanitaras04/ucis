@@ -2,6 +2,7 @@
 
 import { requireAuth, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchNotifications(): Promise<{ success: true; data: { id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }[] } | { success: false; error: string }> {
   try {
@@ -35,6 +36,14 @@ export async function markNotificationRead(notificationId: string): Promise<{ su
 
     if (error) throw error;
 
+    await supabase.rpc('write_audit_log', {
+      p_action: 'notification.mark_read',
+      p_resource_type: 'notifications',
+      p_resource_id: notificationId,
+      p_outcome: 'success'
+    });
+
+    revalidatePath('/notifications');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -54,6 +63,14 @@ export async function markAllNotificationsRead(): Promise<{ success: true } | { 
 
     if (error) throw error;
 
+    await supabase.rpc('write_audit_log', {
+      p_action: 'notification.mark_all_read',
+      p_resource_type: 'notifications',
+      p_resource_id: user.id,
+      p_outcome: 'success'
+    });
+
+    revalidatePath('/notifications');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -73,6 +90,14 @@ export async function deleteNotification(notificationId: string): Promise<{ succ
 
     if (error) throw error;
 
+    await supabase.rpc('write_audit_log', {
+      p_action: 'notification.delete',
+      p_resource_type: 'notifications',
+      p_resource_id: notificationId,
+      p_outcome: 'success'
+    });
+
+    revalidatePath('/notifications');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

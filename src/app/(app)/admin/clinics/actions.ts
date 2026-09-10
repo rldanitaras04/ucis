@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchAllClinics(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -68,6 +69,7 @@ export async function createClinic(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/admin/clinics');
     return { success: true, id: clinic.id };
   } catch (error) {
     return handleAuthError(error);
@@ -109,6 +111,7 @@ export async function updateClinic(clinicId: string, data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/admin/clinics');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -135,6 +138,7 @@ export async function deleteClinic(clinicId: string): Promise<{ success: true } 
       p_outcome: 'success'
     });
 
+    revalidatePath('/admin/clinics');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

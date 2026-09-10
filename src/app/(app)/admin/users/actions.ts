@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchAdminUsers(): Promise<{ success: true; data: { users: any[]; userRoles: any[]; roles: any[] } } | { success: false; error: string }> {
   try {
@@ -67,6 +68,7 @@ export async function updateUserRole(userId: string, roleId: string): Promise<{ 
       p_outcome: 'success'
     });
 
+    revalidatePath('/admin/users');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

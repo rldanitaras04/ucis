@@ -29,11 +29,14 @@ export default async function AppLayout({
     ? `${user.profile.first_name || ''} ${user.profile.last_name || ''}`.trim()
     : user.email || 'User';
 
+  const avatarUrl = user.profile?.avatar_url || null;
+
   return (
     <AppShell
       sections={sections}
       userName={userName}
       userRoles={user.roles}
+      avatarUrl={avatarUrl}
     >
       {children}
     </AppShell>

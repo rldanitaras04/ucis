@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
+import { fetchDashboardStats } from './actions';
 import {
   Users,
   Queue,
@@ -33,37 +33,21 @@ interface DashboardContentProps {
 }
 
 export default function DashboardContent({ userId, roles, profile }: DashboardContentProps) {
-  const [waitingCount, setWaitingCount] = useState(0);
-  const [inServiceCount, setInServiceCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
-  const [totalPatients, setTotalPatients] = useState(0);
-  const [todayQueue, setTodayQueue] = useState(0);
+  const [stats, setStats] = useState({
+    waitingCount: 0,
+    inServiceCount: 0,
+    completedCount: 0,
+    totalPatients: 0,
+    todayQueue: 0,
+  });
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const today = new Date().toISOString().split('T')[0];
-
-        const { data: queueData } = await supabase
-          .from('queue_entries')
-          .select('id, status')
-          .eq('queue_date', today);
-
-        if (queueData) {
-          setWaitingCount(queueData.filter(q => q.status === 'waiting').length);
-          setInServiceCount(queueData.filter(q => q.status === 'in_service').length);
-          setCompletedCount(queueData.filter(q => q.status === 'completed').length);
-          setTodayQueue(queueData.length);
-        }
-
-        const isAdmin = roles.some(r => ['super_admin', 'admin'].includes(r));
-        if (isAdmin) {
-          const { count } = await supabase
-            .from('patient_profiles')
-            .select('id', { count: 'exact', head: true });
-          setTotalPatients(count || 0);
+        const result = await fetchDashboardStats();
+        if (result.success) {
+          setStats(result.data);
         }
       } catch {
         // Dashboard load failed silently
@@ -73,7 +57,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
     }
 
     loadDashboardData();
-  }, [supabase, roles, userId]);
+  }, []);
 
   if (loading) {
     return (
@@ -111,7 +95,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="Total Patients"
-            value={totalPatients.toString()}
+            value={stats.totalPatients.toString()}
             change="Registered"
             trend="up"
             icon={<Users size={20} className="text-[#6B7280]" />}
@@ -119,24 +103,24 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
           />
           <StatCard
             title="Queue Today"
-            value={todayQueue.toString()}
-            change={`+${todayQueue} today`}
+            value={stats.todayQueue.toString()}
+            change={`+${stats.todayQueue} today`}
             trend="up"
             icon={<Queue size={20} className="text-[#6B7280]" />}
             href="/queue"
           />
           <StatCard
             title="In Service"
-            value={inServiceCount.toString()}
-            change={`${inServiceCount} active`}
+            value={stats.inServiceCount.toString()}
+            change={`${stats.inServiceCount} active`}
             trend="up"
             icon={<Stethoscope size={20} className="text-[#6B7280]" />}
             href="/queue"
           />
           <StatCard
             title="Completed"
-            value={completedCount.toString()}
-            change={`${completedCount} done`}
+            value={stats.completedCount.toString()}
+            change={`${stats.completedCount} done`}
             trend="up"
             icon={<CheckCircle size={20} className="text-[#6B7280]" />}
             href="/queue"
@@ -149,7 +133,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="Patients Waiting"
-            value={waitingCount.toString()}
+            value={stats.waitingCount.toString()}
             change="In queue"
             trend="up"
             icon={<Clock size={20} className="text-[#6B7280]" />}
@@ -157,7 +141,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
           />
           <StatCard
             title="In Service"
-            value={inServiceCount.toString()}
+            value={stats.inServiceCount.toString()}
             change="Active"
             trend="up"
             icon={<Stethoscope size={20} className="text-[#6B7280]" />}
@@ -165,7 +149,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
           />
           <StatCard
             title="Completed Today"
-            value={completedCount.toString()}
+            value={stats.completedCount.toString()}
             change="Done"
             trend="up"
             icon={<CheckCircle size={20} className="text-[#6B7280]" />}
@@ -187,7 +171,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="Waiting"
-            value={waitingCount.toString()}
+            value={stats.waitingCount.toString()}
             change="Patients"
             trend="up"
             icon={<Clock size={20} className="text-[#6B7280]" />}
@@ -195,7 +179,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
           />
           <StatCard
             title="In Service"
-            value={inServiceCount.toString()}
+            value={stats.inServiceCount.toString()}
             change="Active"
             trend="up"
             icon={<Stethoscope size={20} className="text-[#6B7280]" />}
@@ -203,7 +187,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
           />
           <StatCard
             title="Completed"
-            value={completedCount.toString()}
+            value={stats.completedCount.toString()}
             change="Today"
             trend="up"
             icon={<CheckCircle size={20} className="text-[#6B7280]" />}
@@ -233,7 +217,7 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
           />
           <StatCard
             title="My Queue"
-            value={waitingCount.toString()}
+            value={stats.waitingCount.toString()}
             change="Waiting"
             trend="up"
             icon={<Queue size={20} className="text-[#6B7280]" />}
@@ -277,28 +261,28 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
         <div className="bg-white rounded-xl border border-[#E5E7EB] p-6">
           <h2 className="text-base font-semibold text-[#111827] mb-4">Recent Activity</h2>
           <div className="space-y-3">
-            {completedCount > 0 && (
+            {stats.completedCount > 0 && (
               <ActivityItem
                 icon={<CheckCircle size={16} className="text-[#059669]" />}
-                text={`${completedCount} consultations completed`}
+                text={`${stats.completedCount} consultations completed`}
                 time="Today"
               />
             )}
-            {inServiceCount > 0 && (
+            {stats.inServiceCount > 0 && (
               <ActivityItem
                 icon={<Stethoscope size={16} className="text-[#1E40AF]" />}
-                text={`${inServiceCount} patients in service`}
+                text={`${stats.inServiceCount} patients in service`}
                 time="Now"
               />
             )}
-            {waitingCount > 0 && (
+            {stats.waitingCount > 0 && (
               <ActivityItem
                 icon={<Clock size={16} className="text-[#D97706]" />}
-                text={`${waitingCount} patients waiting`}
+                text={`${stats.waitingCount} patients waiting`}
                 time="Queue"
               />
             )}
-            {completedCount === 0 && inServiceCount === 0 && waitingCount === 0 && (
+            {stats.completedCount === 0 && stats.inServiceCount === 0 && stats.waitingCount === 0 && (
               <div className="text-sm text-[#9CA3AF] py-4 text-center">
                 No activity today
               </div>

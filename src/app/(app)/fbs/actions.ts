@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchFBSRecords(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -64,6 +65,7 @@ export async function recordFBS(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/fbs');
     return { success: true, id: record.id };
   } catch (error) {
     return handleAuthError(error);

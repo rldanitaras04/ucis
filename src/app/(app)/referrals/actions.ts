@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchReferrals(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -54,6 +55,7 @@ export async function createReferral(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/referrals');
     return { success: true, id: referral.id };
   } catch (error) {
     return handleAuthError(error);
@@ -80,6 +82,7 @@ export async function acceptReferral(referralId: string): Promise<{ success: tru
       p_outcome: 'success'
     });
 
+    revalidatePath('/referrals');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);
@@ -106,6 +109,7 @@ export async function rejectReferral(referralId: string): Promise<{ success: tru
       p_outcome: 'success'
     });
 
+    revalidatePath('/referrals');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

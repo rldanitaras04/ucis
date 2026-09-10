@@ -73,6 +73,14 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     requiredRoles: ['dentist', 'admin', 'super_admin'],
   },
   {
+    id: 'odontogram',
+    label: 'Odontogram',
+    href: '/odontogram',
+    section: 'Clinical',
+    priority: 24,
+    requiredRoles: ['dentist', 'admin', 'super_admin'],
+  },
+  {
     id: 'dispensing',
     label: 'Dispensing',
     href: '/dispensing',
@@ -121,6 +129,22 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     requiredRoles: ['doctor', 'dentist', 'nurse', 'admin', 'super_admin'],
   },
   {
+    id: 'consent',
+    label: 'Consent Management',
+    href: '/consent',
+    section: 'Documents',
+    priority: 44,
+    requiredRoles: ['clinic_staff', 'doctor', 'dentist', 'admin', 'super_admin'],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    href: '/documents',
+    section: 'Documents',
+    priority: 45,
+    requiredRoles: ['doctor', 'dentist', 'clinic_staff', 'admin', 'super_admin'],
+  },
+  {
     id: 'notifications',
     label: 'Notifications',
     href: '/notifications',
@@ -149,6 +173,14 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     href: '/admin/clinics',
     section: 'Administration',
     priority: 61,
+    requiredRoles: ['admin', 'super_admin'],
+  },
+  {
+    id: 'admin-audit',
+    label: 'Audit Logs',
+    href: '/admin/audit',
+    section: 'Administration',
+    priority: 62,
     requiredRoles: ['admin', 'super_admin'],
   },
   {

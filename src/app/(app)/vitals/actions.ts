@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchVitalSigns(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -79,6 +80,7 @@ export async function recordVitalSigns(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/vitals');
     return { success: true, id: vital.id };
   } catch (error) {
     return handleAuthError(error);

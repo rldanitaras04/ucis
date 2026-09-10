@@ -1,69 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
+import { fetchPatientPortalData } from './actions';
 import { formatDate, getStatusColor } from '@/lib/utils';
 
 export default function PatientPortalPage() {
-  const router = useRouter();
   const [patient, setPatient] = useState<any>(null);
   const [encounters, setEncounters] = useState<any[]>([]);
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [queueEntry, setQueueEntry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadPatientData();
   }, []);
 
   const loadPatientData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      router.push('/auth/login?redirect=/patient');
-      return;
+    const result = await fetchPatientPortalData();
+    if (result.success) {
+      setPatient(result.data.patient);
+      setEncounters(result.data.encounters);
+      setPrescriptions(result.data.prescriptions);
+      setQueueEntry(result.data.queueEntry);
+    } else {
+      setError(result.error);
     }
-
-    const { data: patientData } = await supabase
-      .from('patient_profiles')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .single();
-
-    if (patientData) {
-      setPatient(patientData);
-
-      const { data: encountersData } = await supabase
-        .from('encounters')
-        .select('*')
-        .eq('patient_id', patientData.id)
-        .order('visit_date', { ascending: false })
-        .limit(10);
-
-      setEncounters(encountersData || []);
-
-      const { data: prescriptionsData } = await supabase
-        .from('prescriptions')
-        .select('*')
-        .eq('patient_id', patientData.id)
-        .order('prescribed_date', { ascending: false })
-        .limit(10);
-
-      setPrescriptions(prescriptionsData || []);
-
-      const today = new Date().toISOString().split('T')[0];
-      const { data: queueData } = await supabase
-        .from('queue_entries')
-        .select('*, clinic_services(name)')
-        .eq('patient_id', patientData.id)
-        .eq('queue_date', today)
-        .in('status', ['waiting', 'called', 'in_service'])
-        .single();
-
-      setQueueEntry(queueData);
-    }
-
     setLoading(false);
   };
 
@@ -72,6 +34,15 @@ export default function PatientPortalPage() {
       <div className="flex items-center justify-center h-64" role="status" aria-label="Loading patient portal">
         <div className="spinner"></div>
         <span className="sr-only">Loading patient portal...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-heading text-[#0F172A] mb-4">Error Loading Portal</h1>
+        <p className="text-body text-[#DC2626]">{error}</p>
       </div>
     );
   }
@@ -160,7 +131,9 @@ export default function PatientPortalPage() {
             {prescriptions.map((prescription) => (
               <div key={prescription.id} className="flex items-center justify-between py-2 border-b border-[#E2E8F0] last:border-0">
                 <div>
-                  <p className="font-medium text-[#0F172A]">Prescription</p>
+                  <p className="font-medium text-[#0F172A]">
+                    {prescription.items?.[0]?.medication_name || 'Prescription'}
+                  </p>
                   <p className="text-small text-[#64748B]">{formatDate(prescription.prescribed_date)}</p>
                 </div>
                 <span className={`badge ${getStatusColor(prescription.status)}`}>

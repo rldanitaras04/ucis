@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchPrescriptions(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -9,7 +10,11 @@ export async function fetchPrescriptions(): Promise<{ success: true; data: any[]
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('prescriptions')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
+      .select(`
+        *,
+        patient:patient_profiles!patient_id(first_name, last_name, patient_id),
+        items:prescription_items(*)
+      `)
       .order('prescribed_date', { ascending: false });
     if (error) throw error;
     return { success: true, data: data || [] };
@@ -38,26 +43,37 @@ export async function createPrescription(data: {
       throw new Error('FORBIDDEN');
     }
 
-    const { data: prescription, error } = await supabase
+    // Create the prescription record
+    const { data: prescription, error: rxError } = await supabase
       .from('prescriptions')
       .insert({
         patient_id: data.patient_id,
         encounter_id: data.encounter_id || null,
-        prescribed_by: user.profile?.id || user.id,
-        medication_name: data.medication_name,
-        dosage: data.dosage,
-        frequency: data.frequency,
-        duration: data.duration || null,
-        quantity: data.quantity || null,
-        refills: data.refills || 0,
-        instructions: data.instructions || null,
+        created_by: user.profile?.id || user.id,
+        notes: data.instructions || null,
         status: 'active',
         prescribed_date: new Date().toISOString(),
       })
       .select()
       .single();
 
-    if (error) throw error;
+    if (rxError) throw rxError;
+
+    // Create the prescription item
+    const { error: itemError } = await supabase
+      .from('prescription_items')
+      .insert({
+        prescription_id: prescription.id,
+        medication_name: data.medication_name,
+        dosage: data.dosage,
+        frequency: data.frequency,
+        duration: data.duration || null,
+        quantity: data.quantity || 1,
+        refills_allowed: data.refills || 0,
+        notes: data.instructions || null,
+      });
+
+    if (itemError) throw itemError;
 
     await supabase.rpc('write_audit_log', {
       p_actor: user.id,
@@ -67,6 +83,7 @@ export async function createPrescription(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/prescriptions');
     return { success: true, id: prescription.id };
   } catch (error) {
     return handleAuthError(error);
@@ -93,6 +110,7 @@ export async function cancelPrescription(prescriptionId: string): Promise<{ succ
       p_outcome: 'success'
     });
 
+    revalidatePath('/prescriptions');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

@@ -2,6 +2,7 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 export async function fetchClearances(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
@@ -62,6 +63,7 @@ export async function issueClearance(data: {
       p_outcome: 'success'
     });
 
+    revalidatePath('/clearances');
     return { success: true, id: clearance.id, controlNumber: clearance.control_number };
   } catch (error) {
     return handleAuthError(error);
@@ -88,6 +90,7 @@ export async function revokeClearance(clearanceId: string): Promise<{ success: t
       p_outcome: 'success'
     });
 
+    revalidatePath('/clearances');
     return { success: true };
   } catch (error) {
     return handleAuthError(error);

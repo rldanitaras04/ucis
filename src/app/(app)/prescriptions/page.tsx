@@ -8,16 +8,18 @@ import PatientSearch from '@/components/PatientSearch';
 interface Prescription {
   id: string;
   patient_id: string;
-  medication_name: string;
-  dosage: string;
-  frequency: string;
-  duration?: string;
-  quantity?: number;
-  refills?: number;
-  instructions?: string;
   status: string;
   prescribed_date: string;
   patient?: { first_name: string; last_name: string; patient_id: string };
+  items?: Array<{
+    id: string;
+    medication_name: string;
+    dosage: string;
+    frequency: string;
+    duration?: string;
+    quantity?: number;
+    refills_allowed?: number;
+  }>;
 }
 
 function PrescriptionsPageContent() {
@@ -270,32 +272,34 @@ function PrescriptionsPageContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {prescriptions.map((rx) => (
-                <tr key={rx.id} className="hover:bg-[#F8FAFC]">
-                  <td>
-                    {rx.patient?.last_name}, {rx.patient?.first_name}
-                  </td>
-                  <td className="font-medium">{rx.medication_name}</td>
-                  <td>{rx.dosage}</td>
-                  <td>{rx.frequency}</td>
-                  <td>
-                    <span className={`badge ${getStatusColor(rx.status)}`}>
-                      {rx.status}
-                    </span>
-                  </td>
-                  <td>
-                    {rx.status === 'active' && (
-                      <button
-                        onClick={() => handleCancel(rx.id)}
-                        disabled={actionLoading === rx.id}
-                        className="text-[#DC2626] hover:text-[#B91C1C] font-medium disabled:opacity-50"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {prescriptions.map((rx) =>
+                rx.items?.map((item) => (
+                  <tr key={item.id} className="hover:bg-[#F8FAFC]">
+                    <td>
+                      {rx.patient?.last_name}, {rx.patient?.first_name}
+                    </td>
+                    <td className="font-medium">{item.medication_name}</td>
+                    <td>{item.dosage}</td>
+                    <td>{item.frequency}</td>
+                    <td>
+                      <span className={`badge ${getStatusColor(rx.status)}`}>
+                        {rx.status}
+                      </span>
+                    </td>
+                    <td>
+                      {rx.status === 'active' && (
+                        <button
+                          onClick={() => handleCancel(rx.id)}
+                          disabled={actionLoading === rx.id}
+                          className="text-[#DC2626] hover:text-[#B91C1C] font-medium disabled:opacity-50"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
