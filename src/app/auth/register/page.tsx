@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
+import { fetchSystemConfig } from '@/app/(app)/admin/library/actions';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
@@ -18,9 +19,16 @@ export default function RegisterPage() {
     universityId: '',
   });
   const [loading, setLoading] = useState(false);
+  const [userTypes, setUserTypes] = useState<{ config_value: string; label: string }[]>([]);
   const router = useRouter();
 
   const supabase = createClient();
+
+  useEffect(() => {
+    fetchSystemConfig('user_type').then(r => {
+      if (r.success) setUserTypes(r.data);
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,10 +175,7 @@ export default function RegisterPage() {
                 value={formData.userType}
                 onChange={handleChange}
               >
-                <option value="student">Student</option>
-                <option value="faculty">Faculty</option>
-                <option value="non_teaching_staff">Non-Teaching Staff</option>
-                <option value="walk_in">Walk-in Patient</option>
+                {userTypes.map(ut => <option key={ut.config_value} value={ut.config_value}>{ut.label}</option>)}
               </select>
             </div>
             {(formData.userType === 'student' || formData.userType === 'faculty' || formData.userType === 'non_teaching_staff') && (

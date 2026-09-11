@@ -6,6 +6,7 @@ interface CarinaMessageProps {
   role: 'user' | 'assistant' | 'tool';
   content: string;
   toolResults?: CarinaToolCallExecution[];
+  userAvatarUrl?: string | null;
 }
 
 function formatMessageContent(content: string): string {
@@ -17,12 +18,21 @@ function formatMessageContent(content: string): string {
   return formatted;
 }
 
-export default function CarinaMessage({ role, content, toolResults }: CarinaMessageProps) {
+export default function CarinaMessage({ role, content, toolResults, userAvatarUrl }: CarinaMessageProps) {
   if (role === 'user') {
     return (
-      <div className="flex justify-end px-4 py-2">
+      <div className="flex justify-end items-start gap-2 px-4 py-2">
         <div className="max-w-[80%] bg-[#1E40AF] text-white rounded-2xl rounded-br-sm px-4 py-3">
           <p className="text-sm whitespace-pre-wrap">{content}</p>
+        </div>
+        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+          {userAvatarUrl ? (
+            <img src={userAvatarUrl} alt="You" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-8 bg-[#64748B] rounded-full flex items-center justify-center">
+              <span className="text-xs font-medium text-white">U</span>
+            </div>
+          )}
         </div>
       </div>
     );

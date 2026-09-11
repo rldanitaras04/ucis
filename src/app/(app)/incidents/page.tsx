@@ -27,6 +27,7 @@ export default function IncidentsPage() {
   const [confirmDialog, setConfirmDialog] = useState<{ incidentId: string; status: string } | null>(null);
 
   const [formData, setFormData] = useState({
+    title: '',
     incident_type: 'clinical',
     severity: 'medium',
     description: '',
@@ -75,6 +76,7 @@ export default function IncidentsPage() {
     setSuccess(null);
 
     const result = await createIncident({
+      title: formData.title,
       incident_type: formData.incident_type,
       severity: formData.severity,
       description: formData.description,
@@ -85,7 +87,7 @@ export default function IncidentsPage() {
     if (result.success) {
       setSuccess('Incident reported successfully');
       setShowForm(false);
-      setFormData({ incident_type: 'clinical', severity: 'medium', description: '', patient_id: '', status: 'open' });
+      setFormData({ title: '', incident_type: 'clinical', severity: 'medium', description: '', patient_id: '', status: 'open' });
       loadIncidents();
     } else {
       setError(result.error);
@@ -156,6 +158,17 @@ export default function IncidentsPage() {
         <div className="card p-6 mb-6">
           <h2 className="text-subheading text-[#0F172A] mb-4">Report New Incident</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="label">Title *</label>
+              <input
+                type="text"
+                className="input-field"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Brief title for the incident"
+                required
+              />
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label">Incident Type</label>

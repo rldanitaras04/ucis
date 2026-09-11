@@ -42,6 +42,7 @@ export async function fetchDentalRecord(recordId: string): Promise<{ success: tr
 export async function createDentalRecord(data: {
   patient_id: string;
   encounter_id: string;
+  clinic_id?: string;
   chief_complaint?: string;
   oral_examination?: string;
   diagnosis?: string;

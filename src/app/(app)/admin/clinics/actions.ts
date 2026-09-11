@@ -37,7 +37,6 @@ export async function createClinic(data: {
   name: string;
   description?: string;
   location?: string;
-  capacity?: number;
   operating_hours?: string;
   is_active: boolean;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
@@ -51,7 +50,6 @@ export async function createClinic(data: {
         name: data.name,
         description: data.description || null,
         location: data.location || null,
-        capacity: data.capacity || null,
         operating_hours: data.operating_hours || null,
         is_active: data.is_active,
         created_at: new Date().toISOString(),
@@ -80,7 +78,6 @@ export async function updateClinic(clinicId: string, data: {
   name: string;
   description?: string;
   location?: string;
-  capacity?: number;
   operating_hours?: string;
   is_active: boolean;
 }): Promise<{ success: true } | { success: false; error: string }> {
@@ -94,7 +91,6 @@ export async function updateClinic(clinicId: string, data: {
         name: data.name,
         description: data.description || null,
         location: data.location || null,
-        capacity: data.capacity || null,
         operating_hours: data.operating_hours || null,
         is_active: data.is_active,
         updated_at: new Date().toISOString(),

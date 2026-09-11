@@ -10,9 +10,26 @@ export async function fetchVitalSigns(): Promise<{ success: true; data: any[] } 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('vital_signs')
-      .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, temperature, oxygen_saturation')
+      .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, respiratory_rate, temperature, oxygen_saturation, height, weight, bmi, notes, patient:patient_profiles!patient_id(first_name, last_name, university_id)')
       .order('recorded_at', { ascending: false })
       .limit(10);
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function fetchPatientVitals(patientId: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAuth();
+    const supabase = createServerSupabaseClient();
+    const { data, error } = await supabase
+      .from('vital_signs')
+      .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, respiratory_rate, temperature, oxygen_saturation, height, weight, bmi, notes')
+      .eq('patient_id', patientId)
+      .order('recorded_at', { ascending: false })
+      .limit(5);
     if (error) throw error;
     return { success: true, data: data || [] };
   } catch (error) {
@@ -54,7 +71,7 @@ export async function recordVitalSigns(data: {
       .insert({
         patient_id: data.patient_id,
         encounter_id: data.encounter_id || null,
-        recorded_by: user.profile?.id || user.id,
+        recorded_by: user.id,
         blood_pressure_systolic: data.blood_pressure_systolic || null,
         blood_pressure_diastolic: data.blood_pressure_diastolic || null,
         pulse_rate: data.pulse_rate || null,

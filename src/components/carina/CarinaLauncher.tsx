@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { usePathname } from 'next/navigation';
 import CarinaPanel from './CarinaPanel';
 
 export default function CarinaLauncher() {
   const [isOpen, setIsOpen] = useState(false);
   const [roles, setRoles] = useState<string[]>([]);
   const [userName, setUserName] = useState<string | undefined>();
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const pathname = usePathname();
   const supabase = createClient();
 
   useEffect(() => {
@@ -19,12 +22,20 @@ export default function CarinaLauncher() {
 
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('first_name')
+          .select('first_name, avatar_url')
           .eq('auth_user_id', user.id)
           .single();
 
         if (profile) {
           setUserName(profile.first_name);
+          if (profile.avatar_url) {
+            const { data } = await supabase.storage
+              .from('ucis-bucket')
+              .createSignedUrl(profile.avatar_url, 3600);
+            if (data?.signedUrl) {
+              setUserAvatarUrl(data.signedUrl);
+            }
+          }
         }
 
         const { data: rolesData } = await supabase
@@ -43,9 +54,23 @@ export default function CarinaLauncher() {
 
   useEffect(() => {
     const handleToggle = () => setIsOpen(prev => !prev);
+    const handleOpen = () => setIsOpen(true);
     window.addEventListener('carina:toggle', handleToggle);
-    return () => window.removeEventListener('carina:toggle', handleToggle);
+    window.addEventListener('carina:open', handleOpen);
+    return () => {
+      window.removeEventListener('carina:toggle', handleToggle);
+      window.removeEventListener('carina:open', handleOpen);
+    };
   }, []);
+
+  useEffect(() => {
+    if (pathname !== '/vitals') {
+      window.dispatchEvent(new Event('carina:clear-vitals'));
+    }
+    if (pathname !== '/fbs') {
+      window.dispatchEvent(new Event('carina:clear-fbs'));
+    }
+  }, [pathname]);
 
   return (
     <>
@@ -69,6 +94,7 @@ export default function CarinaLauncher() {
         onClose={() => setIsOpen(false)}
         roles={roles}
         userName={userName}
+        userAvatarUrl={userAvatarUrl}
       />
     </>
   );

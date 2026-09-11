@@ -184,6 +184,14 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     requiredRoles: ['admin', 'super_admin'],
   },
   {
+    id: 'admin-library',
+    label: 'Library Management',
+    href: '/admin/library',
+    section: 'Administration',
+    priority: 63,
+    requiredRoles: ['admin', 'super_admin'],
+  },
+  {
     id: 'carina',
     label: 'Carina AI',
     href: '#carina',

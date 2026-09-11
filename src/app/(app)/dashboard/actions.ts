@@ -72,11 +72,19 @@ export async function fetchRecentActivity(): Promise<{
 
     // If user is a patient, only show their encounters
     if (user.roles.includes('student') || user.roles.includes('faculty') || user.roles.includes('non_teaching_staff')) {
-      const { data: patientProfile } = await supabase
-        .from('patient_profiles')
+      const { data: userProfile } = await supabase
+        .from('user_profiles')
         .select('id')
         .eq('auth_user_id', user.id)
         .single();
+
+      const { data: patientProfile } = userProfile
+        ? await supabase
+            .from('patient_profiles')
+            .select('id')
+            .eq('user_profile_id', userProfile.id)
+            .single()
+        : { data: null };
 
       if (patientProfile) {
         encounterQuery = encounterQuery.eq('patient_id', patientProfile.id);

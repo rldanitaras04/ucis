@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { recordFBS, fetchFBSRecords } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+import FBSAnalysis from '@/components/FBSAnalysis';
 import { useSearchParams } from 'next/navigation';
 
 interface FBSRecord {
@@ -12,6 +13,7 @@ interface FBSRecord {
   fbs_value: number;
   fasting_hours: number | null;
   notes: string | null;
+  patient_profiles?: { university_id: string; first_name: string; last_name: string } | null;
 }
 
 function classifyFBS(value: number): { label: string; className: string } {
@@ -34,6 +36,8 @@ function FBSPageContent() {
   const [recentRecords, setRecentRecords] = useState<FBSRecord[]>([]);
   const [recordsLoading, setRecordsLoading] = useState(false);
 
+  const prevFbsRef = useRef<{ value: string; fasting: string }>({ value: '', fasting: '' });
+
   const fetchRecentRecords = useCallback(async () => {
     setRecordsLoading(true);
     const result = await fetchFBSRecords();
@@ -46,6 +50,32 @@ function FBSPageContent() {
   useEffect(() => {
     fetchRecentRecords();
   }, [fetchRecentRecords]);
+
+  useEffect(() => {
+    const hasFbs = fbsValue.trim() !== '';
+    const changed =
+      fbsValue !== prevFbsRef.current.value ||
+      fastingHours !== prevFbsRef.current.fasting;
+    prevFbsRef.current = { value: fbsValue, fasting: fastingHours };
+
+    if (hasFbs && changed) {
+      const timer = setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('carina:analyze-fbs', {
+          detail: { fbs: { fbs_value: fbsValue, fasting_hours: fastingHours || null } },
+        }));
+        window.dispatchEvent(new Event('carina:open'));
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (!hasFbs) {
+      window.dispatchEvent(new CustomEvent('carina:clear-fbs'));
+    }
+  }, [fbsValue, fastingHours]);
+
+  useEffect(() => {
+    return () => {
+      window.dispatchEvent(new CustomEvent('carina:clear-fbs'));
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,6 +174,15 @@ function FBSPageContent() {
         </button>
       </form>
 
+      {fbsValue && (
+        <FBSAnalysis
+          fbs={{
+            fbs_value: fbsValue,
+            fasting_hours: fastingHours || null,
+          }}
+        />
+      )}
+
       <div className="card mt-8">
         <h2 className="text-subheading text-[#0F172A] mb-4">Recent FBS Records</h2>
 
@@ -175,7 +214,16 @@ function FBSPageContent() {
                   const classification = classifyFBS(record.fbs_value);
                   return (
                     <tr key={record.id}>
-                      <td className="text-body text-[#0F172A]">{record.patient_id}</td>
+                      <td className="text-body text-[#0F172A]">
+                        {record.patient_profiles ? (
+                          <div>
+                            <div className="font-medium">{record.patient_profiles.first_name} {record.patient_profiles.last_name}</div>
+                            <div className="text-xs text-[#64748B]">{record.patient_profiles.university_id}</div>
+                          </div>
+                        ) : (
+                          record.patient_id
+                        )}
+                      </td>
                       <td className="text-body text-[#334155]">
                         {new Date(record.recorded_at).toLocaleDateString()}
                       </td>

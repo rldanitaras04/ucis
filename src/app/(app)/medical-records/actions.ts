@@ -13,7 +13,7 @@ export async function fetchMedicalRecords(): Promise<{ success: true; data: any[
       .from('encounters')
       .select(`
         id, visit_date, chief_complaint, status, created_at,
-        patient:patient_profiles!patient_id(id, first_name, last_name, patient_id),
+        patient:patient_profiles!patient_id(id, first_name, last_name),
         clinic:clinics!clinic_id(id, name),
         service:clinic_services!service_id(id, name),
         medical_record:medical_records!encounter_id(
@@ -38,7 +38,7 @@ export async function fetchMedicalRecordDetail(encounterId: string): Promise<{ s
       .from('encounters')
       .select(`
         id, visit_date, chief_complaint, status, created_at,
-        patient:patient_profiles!patient_id(id, first_name, last_name, patient_id, date_of_birth, sex, blood_type),
+        patient:patient_profiles!patient_id(id, first_name, last_name, date_of_birth, gender, blood_type, university_id),
         clinic:clinics!clinic_id(id, name),
         service:clinic_services!service_id(id, name),
         medical_record:medical_records!encounter_id(
@@ -63,7 +63,7 @@ export async function fetchClinicsAndPatients(): Promise<{ success: true; data: 
 
     const [clinicsResult, patientsResult, servicesResult] = await Promise.all([
       supabase.from('clinics').select('id, name').eq('is_active', true).order('name'),
-      supabase.from('patient_profiles').select('id, first_name, last_name, patient_id').order('last_name'),
+      supabase.from('patient_profiles').select('id, first_name, last_name').order('last_name'),
       supabase.from('clinic_services').select('id, name, clinic_id'),
     ]);
 
@@ -218,7 +218,7 @@ export async function upsertMedicalRecord(data: {
         .insert({
           encounter_id: data.encounter_id,
           patient_id: data.patient_id,
-          created_by: user.profile?.id || user.id,
+          created_by: user.id,
           chief_complaint: data.chief_complaint || null,
           history_of_present_illness: data.history_of_present_illness || null,
           physical_examination: data.physical_examination || null,

@@ -20,6 +20,7 @@ export async function fetchIncidents(): Promise<{ success: true; data: any[] } |
 }
 
 export async function createIncident(data: {
+  title: string;
   incident_type: string;
   severity: string;
   description: string;
@@ -33,14 +34,14 @@ export async function createIncident(data: {
     const { data: incident, error } = await supabase
       .from('incidents')
       .insert({
+        title: data.title,
         incident_type: data.incident_type,
         severity: data.severity,
         description: data.description,
         patient_id: data.patient_id || null,
         status: data.status || 'open',
-        reported_by: user.profile?.id || user.id,
+        reported_by: user.id,
         incident_date: new Date().toISOString(),
-        created_at: new Date().toISOString(),
       })
       .select()
       .single();

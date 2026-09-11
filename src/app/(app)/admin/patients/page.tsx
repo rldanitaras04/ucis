@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchPatients } from './actions';
+import { fetchPatientsAdmin } from '@/app/(app)/patient/actions';
+import Link from 'next/link';
 
 interface Patient {
   id: string;
@@ -9,16 +10,13 @@ interface Patient {
   last_name: string;
   email?: string;
   contact_number?: string;
-  date_of_birth?: string;
   gender: string;
-  blood_type?: string;
   patient_type: string;
   status: string;
-  created_at: string;
-  university_id?: string;
+  date_of_birth: string;
 }
 
-export default function RecordsPage() {
+export default function AdminPatientsPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,7 +25,7 @@ export default function RecordsPage() {
 
   const loadPatients = useCallback(async (query: string) => {
     setLoading(true);
-    const result = await fetchPatients(query);
+    const result = await fetchPatientsAdmin(query);
     if (result.success) {
       setPatients(result.data);
     } else {
@@ -37,37 +35,31 @@ export default function RecordsPage() {
   }, []);
 
   useEffect(() => {
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    debounceTimer.current = setTimeout(() => {
-      loadPatients(searchQuery);
-    }, 300);
-
-    return () => {
-      if (debounceTimer.current) {
-        clearTimeout(debounceTimer.current);
-      }
-    };
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => loadPatients(searchQuery), 300);
+    return () => { if (debounceTimer.current) clearTimeout(debounceTimer.current); };
   }, [searchQuery, loadPatients]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading records">
+      <div className="flex items-center justify-center h-64" role="status" aria-label="Loading patients">
         <div className="spinner"></div>
-        <span className="sr-only">Loading records...</span>
+        <span className="sr-only">Loading patients...</span>
       </div>
     );
   }
 
   return (
     <div className="page-container">
-      <h1 className="text-heading text-[#0F172A] mb-6">Patient Records</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-heading text-[#0F172A]">Patient Management</h1>
+        <Link href="/patient/register" className="btn-primary">
+          Register New Patient
+        </Link>
+      </div>
 
       {error && (
-        <div className="alert-error mb-4" role="alert">
-          {error}
-        </div>
+        <div className="alert-error mb-4" role="alert">{error}</div>
       )}
 
       <div className="mb-4">
@@ -75,7 +67,7 @@ export default function RecordsPage() {
         <input
           id="search"
           type="text"
-          placeholder="Search by name or ID..."
+          placeholder="Search by name..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="input-field max-w-md"
@@ -87,30 +79,33 @@ export default function RecordsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th scope="col">University ID</th>
                 <th scope="col">Name</th>
                 <th scope="col">Gender</th>
+                <th scope="col">DOB</th>
                 <th scope="col">Type</th>
                 <th scope="col">Status</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
               {patients.map((patient) => (
                 <tr key={patient.id} className="hover:bg-[#F8FAFC]">
-                  <td className="font-mono tabular-nums">
-                    {patient.university_id || '—'}
-                  </td>
-                  <td>
-                    {patient.last_name}, {patient.first_name}
-                  </td>
+                  <td className="font-medium">{patient.last_name}, {patient.first_name}</td>
                   <td>{patient.gender}</td>
+                  <td>{new Date(patient.date_of_birth).toLocaleDateString()}</td>
                   <td>{patient.patient_type}</td>
                   <td>
-                    <span className={`badge ${
-                      patient.status === 'active' ? 'badge-success' : 'badge-neutral'
-                    }`}>
+                    <span className={`badge ${patient.status === 'active' ? 'badge-success' : 'badge-neutral'}`}>
                       {patient.status}
                     </span>
+                  </td>
+                  <td>
+                    <Link
+                      href={`/admin/patients/${patient.id}`}
+                      className="text-sm text-[#2563EB] hover:underline"
+                    >
+                      Edit
+                    </Link>
                   </td>
                 </tr>
               ))}

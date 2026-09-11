@@ -14,7 +14,7 @@ export async function fetchPatients(searchQuery?: string): Promise<{ success: tr
       .order('last_name', { ascending: true });
 
     if (searchQuery) {
-      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,patient_id.ilike.%${searchQuery}%`);
+      query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,university_id.ilike.%${searchQuery}%`);
     }
 
     const { data, error } = await query;

@@ -18,7 +18,9 @@ import {
   Stethoscope,
   FloppyDisk,
   SealCheck,
+  Heart,
 } from '@phosphor-icons/react';
+import { DEFAULT_CLINIC_ID } from '@/lib/config';
 import {
   fetchMedicalRecords,
   fetchMedicalRecordDetail,
@@ -27,7 +29,9 @@ import {
   updateEncounterStatus,
   upsertMedicalRecord,
 } from './actions';
+import { fetchPatientVitals } from '@/app/(app)/vitals/actions';
 import PatientSearch from '@/components/PatientSearch';
+import CarinaVitalsAnalysis from '@/components/carina/CarinaVitalsAnalysis';
 
 interface MedicalRecordRow {
   id: string;
@@ -35,7 +39,7 @@ interface MedicalRecordRow {
   chief_complaint: string | null;
   status: string;
   created_at: string;
-  patient: { id: string; first_name: string; last_name: string; patient_id: string } | null;
+  patient: { id: string; first_name: string; last_name: string } | null;
   clinic: { id: string; name: string } | null;
   service: { id: string; name: string } | null;
   medical_record: { id: string; diagnosis: string | null; treatment_plan: string | null; status: string } | null;
@@ -46,7 +50,7 @@ interface RecordDetail {
   visit_date: string;
   chief_complaint: string | null;
   status: string;
-  patient: { id: string; first_name: string; last_name: string; patient_id: string; date_of_birth: string; sex: string; blood_type: string } | null;
+  patient: { id: string; first_name: string; last_name: string; date_of_birth: string; gender: string; blood_type: string; university_id?: string } | null;
   clinic: { id: string; name: string } | null;
   service: { id: string; name: string } | null;
   medical_record: {
@@ -64,21 +68,20 @@ function MedicalRecordsPageContent() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const [showCreate, setShowCreate] = useState(false);
-  const [clinics, setClinics] = useState<{ id: string; name: string }[]>([]);
-  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string; patient_id: string }[]>([]);
+  const [patients, setPatients] = useState<{ id: string; first_name: string; last_name: string }[]>([]);
   const [services, setServices] = useState<{ id: string; name: string; clinic_id: string }[]>([]);
   const [filteredServices, setFilteredServices] = useState<{ id: string; name: string }[]>([]);
   const [creating, setCreating] = useState(false);
 
   const [createForm, setCreateForm] = useState({
     patient_id: searchParams.get('patient') || '',
-    clinic_id: '',
     service_id: '',
     chief_complaint: '',
   });
 
   const [selectedRecord, setSelectedRecord] = useState<RecordDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [patientVitals, setPatientVitals] = useState<any[]>([]);
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
     chief_complaint: '', history_of_present_illness: '', physical_examination: '',
@@ -102,7 +105,6 @@ function MedicalRecordsPageContent() {
   const loadCreateData = async () => {
     const result = await fetchClinicsAndPatients();
     if (result.success) {
-      setClinics(result.data.clinics);
       setPatients(result.data.patients);
       setServices(result.data.services);
     }
@@ -113,19 +115,18 @@ function MedicalRecordsPageContent() {
   }, [showCreate]);
 
   useEffect(() => {
-    setFilteredServices(createForm.clinic_id ? services.filter(s => s.clinic_id === createForm.clinic_id) : []);
-    if (createForm.clinic_id) setCreateForm(prev => ({ ...prev, service_id: '' }));
-  }, [createForm.clinic_id, services]);
+    setFilteredServices(services.filter(s => s.clinic_id === DEFAULT_CLINIC_ID));
+  }, [services]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
     setError(null);
-    const result = await createEncounter(createForm);
+    const result = await createEncounter({ ...createForm, clinic_id: DEFAULT_CLINIC_ID });
     if (result.success) {
       setSuccess('Encounter created');
       setShowCreate(false);
-      setCreateForm({ patient_id: '', clinic_id: '', service_id: '', chief_complaint: '' });
+      setCreateForm({ patient_id: '', service_id: '', chief_complaint: '' });
       loadRecords();
     } else {
       setError(result.error);
@@ -157,6 +158,12 @@ function MedicalRecordsPageContent() {
         });
       }
       setEditMode(false);
+      if (result.data.patient?.id) {
+        const vitalsResult = await fetchPatientVitals(result.data.patient.id);
+        if (vitalsResult.success) {
+          setPatientVitals(vitalsResult.data);
+        }
+      }
     } else {
       setError(result.error);
     }
@@ -202,7 +209,6 @@ function MedicalRecordsPageContent() {
     return (
       r.patient?.first_name?.toLowerCase().includes(q) ||
       r.patient?.last_name?.toLowerCase().includes(q) ||
-      r.patient?.patient_id?.toLowerCase().includes(q) ||
       r.chief_complaint?.toLowerCase().includes(q) ||
       r.clinic?.name?.toLowerCase().includes(q)
     );
@@ -296,21 +302,6 @@ function MedicalRecordsPageContent() {
                 onChange={(patientId) => setCreateForm({ ...createForm, patient_id: patientId })}
               />
               <div>
-                <label htmlFor="clinic" className="label">Clinic *</label>
-                <select
-                  id="clinic"
-                  required
-                  value={createForm.clinic_id}
-                  onChange={e => setCreateForm({ ...createForm, clinic_id: e.target.value })}
-                  className="select-field w-full"
-                >
-                  <option value="">Select clinic...</option>
-                  {clinics.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
                 <label htmlFor="service" className="label">Service *</label>
                 <select
                   id="service"
@@ -318,7 +309,6 @@ function MedicalRecordsPageContent() {
                   value={createForm.service_id}
                   onChange={e => setCreateForm({ ...createForm, service_id: e.target.value })}
                   className="select-field w-full"
-                  disabled={!createForm.clinic_id}
                 >
                   <option value="">Select service...</option>
                   {filteredServices.map(s => (
@@ -473,8 +463,8 @@ function MedicalRecordsPageContent() {
                     <p className="font-medium text-[#0F172A]">{selectedRecord.patient?.last_name}, {selectedRecord.patient?.first_name}</p>
                   </div>
                   <div>
-                    <p className="text-small text-[#64748B]">Patient ID</p>
-                    <p className="font-medium text-[#0F172A] font-mono">{selectedRecord.patient?.patient_id}</p>
+                    <p className="text-small text-[#64748B]">Student/Employee ID</p>
+                    <p className="font-medium text-[#0F172A] font-mono">{selectedRecord.patient?.university_id || '—'}</p>
                   </div>
                   <div>
                     <p className="text-small text-[#64748B] flex items-center gap-1"><Buildings size={12} /> Clinic</p>
@@ -497,6 +487,55 @@ function MedicalRecordsPageContent() {
                     </span>
                   )}
                 </div>
+
+                {patientVitals.length > 0 && (
+                  <div className="border border-[#E2E8F0] rounded-lg p-4">
+                    <h3 className="text-subheading text-[#0F172A] mb-3 flex items-center gap-2">
+                      <Heart size={16} className="text-[#DC2626]" /> Recent Vital Signs
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="table text-xs w-full">
+                        <thead>
+                          <tr>
+                            <th className="text-left">Date</th>
+                            <th className="text-left">BP</th>
+                            <th className="text-left">HR</th>
+                            <th className="text-left">RR</th>
+                            <th className="text-left">Temp</th>
+                            <th className="text-left">SpO2</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {patientVitals.map((v: any) => (
+                            <tr key={v.id}>
+                              <td>{new Date(v.recorded_at).toLocaleDateString()}</td>
+                              <td className="tabular-nums">{v.blood_pressure_systolic && v.blood_pressure_diastolic ? `${v.blood_pressure_systolic}/${v.blood_pressure_diastolic}` : '—'}</td>
+                              <td className="tabular-nums">{v.pulse_rate || '—'}</td>
+                              <td className="tabular-nums">{v.respiratory_rate || '—'}</td>
+                              <td className="tabular-nums">{v.temperature ? `${v.temperature}°C` : '—'}</td>
+                              <td className="tabular-nums">{v.oxygen_saturation ? `${v.oxygen_saturation}%` : '—'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {patientVitals[0] && (
+                      <div className="mt-3">
+                        <CarinaVitalsAnalysis vitals={{
+                          blood_pressure_systolic: patientVitals[0].blood_pressure_systolic?.toString() || null,
+                          blood_pressure_diastolic: patientVitals[0].blood_pressure_diastolic?.toString() || null,
+                          pulse_rate: patientVitals[0].pulse_rate?.toString() || null,
+                          respiratory_rate: patientVitals[0].respiratory_rate?.toString() || null,
+                          temperature: patientVitals[0].temperature?.toString() || null,
+                          oxygen_saturation: patientVitals[0].oxygen_saturation?.toString() || null,
+                          height: patientVitals[0].height?.toString() || null,
+                          weight: patientVitals[0].weight?.toString() || null,
+                        }} />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {!editMode ? (
                   <div className="space-y-4">

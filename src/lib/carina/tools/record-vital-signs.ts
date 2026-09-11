@@ -70,7 +70,7 @@ export const recordVitalSignsTool: CarinaToolDefinition = {
       .insert({
         patient_id: args.patient_id,
         encounter_id: args.encounter_id || null,
-        recorded_by: ctx.profile?.id || ctx.userId,
+        recorded_by: ctx.userId,
         blood_pressure_systolic: args.blood_pressure_systolic ? parseFloat(args.blood_pressure_systolic as string) : null,
         blood_pressure_diastolic: args.blood_pressure_diastolic ? parseFloat(args.blood_pressure_diastolic as string) : null,
         pulse_rate: args.pulse_rate ? parseFloat(args.pulse_rate as string) : null,

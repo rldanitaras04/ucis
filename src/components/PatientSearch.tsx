@@ -63,6 +63,17 @@ export default function PatientSearch({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    if (value && !selectedPatient) {
+      searchPatients(value).then((result) => {
+        if (result.success) {
+          const match = result.data.find((p) => p.id === value);
+          if (match) setSelectedPatient(match);
+        }
+      });
+    }
+  }, [value, selectedPatient]);
+
   const handleSelect = (patient: PatientSearchResult) => {
     setSelectedPatient(patient);
     setQuery('');
@@ -104,7 +115,6 @@ export default function PatientSearch({
         <div className="input-field flex items-center justify-between">
           <span className="font-medium text-[#0F172A]">
             {selectedPatient.last_name}, {selectedPatient.first_name}
-            <span className="text-[#64748B] font-normal ml-2">{selectedPatient.patient_id}</span>
           </span>
           <button
             type="button"
@@ -154,8 +164,7 @@ export default function PatientSearch({
                 {patient.last_name}, {patient.first_name}
               </div>
               <div className="text-small text-[#64748B] flex gap-3 mt-0.5">
-                <span>{patient.patient_id}</span>
-                {patient.sex && <span>{patient.sex}</span>}
+                {patient.gender && <span>{patient.gender}</span>}
                 {patient.date_of_birth && <span>DOB: {new Date(patient.date_of_birth).toLocaleDateString()}</span>}
                 {patient.blood_type && <span>{patient.blood_type}</span>}
               </div>

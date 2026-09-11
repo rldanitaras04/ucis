@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { fetchDentalRecords, createDentalRecord, updateDentalRecord, finalizeDentalRecord } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+import { DEFAULT_CLINIC_ID } from '@/lib/config';
 
 interface DentalRecord {
   id: string;
@@ -99,6 +100,7 @@ function DentalPageContent() {
       const result = await createDentalRecord({
         patient_id: formData.patient_id,
         encounter_id: formData.encounter_id,
+        clinic_id: DEFAULT_CLINIC_ID,
         chief_complaint: formData.chief_complaint || undefined,
         oral_examination: formData.oral_examination || undefined,
         diagnosis: formData.diagnosis || undefined,

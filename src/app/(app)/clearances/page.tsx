@@ -142,9 +142,7 @@ export default function ClearancesPage() {
                 <option value="">Select type</option>
                 <option value="medical">Medical</option>
                 <option value="dental">Dental</option>
-                <option value="fitness">Fitness</option>
-                <option value="employment">Employment</option>
-                <option value="travel">Travel</option>
+                <option value="general">General</option>
               </select>
             </div>
             <div>

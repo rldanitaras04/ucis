@@ -9,16 +9,20 @@ interface CarinaMessageListProps {
   messages: CarinaMessageType[];
   isLoading: boolean;
   toolResults?: CarinaToolCallExecution[];
+  userAvatarUrl?: string | null;
 }
 
-export default function CarinaMessageList({ messages, isLoading, toolResults }: CarinaMessageListProps) {
+export default function CarinaMessageList({ messages, isLoading, toolResults, userAvatarUrl }: CarinaMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  const lastAssistantResults = toolResults && toolResults.length > 0 ? toolResults : undefined;
+  const lastAssistantResults = toolResults && toolResults.length > 0
+    ? toolResults.filter(t => t.name !== 'general_query')
+    : undefined;
+  const hasToolResults = lastAssistantResults && lastAssistantResults.length > 0;
 
   return (
     <div
@@ -32,7 +36,8 @@ export default function CarinaMessageList({ messages, isLoading, toolResults }: 
           key={idx}
           role={msg.role as 'user' | 'assistant'}
           content={msg.content}
-          toolResults={idx === messages.length - 1 ? lastAssistantResults : undefined}
+          toolResults={idx === messages.length - 1 ? hasToolResults ? lastAssistantResults : undefined : undefined}
+          userAvatarUrl={userAvatarUrl}
         />
       ))}
       {isLoading && <CarinaTypingIndicator />}

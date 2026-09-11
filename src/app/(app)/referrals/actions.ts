@@ -22,7 +22,7 @@ export async function fetchReferrals(): Promise<{ success: true; data: any[] } |
 export async function createReferral(data: {
   patient_id: string;
   from_clinic_id: string;
-  to_clinic_id: string;
+  to_clinic_id?: string;
   reason: string;
   notes?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
@@ -38,7 +38,7 @@ export async function createReferral(data: {
         to_clinic_id: data.to_clinic_id,
         reason: data.reason,
         notes: data.notes || null,
-        referred_by: user.profile?.id || user.id,
+        referred_by: user.id,
         status: 'pending',
         referral_date: new Date().toISOString(),
       })

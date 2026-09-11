@@ -5,13 +5,12 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export interface PatientSearchResult {
   id: string;
-  patient_id: string;
   first_name: string;
   last_name: string;
   date_of_birth?: string;
-  sex: string;
+  gender: string;
   blood_type?: string;
-  phone?: string;
+  contact_number?: string;
   email?: string;
 }
 
@@ -22,13 +21,13 @@ export async function searchPatients(query: string): Promise<{ success: true; da
 
     let q = supabase
       .from('patient_profiles')
-      .select('id, patient_id, first_name, last_name, date_of_birth, sex, blood_type, phone, email')
+      .select('id, first_name, last_name, date_of_birth, gender, blood_type, contact_number, email')
       .order('last_name', { ascending: true })
       .limit(20);
 
     if (query && query.trim().length > 0) {
       q = q.or(
-        `first_name.ilike.%${query}%,last_name.ilike.%${query}%,patient_id.ilike.%${query}%`
+        `id.eq.${query},first_name.ilike.%${query}%,last_name.ilike.%${query}%,university_id.ilike.%${query}%`
       );
     }
 

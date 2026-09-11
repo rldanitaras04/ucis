@@ -1,0 +1,7 @@
+export const DEFAULT_UNIVERSITY_ID = '00000000-0000-0000-0000-000000000001';
+export const DEFAULT_CAMPUS_ID = '00000000-0000-0000-0000-000000000002';
+export const DEFAULT_CLINIC_ID = '00000000-0000-0000-0000-000000000003';
+
+export const DEFAULT_UNIVERSITY_NAME = 'University Clinic Information System';
+export const DEFAULT_CAMPUS_NAME = 'Main Campus';
+export const DEFAULT_CLINIC_NAME = 'University Health Center';

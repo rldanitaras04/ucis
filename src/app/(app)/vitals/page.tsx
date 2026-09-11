@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { recordVitalSigns, fetchVitalSigns } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+import VitalsAnalysis from '@/components/VitalsAnalysis';
 
 interface VitalRecord {
   id: string;
@@ -14,6 +15,7 @@ interface VitalRecord {
   pulse_rate: number | null;
   temperature: number | null;
   oxygen_saturation: number | null;
+  patient?: { first_name: string; last_name: string; university_id?: string };
 }
 
 function VitalsPageContent() {
@@ -51,6 +53,45 @@ function VitalsPageContent() {
     fetchRecentRecords();
   }, [fetchRecentRecords]);
 
+  const carinaTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (carinaTimerRef.current) clearTimeout(carinaTimerRef.current);
+
+    const filledCount = [
+      formData.blood_pressure_systolic,
+      formData.blood_pressure_diastolic,
+      formData.pulse_rate,
+      formData.respiratory_rate,
+      formData.temperature,
+      formData.oxygen_saturation,
+      formData.height,
+      formData.weight,
+    ].filter(Boolean).length;
+
+    if (filledCount >= 2) {
+      carinaTimerRef.current = setTimeout(() => {
+        window.dispatchEvent(new Event('carina:open'));
+        window.dispatchEvent(new CustomEvent('carina:analyze-vitals', {
+          detail: {
+            vitals: {
+              blood_pressure_systolic: formData.blood_pressure_systolic || null,
+              blood_pressure_diastolic: formData.blood_pressure_diastolic || null,
+              pulse_rate: formData.pulse_rate || null,
+              respiratory_rate: formData.respiratory_rate || null,
+              temperature: formData.temperature || null,
+              oxygen_saturation: formData.oxygen_saturation || null,
+              height: formData.height || null,
+              weight: formData.weight || null,
+            },
+          },
+        }));
+      }, 500);
+    }
+
+    return () => { if (carinaTimerRef.current) clearTimeout(carinaTimerRef.current); };
+  }, [formData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -73,6 +114,26 @@ function VitalsPageContent() {
 
     if (result.success) {
       setSuccess(true);
+
+      window.dispatchEvent(new CustomEvent('carina:analyze-vitals', {
+        detail: {
+          patient_id: patientId,
+          encounter_id: encounterId,
+          vitals: {
+            blood_pressure_systolic: formData.blood_pressure_systolic || null,
+            blood_pressure_diastolic: formData.blood_pressure_diastolic || null,
+            pulse_rate: formData.pulse_rate || null,
+            respiratory_rate: formData.respiratory_rate || null,
+            temperature: formData.temperature || null,
+            oxygen_saturation: formData.oxygen_saturation || null,
+            height: formData.height || null,
+            weight: formData.weight || null,
+          },
+        },
+      }));
+
+      window.dispatchEvent(new Event('carina:open'));
+
       setFormData({
         blood_pressure_systolic: '',
         blood_pressure_diastolic: '',
@@ -232,6 +293,8 @@ function VitalsPageContent() {
         </button>
       </form>
 
+      <VitalsAnalysis vitals={formData} />
+
       <div className="card mt-8">
         <h2 className="text-subheading text-[#0F172A] mb-4">Recent Vital Signs</h2>
 
@@ -250,19 +313,22 @@ function VitalsPageContent() {
             <table className="table w-full">
               <thead>
                 <tr>
-                  <th className="text-small font-medium text-[#64748B] text-left">Patient ID</th>
+                  <th className="text-small font-medium text-[#64748B] text-left">Patient</th>
                   <th className="text-small font-medium text-[#64748B] text-left">Date</th>
                   <th className="text-small font-medium text-[#64748B] text-left">BP</th>
                   <th className="text-small font-medium text-[#64748B] text-left">Pulse</th>
                   <th className="text-small font-medium text-[#64748B] text-left">Temp</th>
                   <th className="text-small font-medium text-[#64748B] text-left">O2 Sat</th>
-                  <th className="text-small font-medium text-[#64748B] text-left">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {recentRecords.map((record) => (
                   <tr key={record.id}>
-                    <td className="text-body text-[#0F172A]">{record.patient_id}</td>
+                    <td className="text-body text-[#0F172A]">
+                      {record.patient?.last_name}, {record.patient?.first_name}
+                      <br />
+                      <span className="text-small text-[#94A3B8]">{record.patient?.university_id || '—'}</span>
+                    </td>
                     <td className="text-body text-[#334155]">
                       {new Date(record.recorded_at).toLocaleDateString()}
                     </td>
@@ -285,11 +351,6 @@ function VitalsPageContent() {
                       {record.oxygen_saturation != null
                         ? `${record.oxygen_saturation}%`
                         : <span className="badge-neutral">N/A</span>}
-                    </td>
-                    <td>
-                      <a href={`/vitals/${record.id}`} className="text-small text-[#334155] hover:text-[#0F172A] underline">
-                        View
-                      </a>
                     </td>
                   </tr>
                 ))}

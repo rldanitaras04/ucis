@@ -42,13 +42,12 @@ export async function issueClearance(data: {
       .insert({
         patient_id: data.patient_id,
         encounter_id: data.encounter_id || null,
-        issued_by: user.profile?.id || user.id,
+        issued_by: user.id,
         clearance_type: data.clearance_type,
         control_number: generateControlNumber(),
         issue_date: new Date().toISOString(),
         expiry_date: data.expiry_date || null,
         status: 'active',
-        created_at: new Date().toISOString(),
       })
       .select()
       .single();

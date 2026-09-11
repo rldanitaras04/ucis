@@ -8,19 +8,24 @@ import CarinaInput from './CarinaInput';
 import CarinaSuggestions from './CarinaSuggestions';
 import CarinaEmptyState from './CarinaEmptyState';
 import CarinaError from './CarinaError';
+import CarinaVitalsAnalysis from './CarinaVitalsAnalysis';
+import CarinaFBSAnalysis from './CarinaFBSAnalysis';
 
 interface CarinaPanelProps {
   isOpen: boolean;
   onClose: () => void;
   roles: string[];
   userName?: string;
+  userAvatarUrl?: string | null;
 }
 
-export default function CarinaPanel({ isOpen, onClose, roles, userName }: CarinaPanelProps) {
+export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvatarUrl }: CarinaPanelProps) {
   const [messages, setMessages] = useState<CarinaMessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toolResults, setToolResults] = useState<CarinaToolCallExecution[]>([]);
+  const [vitalsData, setVitalsData] = useState<Record<string, string | null> | null>(null);
+  const [fbsData, setFbsData] = useState<Record<string, string | null> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,6 +85,32 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName }: Carina
     }
   }, [messages, handleSend]);
 
+  useEffect(() => {
+    const handleAnalyzeVitals = (e: CustomEvent) => {
+      setVitalsData(e.detail.vitals);
+    };
+    const handleClearVitals = () => {
+      setVitalsData(null);
+    };
+    const handleAnalyzeFBS = (e: CustomEvent) => {
+      setFbsData(e.detail.fbs);
+    };
+    const handleClearFBS = () => {
+      setFbsData(null);
+    };
+
+    window.addEventListener('carina:analyze-vitals', handleAnalyzeVitals as EventListener);
+    window.addEventListener('carina:clear-vitals', handleClearVitals);
+    window.addEventListener('carina:analyze-fbs', handleAnalyzeFBS as EventListener);
+    window.addEventListener('carina:clear-fbs', handleClearFBS);
+    return () => {
+      window.removeEventListener('carina:analyze-vitals', handleAnalyzeVitals as EventListener);
+      window.removeEventListener('carina:clear-vitals', handleClearVitals);
+      window.removeEventListener('carina:analyze-fbs', handleAnalyzeFBS as EventListener);
+      window.removeEventListener('carina:clear-fbs', handleClearFBS);
+    };
+  }, []);
+
   if (!isOpen) return null;
 
   return (
@@ -97,13 +128,20 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName }: Carina
         <CarinaError message={error} onDismiss={() => setError(null)} onRetry={handleRetry} />
       )}
 
-      {messages.length === 0 ? (
-        <CarinaEmptyState userName={userName} />
-      ) : (
-        <CarinaMessageList messages={messages} isLoading={isLoading} toolResults={toolResults} />
+      {(vitalsData || fbsData) && (
+        <div className="flex-1 overflow-y-auto px-2 py-4">
+          {vitalsData && <CarinaVitalsAnalysis vitals={vitalsData} />}
+          {fbsData && <CarinaFBSAnalysis fbs={fbsData} />}
+        </div>
       )}
 
-      {messages.length === 0 && (
+      {!vitalsData && !fbsData && messages.length === 0 ? (
+        <CarinaEmptyState userName={userName} />
+      ) : (
+        <CarinaMessageList messages={messages} isLoading={isLoading} toolResults={toolResults} userAvatarUrl={userAvatarUrl} />
+      )}
+
+      {messages.length === 0 && !vitalsData && !fbsData && (
         <CarinaSuggestions roles={roles} onSelect={handleSend} />
       )}
 

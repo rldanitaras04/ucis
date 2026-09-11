@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { callNextPatient, startQueueService, completeQueueService, cancelQueueEntry, addToQueue, fetchQueue, fetchClinicsList, fetchServices } from './actions';
+import { callNextPatient, startQueueService, completeQueueService, cancelQueueEntry, addToQueue, fetchQueue, fetchServices } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+import { DEFAULT_CLINIC_ID } from '@/lib/config';
 import Link from 'next/link';
 
 interface QueueEntry {
@@ -18,14 +19,9 @@ interface QueueEntry {
   started_at?: string;
   completed_at?: string;
   encounter_id?: string;
-  patient?: { first_name: string; last_name: string; patient_id: string };
+  patient?: { first_name: string; last_name: string; id: string; university_id?: string };
   clinic?: { name: string };
   service?: { name: string };
-}
-
-interface Clinic {
-  id: string;
-  name: string;
 }
 
 interface ClinicService {
@@ -42,9 +38,8 @@ export default function QueuePage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
-  const [clinics, setClinics] = useState<Clinic[]>([]);
   const [services, setServices] = useState<ClinicService[]>([]);
-  const [formData, setFormData] = useState({ patient_id: '', clinic_id: '', service_id: '' });
+  const [formData, setFormData] = useState({ patient_id: '', service_id: '' });
 
   const loadQueue = async () => {
     const result = await fetchQueue();
@@ -56,15 +51,8 @@ export default function QueuePage() {
     setLoading(false);
   };
 
-  const loadClinics = async () => {
-    const result = await fetchClinicsList();
-    if (result.success) {
-      setClinics(result.data);
-    }
-  };
-
-  const loadServices = async (clinicId: string) => {
-    const result = await fetchServices(clinicId);
+  const loadServices = async () => {
+    const result = await fetchServices(DEFAULT_CLINIC_ID);
     if (result.success) {
       setServices(result.data);
     }
@@ -72,14 +60,8 @@ export default function QueuePage() {
 
   useEffect(() => {
     loadQueue();
-    loadClinics();
+    loadServices();
   }, []);
-
-  useEffect(() => {
-    if (formData.clinic_id) {
-      loadServices(formData.clinic_id);
-    }
-  }, [formData.clinic_id]);
 
   const handleAddToQueue = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,14 +71,14 @@ export default function QueuePage() {
 
     const result = await addToQueue({
       patient_id: formData.patient_id,
-      clinic_id: formData.clinic_id,
+      clinic_id: DEFAULT_CLINIC_ID,
       service_id: formData.service_id,
     });
 
     if (result.success) {
       setSuccess('Patient added to queue');
       setShowAddForm(false);
-      setFormData({ patient_id: '', clinic_id: '', service_id: '' });
+      setFormData({ patient_id: '', service_id: '' });
       await loadQueue();
     } else {
       setError(result.error || 'Failed to add to queue');
@@ -197,7 +179,7 @@ export default function QueuePage() {
 
       {showAddForm && (
         <form onSubmit={handleAddToQueue} className="card mb-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <PatientSearch
               id="queue-patient-search"
               label="Patient"
@@ -206,15 +188,8 @@ export default function QueuePage() {
               onChange={(patientId) => setFormData({ ...formData, patient_id: patientId })}
             />
             <div>
-              <label htmlFor="clinic_id" className="label">Clinic *</label>
-              <select id="clinic_id" required value={formData.clinic_id} onChange={(e) => setFormData({ ...formData, clinic_id: e.target.value, service_id: '' })} className="select-field">
-                <option value="">Select clinic</option>
-                {clinics.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div>
               <label htmlFor="service_id" className="label">Service *</label>
-              <select id="service_id" required value={formData.service_id} onChange={(e) => setFormData({ ...formData, service_id: e.target.value })} className="select-field" disabled={!formData.clinic_id}>
+              <select id="service_id" required value={formData.service_id} onChange={(e) => setFormData({ ...formData, service_id: e.target.value })} className="select-field">
                 <option value="">Select service</option>
                 {services.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
@@ -262,7 +237,7 @@ export default function QueuePage() {
                   <td>
                     {entry.patient?.last_name}, {entry.patient?.first_name}
                     <br />
-                    <span className="text-small text-[#94A3B8]">{entry.patient?.patient_id}</span>
+                    <span className="text-small text-[#94A3B8]">{entry.patient?.university_id || '—'}</span>
                   </td>
                   <td>{entry.clinic?.name}</td>
                   <td>{entry.service?.name}</td>

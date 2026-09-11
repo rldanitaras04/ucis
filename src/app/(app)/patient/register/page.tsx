@@ -1,62 +1,50 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { registerPatient, fetchActiveClinics, fetchClinicServices, checkInPatient } from '../actions';
+import { registerPatient } from '../actions';
+import { fetchSystemConfig } from '@/app/(app)/admin/library/actions';
 import PatientSearch from '@/components/PatientSearch';
 import { PatientSearchResult } from '@/app/(app)/actions/patients';
 import Link from 'next/link';
 
-type Step = 'search' | 'register' | 'clinic' | 'confirm';
+type Step = 'search' | 'register' | 'confirm';
 
 export default function CheckInPage() {
   const [step, setStep] = useState<Step>('search');
   const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(null);
-  const [clinics, setClinics] = useState<{ id: string; name: string }[]>([]);
-  const [services, setServices] = useState<{ id: string; name: string }[]>([]);
-  const [selectedClinicId, setSelectedClinicId] = useState('');
-  const [selectedServiceId, setSelectedServiceId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ queueNumber: number } | null>(null);
+  const [success, setSuccess] = useState<{ id: string } | null>(null);
+  const [patientTypes, setPatientTypes] = useState<{ config_value: string; label: string }[]>([]);
+
+  useEffect(() => {
+    fetchSystemConfig('patient_type').then(r => {
+      if (r.success) setPatientTypes(r.data);
+    });
+  }, []);
 
   const [regData, setRegData] = useState({
     first_name: '',
+    middle_name: '',
     last_name: '',
+    suffix: '',
     email: '',
-    phone: '',
+    contact_number: '',
     date_of_birth: '',
-    sex: '',
+    gender: '',
     blood_type: '',
     allergies: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
     university_id: '',
-    user_type: 'student',
+    patient_type: 'student',
+    address: '',
   });
-
-  useEffect(() => {
-    const loadClinics = async () => {
-      const result = await fetchActiveClinics();
-      if (result.success) setClinics(result.data);
-    };
-    loadClinics();
-  }, []);
-
-  useEffect(() => {
-    if (selectedClinicId) {
-      const loadServices = async () => {
-        const result = await fetchClinicServices(selectedClinicId);
-        if (result.success) setServices(result.data);
-        else setServices([]);
-      };
-      loadServices();
-    }
-  }, [selectedClinicId]);
 
   const handlePatientFound = (patientId: string, patient?: PatientSearchResult) => {
     if (patient) {
       setSelectedPatient(patient);
-      setStep('clinic');
+      setStep('confirm');
       setError(null);
     }
   };
@@ -74,53 +62,27 @@ export default function CheckInPage() {
 
     const result = await registerPatient({
       first_name: regData.first_name,
+      middle_name: regData.middle_name || undefined,
       last_name: regData.last_name,
+      suffix: regData.suffix || undefined,
       email: regData.email || undefined,
-      phone: regData.phone || undefined,
-      date_of_birth: regData.date_of_birth || undefined,
-      sex: regData.sex,
+      contact_number: regData.contact_number || undefined,
+      date_of_birth: regData.date_of_birth,
+      gender: regData.gender,
       blood_type: regData.blood_type || undefined,
       allergies: regData.allergies || undefined,
       emergency_contact_name: regData.emergency_contact_name || undefined,
       emergency_contact_phone: regData.emergency_contact_phone || undefined,
       university_id: regData.university_id || undefined,
-      user_type: regData.user_type,
+      patient_type: regData.patient_type,
+      address: regData.address || undefined,
     });
 
     if (result.success) {
-      setSelectedPatient({
-        id: result.id,
-        patient_id: '',
-        first_name: regData.first_name,
-        last_name: regData.last_name,
-        sex: regData.sex,
-      });
-      setStep('clinic');
-    } else {
-      setError(result.error || 'Registration failed');
-    }
-    setLoading(false);
-  };
-
-  const handleCheckIn = async () => {
-    if (!selectedPatient || !selectedClinicId || !selectedServiceId) {
-      setError('Please select a clinic and service');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-
-    const result = await checkInPatient({
-      patient_id: selectedPatient.id,
-      clinic_id: selectedClinicId,
-      service_id: selectedServiceId,
-    });
-
-    if (result.success) {
-      setSuccess({ queueNumber: result.queueNumber });
+      setSuccess({ id: result.id });
       setStep('confirm');
     } else {
-      setError(result.error || 'Check-in failed');
+      setError(result.error || 'Registration failed');
     }
     setLoading(false);
   };
@@ -128,18 +90,17 @@ export default function CheckInPage() {
   const steps: { key: Step; label: string }[] = [
     { key: 'search', label: 'Find Patient' },
     { key: 'register', label: 'Register' },
-    { key: 'clinic', label: 'Select Clinic' },
-    { key: 'confirm', label: 'Confirm' },
+    { key: 'confirm', label: 'Done' },
   ];
 
   const visibleSteps = step === 'register'
-    ? steps.filter(s => s.key === 'search' || s.key === 'register' || s.key === 'clinic' || s.key === 'confirm')
+    ? steps
     : steps.filter(s => s.key !== 'register');
 
   return (
     <div className="page-container max-w-2xl mx-auto">
-      <h1 className="text-heading text-[#0F172A] mb-2">Patient Check-In</h1>
-      <p className="text-body text-[#64748B] mb-6">Search for an existing patient or register a new one, then add them to the queue.</p>
+      <h1 className="text-heading text-[#0F172A] mb-2">Patient Registration</h1>
+      <p className="text-body text-[#64748B] mb-6">Search for an existing patient or register a new one.</p>
 
       {/* Step Indicator */}
       <div className="flex items-center gap-2 mb-8">
@@ -176,7 +137,7 @@ export default function CheckInPage() {
             label="Search Patient"
             value={selectedPatient?.id || ''}
             onChange={handlePatientFound}
-            placeholder="Search by name or patient ID..."
+            placeholder="Search by name..."
           />
           <div className="text-center">
             <span className="text-small text-[#64748B]">or</span>
@@ -187,10 +148,12 @@ export default function CheckInPage() {
         </div>
       )}
 
-      {/* Step 1b: Register */}
+      {/* Step 2: Register */}
       {step === 'register' && (
         <form onSubmit={handleRegisterSubmit} className="card space-y-4">
           <h2 className="text-subheading text-[#0F172A]">New Patient Registration</h2>
+
+          {/* Name */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="first_name" className="label">First Name *</label>
@@ -201,19 +164,31 @@ export default function CheckInPage() {
               <input id="last_name" type="text" required value={regData.last_name} onChange={(e) => setRegData({ ...regData, last_name: e.target.value })} className="input-field" />
             </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="middle_name" className="label">Middle Name</label>
+              <input id="middle_name" type="text" value={regData.middle_name} onChange={(e) => setRegData({ ...regData, middle_name: e.target.value })} className="input-field" />
+            </div>
+            <div>
+              <label htmlFor="suffix" className="label">Suffix</label>
+              <input id="suffix" type="text" value={regData.suffix} onChange={(e) => setRegData({ ...regData, suffix: e.target.value })} className="input-field" placeholder="Jr., Sr., III, etc." />
+            </div>
+          </div>
+
+          {/* Demographics */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label htmlFor="sex" className="label">Sex *</label>
-              <select id="sex" required value={regData.sex} onChange={(e) => setRegData({ ...regData, sex: e.target.value })} className="select-field">
+              <label htmlFor="gender" className="label">Gender *</label>
+              <select id="gender" required value={regData.gender} onChange={(e) => setRegData({ ...regData, gender: e.target.value })} className="select-field">
                 <option value="">Select</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-                <option value="O">Other</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
               </select>
             </div>
             <div>
-              <label htmlFor="date_of_birth" className="label">Date of Birth</label>
-              <input id="date_of_birth" type="date" value={regData.date_of_birth} onChange={(e) => setRegData({ ...regData, date_of_birth: e.target.value })} className="input-field" />
+              <label htmlFor="date_of_birth" className="label">Date of Birth *</label>
+              <input id="date_of_birth" type="date" required value={regData.date_of_birth} onChange={(e) => setRegData({ ...regData, date_of_birth: e.target.value })} className="input-field" />
             </div>
             <div>
               <label htmlFor="blood_type" className="label">Blood Type</label>
@@ -226,115 +201,94 @@ export default function CheckInPage() {
               </select>
             </div>
           </div>
+
+          {/* Contact */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="email" className="label">Email</label>
               <input id="email" type="email" value={regData.email} onChange={(e) => setRegData({ ...regData, email: e.target.value })} className="input-field" />
             </div>
             <div>
-              <label htmlFor="phone" className="label">Phone</label>
-              <input id="phone" type="tel" value={regData.phone} onChange={(e) => setRegData({ ...regData, phone: e.target.value })} className="input-field" />
+              <label htmlFor="contact_number" className="label">Contact Number</label>
+              <input id="contact_number" type="tel" value={regData.contact_number} onChange={(e) => setRegData({ ...regData, contact_number: e.target.value })} className="input-field" />
             </div>
           </div>
+
+          {/* Address */}
+          <div>
+            <label htmlFor="address" className="label">Address</label>
+            <textarea id="address" rows={2} value={regData.address} onChange={(e) => setRegData({ ...regData, address: e.target.value })} className="input-field" />
+          </div>
+
+          {/* Type & ID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="user_type" className="label">Type *</label>
-              <select id="user_type" required value={regData.user_type} onChange={(e) => setRegData({ ...regData, user_type: e.target.value })} className="select-field">
-                <option value="student">Student</option>
-                <option value="employee">Employee</option>
-                <option value="dependent">Dependent</option>
+              <label htmlFor="patient_type" className="label">Patient Type *</label>
+              <select id="patient_type" required value={regData.patient_type} onChange={(e) => setRegData({ ...regData, patient_type: e.target.value })} className="select-field">
+                {patientTypes.map(pt => <option key={pt.config_value} value={pt.config_value}>{pt.label}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="university_id" className="label">University ID</label>
+              <label htmlFor="university_id" className="label">University/Employee ID</label>
               <input id="university_id" type="text" value={regData.university_id} onChange={(e) => setRegData({ ...regData, university_id: e.target.value })} className="input-field" />
             </div>
           </div>
+
+          {/* Emergency & Allergies */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="emergency_contact_name" className="label">Emergency Contact Name</label>
+              <input id="emergency_contact_name" type="text" value={regData.emergency_contact_name} onChange={(e) => setRegData({ ...regData, emergency_contact_name: e.target.value })} className="input-field" />
+            </div>
+            <div>
+              <label htmlFor="emergency_contact_phone" className="label">Emergency Contact Phone</label>
+              <input id="emergency_contact_phone" type="tel" value={regData.emergency_contact_phone} onChange={(e) => setRegData({ ...regData, emergency_contact_phone: e.target.value })} className="input-field" />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="allergies" className="label">Allergies</label>
+            <textarea id="allergies" rows={2} value={regData.allergies} onChange={(e) => setRegData({ ...regData, allergies: e.target.value })} className="input-field" placeholder="List any known allergies" />
+          </div>
+
           <div className="flex gap-2">
             <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? 'Registering...' : 'Register & Continue'}
+              {loading ? 'Registering...' : 'Register Patient'}
             </button>
             <button type="button" onClick={() => setStep('search')} className="btn-secondary">Back</button>
           </div>
         </form>
       )}
 
-      {/* Step 2: Clinic & Service */}
-      {step === 'clinic' && (
-        <div className="card space-y-4">
-          <h2 className="text-subheading text-[#0F172A]">Select Clinic & Service</h2>
-
-          <div className="bg-[#F0F9FF] border border-[#BAE6FD] rounded-lg px-4 py-3 text-sm text-[#0369A1]">
-            Patient: <strong>{selectedPatient?.last_name}, {selectedPatient?.first_name}</strong>
-            {selectedPatient?.patient_id && <span className="ml-2 text-[#0284C7]">({selectedPatient.patient_id})</span>}
-          </div>
-
-          <div>
-            <label htmlFor="clinic" className="label">Clinic *</label>
-            <select
-              id="clinic"
-              required
-              value={selectedClinicId}
-              onChange={(e) => { setSelectedClinicId(e.target.value); setSelectedServiceId(''); }}
-              className="select-field"
-            >
-              <option value="">Select clinic</option>
-              {clinics.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="service" className="label">Service *</label>
-            <select
-              id="service"
-              required
-              value={selectedServiceId}
-              onChange={(e) => setSelectedServiceId(e.target.value)}
-              className="select-field"
-              disabled={!selectedClinicId}
-            >
-              <option value="">Select service</option>
-              {services.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              onClick={handleCheckIn}
-              disabled={loading || !selectedClinicId || !selectedServiceId}
-              className="btn-primary"
-            >
-              {loading ? 'Checking in...' : 'Add to Queue'}
-            </button>
-            <button onClick={() => setStep('search')} className="btn-secondary">Back</button>
-          </div>
-        </div>
-      )}
-
       {/* Step 3: Confirmation */}
-      {step === 'confirm' && success && (
+      {step === 'confirm' && (
         <div className="card text-center space-y-4">
           <div className="w-16 h-16 bg-[#ECFDF5] rounded-full flex items-center justify-center mx-auto">
             <span className="text-3xl text-[#059669]">✓</span>
           </div>
-          <h2 className="text-subheading text-[#0F172A]">Check-In Complete</h2>
+          <h2 className="text-subheading text-[#0F172A]">
+            {success ? 'Registration Complete' : 'Patient Found'}
+          </h2>
           <p className="text-body text-[#64748B]">
-            <strong>{selectedPatient?.last_name}, {selectedPatient?.first_name}</strong> has been added to the queue.
+            {success
+              ? <>Patient <strong>{regData.last_name}, {regData.first_name}</strong> has been registered.</>
+              : <>Patient <strong>{selectedPatient?.last_name}, {selectedPatient?.first_name}</strong> is already registered.</>
+            }
           </p>
-          <div className="text-5xl font-bold text-[#1E40AF] tabular-nums my-4">
-            #{success.queueNumber}
-          </div>
-          <p className="text-small text-[#64748B]">Queue Number</p>
           <div className="flex gap-2 justify-center pt-4">
-            <Link href="/queue" className="btn-primary">View Queue</Link>
+            <Link href="/queue" className="btn-primary">Go to Queue</Link>
             <button onClick={() => {
               setStep('search');
               setSelectedPatient(null);
-              setSelectedClinicId('');
-              setSelectedServiceId('');
               setSuccess(null);
               setError(null);
-            }} className="btn-secondary">Check In Another</button>
+              setRegData({
+                first_name: '', middle_name: '', last_name: '', suffix: '',
+                email: '', contact_number: '', date_of_birth: '', gender: '',
+                blood_type: '', allergies: '', emergency_contact_name: '',
+                emergency_contact_phone: '', university_id: '', patient_type: 'student',
+                address: '',
+              });
+            }} className="btn-secondary">Register Another</button>
           </div>
         </div>
       )}

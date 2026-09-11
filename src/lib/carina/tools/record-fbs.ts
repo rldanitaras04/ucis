@@ -48,7 +48,7 @@ export const recordFbsTool: CarinaToolDefinition = {
       .insert({
         patient_id: args.patient_id,
         encounter_id: args.encounter_id || null,
-        recorded_by: ctx.profile?.id || ctx.userId,
+        recorded_by: ctx.userId,
         fbs_value: fbsValue,
         fasting_hours: args.fasting_hours ? parseFloat(args.fasting_hours as string) : null,
         notes: args.notes || null,

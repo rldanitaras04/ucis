@@ -12,7 +12,7 @@ export async function fetchQueue(): Promise<{ success: true; data: any[] } | { s
 
     const { data, error } = await supabase
       .from('queue_entries')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id), clinic:clinics!clinic_id(name), service:clinic_services!service_id(name), encounter_id')
+      .select('*, patient:patient_profiles!patient_id(first_name, last_name, id, university_id), clinic:clinics!clinic_id(name), service:clinic_services!service_id(name), encounter_id')
       .eq('queue_date', today)
       .order('queue_number', { ascending: true });
 

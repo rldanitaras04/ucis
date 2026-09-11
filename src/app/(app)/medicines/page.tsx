@@ -230,7 +230,6 @@ export default function MedicinesPage() {
                   <option value="capsule">Capsule</option>
                   <option value="syrup">Syrup</option>
                   <option value="injection">Injection</option>
-                  <option value="cream">Cream</option>
                   <option value="ointment">Ointment</option>
                   <option value="drops">Drops</option>
                   <option value="inhaler">Inhaler</option>

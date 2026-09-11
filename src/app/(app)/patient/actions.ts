@@ -6,41 +6,42 @@ import { revalidatePath } from 'next/cache';
 
 export async function registerPatient(data: {
   first_name: string;
+  middle_name?: string;
   last_name: string;
+  suffix?: string;
   email?: string;
-  phone?: string;
-  date_of_birth?: string;
-  sex: string;
+  contact_number?: string;
+  date_of_birth: string;
+  gender: string;
   blood_type?: string;
   allergies?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   university_id?: string;
-  user_type: string;
+  patient_type: string;
+  address?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
-    const { data: patient, error } = await supabase
-      .from('patient_profiles')
-      .insert({
-        first_name: data.first_name,
-        last_name: data.last_name,
-        email: data.email || null,
-        phone: data.phone || null,
-        date_of_birth: data.date_of_birth || null,
-        sex: data.sex,
-        blood_type: data.blood_type || null,
-        allergies: data.allergies || null,
-        emergency_contact_name: data.emergency_contact_name || null,
-        emergency_contact_phone: data.emergency_contact_phone || null,
-        university_id: data.university_id || null,
-        user_type: data.user_type,
-        status: 'active',
-      })
-      .select()
-      .single();
+    const { data: patientId, error } = await supabase.rpc('register_patient', {
+      p_first_name: data.first_name,
+      p_middle_name: data.middle_name || null,
+      p_last_name: data.last_name,
+      p_suffix: data.suffix || null,
+      p_date_of_birth: data.date_of_birth,
+      p_gender: data.gender,
+      p_patient_type: data.patient_type,
+      p_email: data.email || null,
+      p_contact_number: data.contact_number || null,
+      p_blood_type: data.blood_type || null,
+      p_allergies: data.allergies || null,
+      p_emergency_contact_name: data.emergency_contact_name || null,
+      p_emergency_contact_phone: data.emergency_contact_phone || null,
+      p_university_id: data.university_id || null,
+      p_address: data.address || null,
+    });
 
     if (error) throw error;
 
@@ -48,12 +49,93 @@ export async function registerPatient(data: {
       p_actor: user.id,
       p_action: 'patient.register',
       p_resource_type: 'patient_profiles',
-      p_resource_id: patient.id,
+      p_resource_id: patientId,
       p_outcome: 'success'
     });
 
     revalidatePath('/patient');
-    return { success: true, id: patient.id };
+    return { success: true, id: patientId };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function fetchPatientsAdmin(search?: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+  try {
+    await requireAnyRole('admin', 'super_admin', 'clinic_staff');
+    const supabase = createServerSupabaseClient();
+
+    let q = supabase
+      .from('patient_profiles')
+      .select('id, first_name, last_name, email, contact_number, gender, patient_type, status, date_of_birth')
+      .order('last_name', { ascending: true });
+
+    if (search && search.trim().length > 0) {
+      q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
+    }
+
+    const { data, error } = await q;
+    if (error) throw error;
+    return { success: true, data: data || [] };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function fetchPatientById(patientId: string): Promise<{ success: true; data: any } | { success: false; error: string }> {
+  try {
+    await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'doctor', 'dentist', 'nurse');
+    const supabase = createServerSupabaseClient();
+
+    const { data, error } = await supabase
+      .from('patient_profiles')
+      .select('*')
+      .eq('id', patientId)
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
+export async function updatePatient(patientId: string, data: {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  contact_number?: string;
+  date_of_birth?: string;
+  gender?: string;
+  blood_type?: string;
+  allergies?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  patient_type?: string;
+  status?: string;
+}): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff');
+    const supabase = createServerSupabaseClient();
+
+    const { error } = await supabase
+      .from('patient_profiles')
+      .update(data)
+      .eq('id', patientId);
+
+    if (error) throw error;
+
+    await supabase.rpc('write_audit_log', {
+      p_actor: user.id,
+      p_action: 'patient.update',
+      p_resource_type: 'patient_profiles',
+      p_resource_id: patientId,
+      p_outcome: 'success'
+    });
+
+    revalidatePath('/admin/patients');
+    revalidatePath(`/admin/patients/${patientId}`);
+    return { success: true };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -159,12 +241,20 @@ export async function fetchPatientPortalData(): Promise<{
     const user = await requireAuth();
     const supabase = createServerSupabaseClient();
 
-    // Get patient profile
-    const { data: patientData, error: patientError } = await supabase
-      .from('patient_profiles')
-      .select('*')
+    // Get user_profile_id first, then patient profile
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('id')
       .eq('auth_user_id', user.id)
       .single();
+
+    const { data: patientData, error: patientError } = userProfile
+      ? await supabase
+          .from('patient_profiles')
+          .select('*')
+          .eq('user_profile_id', userProfile.id)
+          .single()
+      : { data: null, error: { message: 'No user profile found' } };
 
     if (patientError || !patientData) {
       return {
@@ -233,11 +323,18 @@ export async function fetchPatientClearances(): Promise<{
     const user = await requireAuth();
     const supabase = createServerSupabaseClient();
 
-    // Get patient profile
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!userProfile) return { success: true, data: [] };
+
     const { data: patientData } = await supabase
       .from('patient_profiles')
       .select('id')
-      .eq('auth_user_id', user.id)
+      .eq('user_profile_id', userProfile.id)
       .single();
 
     if (!patientData) {
@@ -265,11 +362,18 @@ export async function fetchPatientReferrals(): Promise<{
     const user = await requireAuth();
     const supabase = createServerSupabaseClient();
 
-    // Get patient profile
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('auth_user_id', user.id)
+      .single();
+
+    if (!userProfile) return { success: true, data: [] };
+
     const { data: patientData } = await supabase
       .from('patient_profiles')
       .select('id')
-      .eq('auth_user_id', user.id)
+      .eq('user_profile_id', userProfile.id)
       .single();
 
     if (!patientData) {

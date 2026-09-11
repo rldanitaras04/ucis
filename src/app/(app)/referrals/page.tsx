@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createReferral, acceptReferral, rejectReferral, fetchClinics, fetchReferrals } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+import { DEFAULT_CLINIC_ID } from '@/lib/config';
 
 interface Referral {
   id: string;
@@ -35,7 +36,6 @@ export default function ReferralsPage() {
 
   const [formData, setFormData] = useState({
     patient_id: '',
-    from_clinic_id: '',
     to_clinic_id: '',
     reason: '',
     notes: '',
@@ -69,8 +69,8 @@ export default function ReferralsPage() {
 
     const result = await createReferral({
       patient_id: formData.patient_id,
-      from_clinic_id: formData.from_clinic_id,
-      to_clinic_id: formData.to_clinic_id,
+      from_clinic_id: DEFAULT_CLINIC_ID,
+      to_clinic_id: formData.to_clinic_id || undefined,
       reason: formData.reason,
       notes: formData.notes || undefined,
     });
@@ -78,7 +78,7 @@ export default function ReferralsPage() {
     if (result.success) {
       setSuccess('Referral created successfully');
       setShowForm(false);
-      setFormData({ patient_id: '', from_clinic_id: '', to_clinic_id: '', reason: '', notes: '' });
+      setFormData({ patient_id: '', to_clinic_id: '', reason: '', notes: '' });
       await loadReferrals();
     } else {
       setError(result.error || 'Failed to create referral');
@@ -171,30 +171,14 @@ export default function ReferralsPage() {
               onChange={(patientId) => setFormData({ ...formData, patient_id: patientId })}
             />
             <div>
-              <label htmlFor="from_clinic_id" className="label">From Clinic *</label>
-              <select
-                id="from_clinic_id"
-                value={formData.from_clinic_id}
-                onChange={(e) => setFormData({ ...formData, from_clinic_id: e.target.value })}
-                required
-                className="select-field"
-              >
-                <option value="">Select clinic</option>
-                {clinics.map((clinic) => (
-                  <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="to_clinic_id" className="label">To Clinic *</label>
+              <label htmlFor="to_clinic_id" className="label">To Clinic</label>
               <select
                 id="to_clinic_id"
                 value={formData.to_clinic_id}
                 onChange={(e) => setFormData({ ...formData, to_clinic_id: e.target.value })}
-                required
                 className="select-field"
               >
-                <option value="">Select clinic</option>
+                <option value="">Select clinic (optional)</option>
                 {clinics.map((clinic) => (
                   <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
                 ))}

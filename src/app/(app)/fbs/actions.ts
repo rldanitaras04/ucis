@@ -10,7 +10,7 @@ export async function fetchFBSRecords(): Promise<{ success: true; data: any[] } 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('fbs_records')
-      .select('id, patient_id, recorded_at, fbs_value, fasting_hours, notes')
+      .select('id, patient_id, recorded_at, fbs_value, fasting_hours, notes, patient_profiles!patient_id(university_id, first_name, last_name)')
       .order('recorded_at', { ascending: false })
       .limit(10);
     if (error) throw error;
@@ -45,7 +45,7 @@ export async function recordFBS(data: {
       .insert({
         patient_id: data.patient_id,
         encounter_id: data.encounter_id || null,
-        recorded_by: user.profile?.id || user.id,
+        recorded_by: user.id,
         fbs_value: data.fbs_value,
         fasting_hours: data.fasting_hours || null,
         notes: data.notes || null,

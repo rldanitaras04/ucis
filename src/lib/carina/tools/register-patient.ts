@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export const registerPatientTool: CarinaToolDefinition = {
   name: 'register_patient',
-  description: 'Register a new patient in the system. Requires first name, last name, and sex.',
+  description: 'Register a new patient in the system. Requires first name, last name, and gender.',
   allowedRoles: ['clinic_staff', 'admin', 'super_admin'],
   inputSchema: {
     type: 'object',
@@ -20,18 +20,18 @@ export const registerPatientTool: CarinaToolDefinition = {
         type: 'string',
         description: 'Patient email address',
       },
-      phone: {
+      contact_number: {
         type: 'string',
-        description: 'Patient phone number',
+        description: 'Patient contact number',
       },
       date_of_birth: {
         type: 'string',
         description: 'Patient date of birth (YYYY-MM-DD)',
       },
-      sex: {
+      gender: {
         type: 'string',
-        description: 'Patient sex (male/female)',
-        enum: ['male', 'female'],
+        description: 'Patient gender (male/female/other)',
+        enum: ['male', 'female', 'other'],
       },
       blood_type: {
         type: 'string',
@@ -53,35 +53,32 @@ export const registerPatientTool: CarinaToolDefinition = {
         type: 'string',
         description: 'University or employee ID',
       },
-      user_type: {
+      patient_type: {
         type: 'string',
         description: 'Patient type',
         enum: ['student', 'faculty', 'non_teaching_staff', 'walk_in'],
       },
     },
-    required: ['first_name', 'last_name', 'sex'],
+    required: ['first_name', 'last_name', 'gender'],
   },
   handler: async (args, ctx) => {
     const supabase = createServerSupabaseClient();
 
     const { data: patient, error } = await supabase
-      .from('patient_profiles')
-      .insert({
-        first_name: args.first_name,
-        last_name: args.last_name,
-        email: args.email || null,
-        phone: args.phone || null,
-        date_of_birth: args.date_of_birth || null,
-        sex: args.sex,
-        blood_type: args.blood_type || null,
-        allergies: args.allergies || null,
-        emergency_contact_name: args.emergency_contact_name || null,
-        emergency_contact_phone: args.emergency_contact_phone || null,
-        university_id: args.university_id || null,
-        user_type: args.user_type || 'walk_in',
-        status: 'active',
+      .rpc('register_patient', {
+        p_first_name: args.first_name,
+        p_last_name: args.last_name,
+        p_date_of_birth: args.date_of_birth || null,
+        p_gender: args.gender,
+        p_patient_type: args.patient_type || 'walk_in',
+        p_email: args.email || null,
+        p_contact_number: args.contact_number || null,
+        p_blood_type: args.blood_type || null,
+        p_allergies: args.allergies || null,
+        p_emergency_contact_name: args.emergency_contact_name || null,
+        p_emergency_contact_phone: args.emergency_contact_phone || null,
+        p_university_id: args.university_id || null,
       })
-      .select('id, first_name, last_name')
       .single();
 
     if (error) {
@@ -92,15 +89,15 @@ export const registerPatientTool: CarinaToolDefinition = {
       p_actor: ctx.userId,
       p_action: 'carina.register_patient',
       p_resource_type: 'patient_profiles',
-      p_resource_id: patient.id,
+      p_resource_id: patient,
       p_outcome: 'success',
     });
 
     return {
       success: true,
       data: {
-        patientId: patient.id,
-        name: `${patient.first_name} ${patient.last_name}`,
+        patientId: patient,
+        name: `${args.first_name} ${args.last_name}`,
         message: 'Patient registered successfully',
       },
     };
