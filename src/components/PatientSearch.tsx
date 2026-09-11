@@ -164,6 +164,7 @@ export default function PatientSearch({
                 {patient.last_name}, {patient.first_name}
               </div>
               <div className="text-small text-[#64748B] flex gap-3 mt-0.5">
+                {patient.university_id && <span className="font-medium text-[#334155]">{patient.university_id}</span>}
                 {patient.gender && <span>{patient.gender}</span>}
                 {patient.date_of_birth && <span>DOB: {new Date(patient.date_of_birth).toLocaleDateString()}</span>}
                 {patient.blood_type && <span>{patient.blood_type}</span>}

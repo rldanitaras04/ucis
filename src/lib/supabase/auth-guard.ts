@@ -167,5 +167,39 @@ export function handleAuthError(error: any): { success: false; error: string } {
   if (error.message === 'FORBIDDEN') {
     return { success: false, error: 'Insufficient permissions' };
   }
-  return { success: false, error: error.message || 'An error occurred' };
+
+  const msg = error.message || error.error?.message || '';
+
+  if (msg.includes('violates foreign key constraint')) {
+    const match = msg.match(/relation "([^"]+)"/);
+    const table = match ? match[1].replace(/_/g, ' ') : 'related record';
+    if (msg.includes('deleted') || msg.includes('update')) {
+      return { success: false, error: `Cannot modify: this record is referenced by other ${table}. Remove dependent records first.` };
+    }
+    return { success: false, error: `Cannot save: the referenced ${table} does not exist.` };
+  }
+
+  if (msg.includes('violates not-null constraint')) {
+    const match = msg.match(/column "([^"]+)"/);
+    const col = match ? match[1].replace(/_/g, ' ') : 'required field';
+    return { success: false, error: `Please fill in the required field: ${col}.` };
+  }
+
+  if (msg.includes('violates check constraint')) {
+    return { success: false, error: 'The value entered is not valid. Please check your input.' };
+  }
+
+  if (msg.includes('violates unique constraint')) {
+    return { success: false, error: 'This record already exists. Duplicate entries are not allowed.' };
+  }
+
+  if (msg.includes('violates row-level security')) {
+    return { success: false, error: 'You do not have permission to perform this action.' };
+  }
+
+  if (msg.includes('new row') && msg.includes('violates')) {
+    return { success: false, error: 'Could not save the record. Please check all fields and try again.' };
+  }
+
+  return { success: false, error: error.message || 'An unexpected error occurred. Please try again.' };
 }

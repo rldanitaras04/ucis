@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { fetchDashboardStats } from './actions';
+import { fetchDashboardStats, fetchInventoryAlerts } from './actions';
 import {
   Users,
   Queue,
@@ -16,6 +16,7 @@ import {
   Bell,
   FileText,
   ChartBar,
+  Warning,
 } from '@phosphor-icons/react';
 
 interface UserProfile {
@@ -40,14 +41,25 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
     totalPatients: 0,
     todayQueue: 0,
   });
+  const [inventoryAlerts, setInventoryAlerts] = useState<{
+    lowStock: Array<{ medicine_id: string; medicine_name: string; total_stock: number; severity: string }>;
+    nearExpiry: Array<{ medicine_id: string; medicine_name: string; batch_number: string; days_until_expiry: number; severity: string }>;
+    expired: Array<{ medicine_id: string; medicine_name: string; batch_number: string; days_expired: number }>;
+  }>({ lowStock: [], nearExpiry: [], expired: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const result = await fetchDashboardStats();
-        if (result.success) {
-          setStats(result.data);
+        const [statsResult, alertsResult] = await Promise.all([
+          fetchDashboardStats(),
+          fetchInventoryAlerts(),
+        ]);
+        if (statsResult.success) {
+          setStats(statsResult.data);
+        }
+        if (alertsResult.success) {
+          setInventoryAlerts(alertsResult.data);
         }
       } catch {
         // Dashboard load failed silently
@@ -239,6 +251,93 @@ export default function DashboardContent({ userId, roles, profile }: DashboardCo
             icon={<Bell size={20} className="text-[#6B7280]" />}
             href="/notifications"
           />
+        </div>
+      )}
+
+      {/* Inventory Alerts — visible to admin, nurse, clinic_staff */}
+      {(isAdmin || isClinician || isFrontDesk) && (inventoryAlerts.lowStock.length > 0 || inventoryAlerts.nearExpiry.length > 0 || inventoryAlerts.expired.length > 0) && (
+        <div className="mb-8">
+          <h2 className="text-base font-semibold text-[#111827] mb-4">Medicine Inventory Alerts</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Low Stock */}
+            {inventoryAlerts.lowStock.length > 0 && (
+              <div className="bg-white rounded-xl border border-[#FDE68A] overflow-hidden">
+                <div className="px-4 py-3 bg-[#FFFBEB] border-b border-[#FDE68A] flex items-center gap-2">
+                  <Warning size={16} className="text-[#D97706]" />
+                  <span className="text-sm font-semibold text-[#92400E]">Low Stock ({inventoryAlerts.lowStock.length})</span>
+                </div>
+                <div className="divide-y divide-[#F3F4F6] max-h-48 overflow-y-auto">
+                  {inventoryAlerts.lowStock.map((item) => (
+                    <div key={item.medicine_id} className="px-4 py-2.5 flex items-center justify-between">
+                      <span className="text-sm text-[#374151]">{item.medicine_name}</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        item.severity === 'critical' ? 'bg-[#FEE2E2] text-[#991B1B]' : 'bg-[#FEF3C7] text-[#92400E]'
+                      }`}>
+                        {item.total_stock} left
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/medicines" className="block px-4 py-2 text-xs text-[#1E40AF] hover:bg-[#F9FAFB] border-t border-[#F3F4F6]">
+                  View inventory →
+                </Link>
+              </div>
+            )}
+
+            {/* Near Expiry */}
+            {inventoryAlerts.nearExpiry.length > 0 && (
+              <div className="bg-white rounded-xl border border-[#FDE68A] overflow-hidden">
+                <div className="px-4 py-3 bg-[#FFFBEB] border-b border-[#FDE68A] flex items-center gap-2">
+                  <Clock size={16} className="text-[#D97706]" />
+                  <span className="text-sm font-semibold text-[#92400E]">Expiring Soon ({inventoryAlerts.nearExpiry.length})</span>
+                </div>
+                <div className="divide-y divide-[#F3F4F6] max-h-48 overflow-y-auto">
+                  {inventoryAlerts.nearExpiry.map((item, idx) => (
+                    <div key={`${item.medicine_id}-${idx}`} className="px-4 py-2.5 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm text-[#374151]">{item.medicine_name}</span>
+                        <span className="text-xs text-[#9CA3AF] ml-1">({item.batch_number})</span>
+                      </div>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        item.days_until_expiry <= 7 ? 'bg-[#FEE2E2] text-[#991B1B]' : 'bg-[#FEF3C7] text-[#92400E]'
+                      }`}>
+                        {item.days_until_expiry}d left
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/medicines" className="block px-4 py-2 text-xs text-[#1E40AF] hover:bg-[#F9FAFB] border-t border-[#F3F4F6]">
+                  View inventory →
+                </Link>
+              </div>
+            )}
+
+            {/* Expired */}
+            {inventoryAlerts.expired.length > 0 && (
+              <div className="bg-white rounded-xl border border-[#FECACA] overflow-hidden">
+                <div className="px-4 py-3 bg-[#FEF2F2] border-b border-[#FECACA] flex items-center gap-2">
+                  <Warning size={16} className="text-[#DC2626]" />
+                  <span className="text-sm font-semibold text-[#991B1B]">Expired ({inventoryAlerts.expired.length})</span>
+                </div>
+                <div className="divide-y divide-[#F3F4F6] max-h-48 overflow-y-auto">
+                  {inventoryAlerts.expired.map((item, idx) => (
+                    <div key={`${item.medicine_id}-${idx}`} className="px-4 py-2.5 flex items-center justify-between">
+                      <div>
+                        <span className="text-sm text-[#374151]">{item.medicine_name}</span>
+                        <span className="text-xs text-[#9CA3AF] ml-1">({item.batch_number})</span>
+                      </div>
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[#FEE2E2] text-[#991B1B]">
+                        {item.days_expired}d ago
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/medicines" className="block px-4 py-2 text-xs text-[#1E40AF] hover:bg-[#F9FAFB] border-t border-[#F3F4F6]">
+                  View inventory →
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

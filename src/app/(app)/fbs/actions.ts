@@ -36,20 +36,17 @@ export async function recordFBS(data: {
     }
 
     // Auto-classify status
-    let status = 'normal';
-    if (data.fbs_value >= 126) status = 'high';
-    else if (data.fbs_value >= 100) status = 'pre_diabetic';
-
     const { data: record, error } = await supabase
       .from('fbs_records')
       .insert({
         patient_id: data.patient_id,
         encounter_id: data.encounter_id || null,
         recorded_by: user.id,
+        created_by: user.id,
         fbs_value: data.fbs_value,
         fasting_hours: data.fasting_hours || null,
         notes: data.notes || null,
-        status,
+        status: 'draft',
         recorded_at: new Date().toISOString(),
       })
       .select()

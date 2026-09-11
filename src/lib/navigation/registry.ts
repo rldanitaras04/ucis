@@ -89,6 +89,14 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     requiredRoles: ['clinic_staff', 'admin', 'super_admin'],
   },
   {
+    id: 'dispensing-history',
+    label: 'Dispensing History',
+    href: '/dispensing/history',
+    section: 'Pharmacy',
+    priority: 31,
+    requiredRoles: ['clinic_staff', 'admin', 'super_admin'],
+  },
+  {
     id: 'medicines',
     label: 'Medicine Inventory',
     href: '/medicines',
@@ -160,19 +168,19 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     requiredRoles: ['admin', 'super_admin'],
   },
   {
+    id: 'inventory-report',
+    label: 'Inventory Report',
+    href: '/reports/inventory',
+    section: 'Analytics',
+    priority: 51,
+    requiredRoles: ['clinic_staff', 'admin', 'super_admin'],
+  },
+  {
     id: 'admin-users',
     label: 'User Management',
     href: '/admin/users',
     section: 'Administration',
     priority: 60,
-    requiredRoles: ['admin', 'super_admin'],
-  },
-  {
-    id: 'admin-clinics',
-    label: 'Clinic Management',
-    href: '/admin/clinics',
-    section: 'Administration',
-    priority: 61,
     requiredRoles: ['admin', 'super_admin'],
   },
   {

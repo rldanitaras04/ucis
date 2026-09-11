@@ -12,8 +12,8 @@ export async function fetchActivePrescriptions(): Promise<{ success: true; data:
       .from('prescriptions')
       .select(`
         *,
-        patient:patient_profiles!patient_id(first_name, last_name, patient_id),
-        items:prescription_items(*)
+        patient:patient_profiles!patient_id(first_name, last_name, university_id),
+        items:prescription_items(*, medicine:medicines(id, name, generic_name, form, strength))
       `)
       .eq('status', 'active')
       .order('prescribed_date', { ascending: false });
@@ -24,19 +24,20 @@ export async function fetchActivePrescriptions(): Promise<{ success: true; data:
   }
 }
 
-export async function fetchMedicineBatches(medicineName?: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
+export async function fetchMedicineBatches(medicineId?: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAuth();
     const supabase = createServerSupabaseClient();
 
     let query = supabase
       .from('medicine_batches')
-      .select('*, medicine:medicines!medicine_id(id, generic_name, brand_name, dosage_form, strength)')
+      .select('id, batch_number, quantity, unit_price, expiry_date, medicine_id, medicine:medicines!medicine_id(id, name, generic_name, form, strength)')
       .gt('quantity', 0)
-      .order('expiration_date', { ascending: true });
+      .eq('is_active', true)
+      .order('expiry_date', { ascending: true });
 
-    if (medicineName) {
-      query = query.ilike('medicine.generic_name', `%${medicineName}%`);
+    if (medicineId) {
+      query = query.eq('medicine_id', medicineId);
     }
 
     const { data, error } = await query;
@@ -56,17 +57,11 @@ export async function dispenseMedication(data: {
     const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
-    // Use the atomic dispense_prescription RPC which handles:
-    // - Row-level locking (FOR UPDATE)
-    // - Stock validation
-    // - Stock deduction
-    // - Inventory transaction creation
-    // - Prescription status update
     const { data: dispensingId, error } = await supabase.rpc('dispense_prescription', {
       p_prescription_item_id: data.prescription_item_id,
       p_medicine_batch_id: data.medicine_batch_id,
       p_quantity: data.quantity,
-      p_dispensed_by: user.profile?.id || user.id,
+      p_dispensed_by: user.id,
     });
 
     if (error) throw error;

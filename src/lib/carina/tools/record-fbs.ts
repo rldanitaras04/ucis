@@ -39,20 +39,17 @@ export const recordFbsTool: CarinaToolDefinition = {
       return { success: false, error: 'Invalid FBS value. Must be between 0 and 500 mg/dL.' };
     }
 
-    let status = 'normal';
-    if (fbsValue >= 126) status = 'high';
-    else if (fbsValue >= 100) status = 'pre_diabetic';
-
     const { data: record, error } = await supabase
       .from('fbs_records')
       .insert({
         patient_id: args.patient_id,
         encounter_id: args.encounter_id || null,
         recorded_by: ctx.userId,
+        created_by: ctx.userId,
         fbs_value: fbsValue,
         fasting_hours: args.fasting_hours ? parseFloat(args.fasting_hours as string) : null,
         notes: args.notes || null,
-        status,
+        status: 'draft',
         recorded_at: new Date().toISOString(),
       })
       .select('id')
@@ -70,13 +67,14 @@ export const recordFbsTool: CarinaToolDefinition = {
       p_outcome: 'success',
     });
 
+    const classification = fbsValue < 100 ? 'normal' : fbsValue < 126 ? 'pre_diabetic' : 'high';
+
     return {
       success: true,
       data: {
         fbsRecordId: record.id,
         fbsValue,
-        status,
-        classification: status === 'normal' ? 'Normal (< 100 mg/dL)' : status === 'pre_diabetic' ? 'Pre-diabetic (100-125 mg/dL)' : 'High (>= 126 mg/dL)',
+        classification: classification === 'normal' ? 'Normal (< 100 mg/dL)' : classification === 'pre_diabetic' ? 'Pre-diabetic (100-125 mg/dL)' : 'High (>= 126 mg/dL)',
         message: 'FBS recorded successfully',
       },
     };

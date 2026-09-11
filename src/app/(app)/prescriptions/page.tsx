@@ -2,38 +2,59 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createPrescription, cancelPrescription, fetchPrescriptions } from './actions';
+import { createPrescription, cancelPrescription, fetchPrescriptions, fetchAvailableMedicines } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+
+interface Medicine {
+  id: string;
+  name: string;
+  generic_name?: string;
+  form?: string;
+  strength?: string;
+  category?: string;
+}
+
+interface PrescriptionItem {
+  id: string;
+  medication_name: string;
+  dosage: string;
+  frequency: string;
+  duration?: string;
+  quantity?: number;
+  refills_allowed?: number;
+  medicine?: Medicine;
+}
 
 interface Prescription {
   id: string;
   patient_id: string;
   status: string;
   prescribed_date: string;
-  patient?: { first_name: string; last_name: string; patient_id: string };
-  items?: Array<{
-    id: string;
-    medication_name: string;
-    dosage: string;
-    frequency: string;
-    duration?: string;
-    quantity?: number;
-    refills_allowed?: number;
-  }>;
+  patient?: { first_name: string; last_name: string; university_id: string };
+  items?: PrescriptionItem[];
 }
 
 function PrescriptionsPageContent() {
   const searchParams = useSearchParams();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(!!searchParams.get('patient'));
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [medicineSearch, setMedicineSearch] = useState('');
+  const [showMedicineDropdown, setShowMedicineDropdown] = useState(false);
+
+  const filteredMedicines = medicines.filter(med =>
+    med.name.toLowerCase().includes(medicineSearch.toLowerCase()) ||
+    (med.generic_name && med.generic_name.toLowerCase().includes(medicineSearch.toLowerCase()))
+  );
 
   const [formData, setFormData] = useState({
     patient_id: searchParams.get('patient') || '',
     encounter_id: searchParams.get('encounter') || '',
+    medicine_id: '',
     medication_name: '',
     dosage: '',
     frequency: '',
@@ -52,8 +73,16 @@ function PrescriptionsPageContent() {
     }
   };
 
+  const loadMedicines = async () => {
+    const result = await fetchAvailableMedicines();
+    if (result.success) {
+      setMedicines(result.data);
+    }
+  };
+
   useEffect(() => {
     loadPrescriptions();
+    loadMedicines();
     setLoading(false);
   }, []);
 
@@ -66,6 +95,7 @@ function PrescriptionsPageContent() {
     const result = await createPrescription({
       patient_id: formData.patient_id,
       encounter_id: formData.encounter_id || undefined,
+      medicine_id: formData.medicine_id || undefined,
       medication_name: formData.medication_name,
       dosage: formData.dosage,
       frequency: formData.frequency,
@@ -81,6 +111,7 @@ function PrescriptionsPageContent() {
       setFormData({
         patient_id: '',
         encounter_id: '',
+        medicine_id: '',
         medication_name: '',
         dosage: '',
         frequency: '',
@@ -167,15 +198,55 @@ function PrescriptionsPageContent() {
               onChange={(patientId) => setFormData({ ...formData, patient_id: patientId })}
             />
             <div>
-              <label htmlFor="medication_name" className="label">Medication *</label>
-              <input
-                id="medication_name"
-                type="text"
-                value={formData.medication_name}
-                onChange={(e) => setFormData({ ...formData, medication_name: e.target.value })}
-                required
-                className="input-field"
-              />
+              <label htmlFor="medicine_search" className="label">Medicine *</label>
+              <div className="relative">
+                <input
+                  id="medicine_search"
+                  type="text"
+                  value={formData.medicine_id ? medicines.find(m => m.id === formData.medicine_id) ? `${medicines.find(m => m.id === formData.medicine_id)!.name}${medicines.find(m => m.id === formData.medicine_id)!.strength ? ' ' + medicines.find(m => m.id === formData.medicine_id)!.strength : ''}` : medicineSearch : medicineSearch}
+                  onChange={(e) => {
+                    setMedicineSearch(e.target.value);
+                    setFormData({ ...formData, medicine_id: '', medication_name: e.target.value });
+                    setShowMedicineDropdown(true);
+                  }}
+                  onFocus={() => setShowMedicineDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowMedicineDropdown(false), 200)}
+                  placeholder="Search medicine name or generic name..."
+                  className="input-field"
+                />
+                {formData.medicine_id && (
+                  <button type="button" onClick={() => { setFormData({ ...formData, medicine_id: '', medication_name: '' }); setMedicineSearch(''); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B]">&times;</button>
+                )}
+                {showMedicineDropdown && medicineSearch && filteredMedicines.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-[#E2E8F0] rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                    {filteredMedicines.map((med) => (
+                      <button
+                        key={med.id}
+                        type="button"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          setFormData({
+                            ...formData,
+                            medicine_id: med.id,
+                            medication_name: `${med.name}${med.strength ? ' ' + med.strength : ''}${med.form ? ' (' + med.form + ')' : ''}`,
+                          });
+                          setMedicineSearch('');
+                          setShowMedicineDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-[#F1F5F9] text-sm border-b border-[#F1F5F9] last:border-0"
+                      >
+                        <span className="font-medium text-[#0F172A]">{med.name}</span>
+                        {med.strength && <span className="text-[#64748B] ml-1">{med.strength}</span>}
+                        {med.form && <span className="text-[#94A3B8] ml-1">({med.form})</span>}
+                        {med.generic_name && <span className="block text-xs text-[#94A3B8]">{med.generic_name}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="mt-2">
+                <label htmlFor="medication_name_manual" className="label text-xs text-[#94A3B8]">Selected: {formData.medication_name || 'None'}</label>
+              </div>
             </div>
           </div>
 

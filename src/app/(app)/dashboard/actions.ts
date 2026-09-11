@@ -52,6 +52,59 @@ export async function fetchDashboardStats(): Promise<{
   }
 }
 
+export async function fetchInventoryAlerts(): Promise<{
+  success: true;
+  data: {
+    lowStock: Array<{ medicine_id: string; medicine_name: string; total_stock: number; severity: string }>;
+    nearExpiry: Array<{ medicine_id: string; medicine_name: string; batch_number: string; days_until_expiry: number; severity: string }>;
+    expired: Array<{ medicine_id: string; medicine_name: string; batch_number: string; days_expired: number }>;
+  };
+} | { success: false; error: string }> {
+  try {
+    await requireAuth();
+    const supabase = createServerSupabaseClient();
+
+    const lowStock: Array<{ medicine_id: string; medicine_name: string; total_stock: number; severity: string }> = [];
+    const nearExpiry: Array<{ medicine_id: string; medicine_name: string; batch_number: string; days_until_expiry: number; severity: string }> = [];
+    const expired: Array<{ medicine_id: string; medicine_name: string; batch_number: string; days_expired: number }> = [];
+
+    // Low stock: total active batches <= 10
+    const { data: lowStockData } = await supabase.rpc('check_medicine_inventory_alerts');
+
+    if (lowStockData) {
+      for (const alert of lowStockData) {
+        if (alert.alert_type === 'low_stock') {
+          lowStock.push({
+            medicine_id: alert.medicine_id,
+            medicine_name: alert.medicine_name,
+            total_stock: parseInt(alert.detail) || 0,
+            severity: alert.severity,
+          });
+        } else if (alert.alert_type === 'near_expiry') {
+          nearExpiry.push({
+            medicine_id: alert.medicine_id,
+            medicine_name: alert.medicine_name,
+            batch_number: alert.detail?.split('Batch ')[1]?.split(' expires')[0] || '',
+            days_until_expiry: parseInt(alert.detail?.match(/in (\d+) days/)?.[1] || '0'),
+            severity: alert.severity,
+          });
+        } else if (alert.alert_type === 'expired') {
+          expired.push({
+            medicine_id: alert.medicine_id,
+            medicine_name: alert.medicine_name,
+            batch_number: alert.detail?.split('Batch ')[1]?.split(' expired')[0] || '',
+            days_expired: parseInt(alert.detail?.match(/(\d+) days ago/)?.[1] || '0'),
+          });
+        }
+      }
+    }
+
+    return { success: true, data: { lowStock, nearExpiry, expired } };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
 export async function fetchRecentActivity(): Promise<{
   success: true;
   data: {
