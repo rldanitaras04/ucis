@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { fetchDispensingHistory } from './history-actions';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface DispensingRecord {
   id: string;
@@ -40,6 +41,8 @@ export default function DispensingHistoryPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [search, setSearch] = useState('');
+
+  const { paginatedData, pagination } = usePagination(records, 10);
 
   const loadData = async () => {
     setLoading(true);
@@ -145,46 +148,49 @@ export default function DispensingHistoryPage() {
         {loading ? (
           <div className="flex items-center justify-center h-64"><div className="spinner" /></div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th scope="col">Date</th>
-                  <th scope="col">Patient</th>
-                  <th scope="col">Medicine</th>
-                  <th scope="col">Batch</th>
-                  <th scope="col">Qty</th>
-                  <th scope="col">Unit</th>
-                  <th scope="col">Dosage</th>
-                  <th scope="col">Frequency</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#E2E8F0]">
-                {records.map((r) => (
-                  <tr key={r.id} className="hover:bg-[#F8FAFC]">
-                    <td className="whitespace-nowrap">{new Date(r.dispensed_at).toLocaleDateString()}</td>
-                    <td>
-                      {r.prescription_item?.prescription?.patient?.last_name}, {r.prescription_item?.prescription?.patient?.first_name}
-                      <br />
-                      <span className="text-xs text-[#94A3B8]">{r.prescription_item?.prescription?.patient?.employee_student_id}</span>
-                    </td>
-                    <td className="font-medium">
-                      {r.batch?.medicine?.name || r.prescription_item?.medication_name}
-                      {r.batch?.medicine?.strength && <span className="text-xs text-[#94A3B8] ml-1">{r.batch.medicine.strength}</span>}
-                    </td>
-                    <td className="text-sm text-[#64748B]">{r.batch?.batch_number || '—'}</td>
-                    <td className="tabular-nums">{r.quantity_dispensed}</td>
-                    <td className="text-sm text-[#64748B]">{r.prescription_item?.prescription?.unit || '—'}</td>
-                    <td className="text-sm">{r.prescription_item?.dosage}</td>
-                    <td className="text-sm">{r.prescription_item?.frequency}</td>
+          <>
+            <div className="overflow-x-auto">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Patient</th>
+                    <th scope="col">Medicine</th>
+                    <th scope="col">Batch</th>
+                    <th scope="col">Qty</th>
+                    <th scope="col">Unit</th>
+                    <th scope="col">Dosage</th>
+                    <th scope="col">Frequency</th>
                   </tr>
-                ))}
-                {records.length === 0 && (
-                  <tr><td colSpan={8} className="text-center py-12 text-[#64748B]">No dispensing records found</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-[#E2E8F0]">
+                  {paginatedData.map((r) => (
+                    <tr key={r.id} className="hover:bg-[#F8FAFC]">
+                      <td className="whitespace-nowrap">{new Date(r.dispensed_at).toLocaleDateString()}</td>
+                      <td>
+                        {r.prescription_item?.prescription?.patient?.last_name}, {r.prescription_item?.prescription?.patient?.first_name}
+                        <br />
+                        <span className="text-xs text-[#94A3B8]">{r.prescription_item?.prescription?.patient?.employee_student_id}</span>
+                      </td>
+                      <td className="font-medium">
+                        {r.batch?.medicine?.name || r.prescription_item?.medication_name}
+                        {r.batch?.medicine?.strength && <span className="text-xs text-[#94A3B8] ml-1">{r.batch.medicine.strength}</span>}
+                      </td>
+                      <td className="text-sm text-[#64748B]">{r.batch?.batch_number || '—'}</td>
+                      <td className="tabular-nums">{r.quantity_dispensed}</td>
+                      <td className="text-sm text-[#64748B]">{r.prescription_item?.prescription?.unit || '—'}</td>
+                      <td className="text-sm">{r.prescription_item?.dosage}</td>
+                      <td className="text-sm">{r.prescription_item?.frequency}</td>
+                    </tr>
+                  ))}
+                  {records.length === 0 && (
+                    <tr><td colSpan={8} className="text-center py-12 text-[#64748B]">No dispensing records found</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <PaginationControls {...pagination} />
+          </>
         )}
       </div>
     </div>

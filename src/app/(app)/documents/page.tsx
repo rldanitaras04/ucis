@@ -5,6 +5,7 @@ import { fetchDocuments, createDocument, revokeDocument, verifyDocument } from '
 import PatientSearch from '@/components/PatientSearch';
 import { PatientSearchResult } from '@/app/(app)/actions/patients';
 import { Plus, FileText, Eye, Prohibit, CheckCircle, XCircle, Copy } from '@phosphor-icons/react';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 const DOCUMENT_TYPES = [
   { value: 'medical_certificate', label: 'Medical Certificate' },
@@ -33,6 +34,8 @@ export default function DocumentsPage() {
     document_type: '',
     status: '',
   });
+
+  const { paginatedData, pagination } = usePagination(documents, 10);
 
   useEffect(() => {
     loadDocuments();
@@ -310,6 +313,7 @@ export default function DocumentsPage() {
             <p className="text-[#9CA3AF]">No documents found</p>
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -323,7 +327,7 @@ export default function DocumentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {documents.map((doc) => (
+                {paginatedData.map((doc) => (
                   <tr key={doc.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB]">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -382,6 +386,8 @@ export default function DocumentsPage() {
               </tbody>
             </table>
           </div>
+          <PaginationControls {...pagination} />
+          </>
         )}
       </div>
 

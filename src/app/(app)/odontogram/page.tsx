@@ -5,6 +5,7 @@ import { fetchOdontograms, createOdontogram, fetchPatientOdontogramHistory } fro
 import PatientSearch from '@/components/PatientSearch';
 import { PatientSearchResult } from '@/app/(app)/actions/patients';
 import { Plus, Eye, Calendar, User } from '@phosphor-icons/react';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 const TOOTH_DATA_DEFAULT = {
   permanent: Array.from({ length: 32 }, (_, i) => ({
@@ -26,6 +27,8 @@ export default function OdontogramPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<any>(null);
   const [patientHistory, setPatientHistory] = useState<any[]>([]);
+
+  const { paginatedData, pagination } = usePagination(odontograms, 10);
 
   useEffect(() => {
     loadOdontograms();
@@ -242,6 +245,7 @@ export default function OdontogramPage() {
             <p className="text-[#9CA3AF]">No odontograms found</p>
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -254,7 +258,7 @@ export default function OdontogramPage() {
                 </tr>
               </thead>
               <tbody>
-                {odontograms.map((record) => (
+                {paginatedData.map((record) => (
                   <tr key={record.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB]">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -293,6 +297,8 @@ export default function OdontogramPage() {
               </tbody>
             </table>
           </div>
+          <PaginationControls {...pagination} />
+          </>
         )}
       </div>
 

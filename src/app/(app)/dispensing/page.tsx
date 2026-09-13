@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { X, Pill, WarningCircle, CheckCircle } from '@phosphor-icons/react';
 import { dispenseMedication, fetchActivePrescriptions, fetchMedicineBatches } from './actions';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface MedicineRef {
   id: string;
@@ -94,6 +95,8 @@ export default function DispensingPage() {
     }
     return items;
   }, [prescriptions]);
+
+  const { paginatedData, pagination } = usePagination(allItems, 10);
 
   const allItemIds = useMemo(() => allItems.map(i => i.item.id), [allItems]);
 
@@ -295,7 +298,7 @@ export default function DispensingPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {allItems.map(({ rx, item }) => {
+              {paginatedData.map(({ rx, item }) => {
                 const batches = getMatchingBatches(item);
                 return (
                   <tr key={item.id} className={`hover:bg-[#F8FAFC] ${selected.has(item.id) ? 'bg-[#F0F7FF]' : ''}`}>
@@ -339,6 +342,7 @@ export default function DispensingPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {allItems.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No active prescriptions to dispense

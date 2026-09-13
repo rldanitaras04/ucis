@@ -13,7 +13,7 @@ function formatMessageContent(content: string): string {
   let formatted = content
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code class="bg-[#F1F5F9] px-1 rounded text-sm font-mono">$1</code>')
+    .replace(/`(.*?)`/g, '<code class="bg-[#F1F5F9] px-1 rounded text-sm font-mono break-all">$1</code>')
     .replace(/\n/g, '<br />');
   return formatted;
 }
@@ -22,8 +22,8 @@ export default function CarinaMessage({ role, content, toolResults, userAvatarUr
   if (role === 'user') {
     return (
       <div className="flex justify-end items-start gap-2 px-4 py-2">
-        <div className="max-w-[80%] bg-[#1E40AF] text-white rounded-2xl rounded-br-sm px-4 py-3">
-          <p className="text-sm whitespace-pre-wrap">{content}</p>
+        <div className="max-w-[80%] bg-[#1E40AF] text-white rounded-2xl rounded-br-sm px-4 py-3 overflow-hidden">
+          <p className="text-sm whitespace-pre-wrap break-words">{content}</p>
         </div>
         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
           {userAvatarUrl ? (
@@ -47,10 +47,10 @@ export default function CarinaMessage({ role, content, toolResults, userAvatarUr
       <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
         <img src="/carina.png" alt="Carina" className="w-full h-full object-cover" />
       </div>
-      <div className="max-w-[80%]">
-        <div className="bg-[#F8FAFC] text-[#0F172A] rounded-2xl rounded-bl-sm px-4 py-3 border border-[#E2E8F0]">
+      <div className="max-w-[80%] min-w-0 overflow-hidden">
+        <div className="bg-[#F8FAFC] text-[#0F172A] rounded-2xl rounded-bl-sm px-4 py-3 border border-[#E2E8F0] overflow-hidden">
           <div
-            className="text-sm leading-relaxed"
+            className="text-sm leading-relaxed break-words overflow-hidden"
             dangerouslySetInnerHTML={{ __html: formatMessageContent(content) }}
           />
         </div>

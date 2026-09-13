@@ -19,8 +19,7 @@ export async function fetchFBSRecords(): Promise<{ success: true; data: any[] } 
     const { data, error } = await supabase
       .from('fbs_records')
       .select('id, patient_id, recorded_at, fbs_value, fasting_hours, notes, patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name, employee_student_id))')
-      .order('recorded_at', { ascending: false })
-      .limit(10);
+      .order('recorded_at', { ascending: false });
     if (error) throw error;
     return { success: true, data: data || [] };
   } catch (error) {

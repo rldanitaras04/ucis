@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchPatientsAdmin } from '@/app/(app)/patient/actions';
 import Link from 'next/link';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface Patient {
   id: string;
@@ -24,6 +25,8 @@ export default function AdminPatientsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const { paginatedData: paginatedPatients, pagination: patientsPagination } = usePagination(patients, 10);
 
   const loadPatients = useCallback(async (query: string) => {
     setLoading(true);
@@ -90,7 +93,7 @@ export default function AdminPatientsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {patients.map((patient) => (
+              {paginatedPatients.map((patient) => (
                 <tr key={patient.id} className="hover:bg-[#F8FAFC]">
                   <td className="font-medium">{patient.user_profile?.last_name}, {patient.user_profile?.first_name}</td>
                   <td>{patient.user_profile?.gender}</td>
@@ -114,6 +117,7 @@ export default function AdminPatientsPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...patientsPagination} />
         {patients.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No patients found

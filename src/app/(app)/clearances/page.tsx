@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { issueClearance, revokeClearance, fetchClearances } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface Clearance {
   id: string;
@@ -85,6 +86,8 @@ export default function ClearancesPage() {
       default: return 'badge-neutral';
     }
   };
+
+  const { paginatedData, pagination } = usePagination(clearances, 10);
 
   if (loading) {
     return (
@@ -182,7 +185,7 @@ export default function ClearancesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {clearances.map((clr) => (
+              {paginatedData.map((clr) => (
                 <tr key={clr.id} className="hover:bg-[#F8FAFC]">
                   <td className="font-mono tabular-nums">
                     {clr.control_number}
@@ -218,6 +221,7 @@ export default function ClearancesPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {clearances.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No clearances found

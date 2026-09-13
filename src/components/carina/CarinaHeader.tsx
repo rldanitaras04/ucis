@@ -4,9 +4,12 @@ import { useEffect, useRef } from 'react';
 
 interface CarinaHeaderProps {
   onClose: () => void;
+  onDragStart?: (e: React.PointerEvent) => void;
+  onDragMove?: (e: React.PointerEvent) => void;
+  onDragEnd?: () => void;
 }
 
-export default function CarinaHeader({ onClose }: CarinaHeaderProps) {
+export default function CarinaHeader({ onClose, onDragStart, onDragMove, onDragEnd }: CarinaHeaderProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -19,14 +22,19 @@ export default function CarinaHeader({ onClose }: CarinaHeaderProps) {
   }, [onClose]);
 
   return (
-    <div className="bg-[#1E40AF] text-white px-4 py-3 flex items-center justify-between rounded-t-xl">
+    <div
+      onPointerDown={onDragStart}
+      onPointerMove={onDragMove}
+      onPointerUp={onDragEnd}
+      className="bg-[#1E40AF] text-white px-4 py-3 flex items-center justify-between rounded-t-xl cursor-grab active:cursor-grabbing touch-none select-none"
+    >
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/30">
-          <img src="/carina.png" alt="Carina" className="w-full h-full object-cover" />
+          <img src="/carina.png" alt="Carina" className="w-full h-full object-cover pointer-events-none" />
         </div>
         <div>
-          <h3 className="font-semibold text-sm">Carina</h3>
-          <p className="text-xs text-white/80">UCIS AI Assistant</p>
+          <h3 className="font-semibold text-sm pointer-events-none">Carina</h3>
+          <p className="text-xs text-white/80 pointer-events-none">UCIS AI Assistant</p>
         </div>
       </div>
       <button

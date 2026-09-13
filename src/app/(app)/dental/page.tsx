@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { fetchDentalRecords, createDentalRecord, updateDentalRecord, finalizeDentalRecord } from './actions';
 import PatientSearch from '@/components/PatientSearch';
 import { DEFAULT_CLINIC_ID } from '@/lib/config';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface DentalRecord {
   id: string;
@@ -154,6 +155,8 @@ function DentalPageContent() {
     }
   };
 
+  const { paginatedData, pagination } = usePagination(records, 10);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-label="Loading dental records">
@@ -299,7 +302,7 @@ function DentalPageContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {records.map((record) => (
+              {paginatedData.map((record) => (
                 <tr key={record.id} className="hover:bg-[#F8FAFC]">
                   <td>
                     {record.patient?.last_name}, {record.patient?.first_name}
@@ -327,6 +330,7 @@ function DentalPageContent() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {records.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No dental records found

@@ -19,8 +19,7 @@ export async function fetchVitalSigns(): Promise<{ success: true; data: any[] } 
     const { data, error } = await supabase
       .from('vital_signs')
       .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, respiratory_rate, temperature, oxygen_saturation, height, weight, bmi, notes, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name, employee_student_id))')
-      .order('recorded_at', { ascending: false })
-      .limit(10);
+      .order('recorded_at', { ascending: false });
     if (error) throw error;
     return { success: true, data: data || [] };
   } catch (error) {

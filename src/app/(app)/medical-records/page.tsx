@@ -32,6 +32,7 @@ import { fetchPatientVitals } from '@/app/(app)/vitals/actions';
 import { fetchPatientPrescriptions, createPrescription, deletePrescription, fetchAvailableMedicines } from '@/app/(app)/prescriptions/actions';
 import PatientSearch from '@/components/PatientSearch';
 import CarinaVitalsAnalysis from '@/components/carina/CarinaVitalsAnalysis';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface MedicalRecordRow {
   id: string;
@@ -300,6 +301,8 @@ function MedicalRecordsPageContent() {
     );
   });
 
+  const { paginatedData, pagination } = usePagination(filteredRecords, 10);
+
   const getEncounterStatusBadge = (status: string) => {
     switch (status) {
       case 'open': return 'badge-info';
@@ -457,7 +460,7 @@ function MedicalRecordsPageContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {filteredRecords.map(row => (
+              {paginatedData.map(row => (
                 <tr key={row.id} className="hover:bg-[#F8FAFC]">
                   <td className="text-small tabular-nums whitespace-nowrap">
                     {new Date(row.visit_date).toLocaleDateString()}
@@ -514,6 +517,7 @@ function MedicalRecordsPageContent() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {filteredRecords.length === 0 && (
           <div className="text-center py-12">
             <FirstAid size={48} className="mx-auto text-[#D1D5DB] mb-3" />

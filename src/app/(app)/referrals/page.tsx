@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createReferral, acceptReferral, rejectReferral, fetchClinics, fetchReferrals } from './actions';
 import PatientSearch from '@/components/PatientSearch';
 import { DEFAULT_CLINIC_ID } from '@/lib/config';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface Referral {
   id: string;
@@ -33,6 +34,8 @@ export default function ReferralsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ id: string; action: 'reject' } | null>(null);
+
+  const { paginatedData, pagination } = usePagination(referrals, 10);
 
   const [formData, setFormData] = useState({
     patient_id: '',
@@ -231,7 +234,7 @@ export default function ReferralsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {referrals.map((referral) => (
+              {paginatedData.map((referral) => (
                 <tr key={referral.id} className="hover:bg-[#F8FAFC]">
                   <td>
                     {referral.patient?.last_name}, {referral.patient?.first_name}
@@ -272,6 +275,7 @@ export default function ReferralsPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {referrals.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No referrals found

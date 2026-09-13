@@ -19,8 +19,6 @@ export async function fetchAuditLogs(filters?: {
       .from('audit_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(filters?.limit || 100);
-
     if (filters?.actor) {
       query = query.eq('actor', filters.actor);
     }
@@ -99,8 +97,6 @@ export async function fetchLoginHistory(filters?: {
       .from('login_history')
       .select('*')
       .order('login_at', { ascending: false })
-      .limit(filters?.limit || 100);
-
     if (filters?.user_id) {
       query = query.eq('user_id', filters.user_id);
     }

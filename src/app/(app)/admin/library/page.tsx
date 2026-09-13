@@ -5,6 +5,7 @@ import {
   fetchAllSystemConfigs, createSystemConfig, updateSystemConfig, deleteSystemConfig,
   fetchClinicServices, createClinicService, updateClinicService, deleteClinicService,
 } from './actions';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface ConfigEntry {
   id: string;
@@ -69,6 +70,9 @@ export default function LibraryManagementPage() {
 
   const isServices = activeGroup === 'clinic_services';
   const filteredConfigs = configs.filter(c => c.config_key === activeGroup);
+
+  const { paginatedData: paginatedConfigs, pagination: configPagination } = usePagination(filteredConfigs, 10);
+  const { paginatedData: paginatedServices, pagination: servicePagination } = usePagination(services, 10);
 
   const resetForm = () => {
     setFormData({ config_value: '', label: '', sort_order: 0, name: '', category: 'medical', description: '' });
@@ -357,7 +361,7 @@ export default function LibraryManagementPage() {
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
               {isServices ? (
-                services.length === 0 ? null : services.map((entry) => (
+                services.length === 0 ? null : paginatedServices.map((entry) => (
                   <tr key={entry.id} className="hover:bg-[#F8FAFC]">
                     <td className="font-medium">{entry.name}</td>
                     <td>
@@ -381,7 +385,7 @@ export default function LibraryManagementPage() {
                   </tr>
                 ))
               ) : (
-                filteredConfigs.length === 0 ? null : filteredConfigs.map((entry) => (
+                filteredConfigs.length === 0 ? null : paginatedConfigs.map((entry) => (
                   <tr key={entry.id} className="hover:bg-[#F8FAFC]">
                     <td className="tabular-nums text-[#64748B]">{entry.sort_order}</td>
                     <td className="font-mono text-sm">{entry.config_value}</td>
@@ -406,6 +410,7 @@ export default function LibraryManagementPage() {
             </tbody>
           </table>
         </div>
+        {isServices ? <PaginationControls {...servicePagination} /> : <PaginationControls {...configPagination} />}
         {(isServices ? services.length === 0 : filteredConfigs.length === 0) && (
           <div className="text-center py-12 text-body text-[#64748B]">
             {isServices ? 'No services configured' : 'No options configured'}

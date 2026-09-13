@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createMedicine, updateMedicine, deleteMedicine, fetchMedicines, addBatch, updateBatch } from './actions';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface MedicineBatch {
   id: string;
@@ -207,6 +208,8 @@ export default function MedicinesPage() {
     return matchSearch && matchCategory && matchForm;
   });
 
+  const { paginatedData, pagination } = usePagination(filteredMedicines, 10);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -364,8 +367,8 @@ export default function MedicinesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {filteredMedicines.map((med) => (
-                <>
+              {paginatedData.map((med) => (
+                <React.Fragment key={med.id}>
                   <tr key={med.id} className="hover:bg-[#F8FAFC]">
                     <td className="font-medium">{med.name}</td>
                     <td>{med.generic_name || '—'}</td>
@@ -420,11 +423,12 @@ export default function MedicinesPage() {
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {filteredMedicines.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             {medicines.length === 0 ? 'No medicines found' : 'No medicines match the filters'}

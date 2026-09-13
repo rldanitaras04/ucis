@@ -5,6 +5,7 @@ import { fetchConsentRecords, recordConsent, withdrawConsent } from './actions';
 import PatientSearch from '@/components/PatientSearch';
 import { PatientSearchResult } from '@/app/(app)/actions/patients';
 import { Plus, ShieldCheck, ShieldSlash, Calendar } from '@phosphor-icons/react';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 const CONSENT_TYPES = [
   { value: 'treatment', label: 'Treatment Consent' },
@@ -92,6 +93,8 @@ export default function ConsentPage() {
     }
     return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#ECFDF5] text-[#059669]">Active</span>;
   };
+
+  const { paginatedData, pagination } = usePagination(consents, 10);
 
   return (
     <div className="page-container">
@@ -218,6 +221,7 @@ export default function ConsentPage() {
             <p className="text-[#9CA3AF]">No consent records found</p>
           </div>
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -231,7 +235,7 @@ export default function ConsentPage() {
                 </tr>
               </thead>
               <tbody>
-                {consents.map((consent) => (
+                {paginatedData.map((consent) => (
                   <tr key={consent.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB]">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
@@ -277,6 +281,8 @@ export default function ConsentPage() {
               </tbody>
             </table>
           </div>
+          <PaginationControls {...pagination} />
+          </>
         )}
       </div>
     </div>

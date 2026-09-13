@@ -17,9 +17,10 @@ interface CarinaPanelProps {
   roles: string[];
   userName?: string;
   userAvatarUrl?: string | null;
+  position?: { x: number; y: number } | null;
 }
 
-export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvatarUrl }: CarinaPanelProps) {
+export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvatarUrl, position }: CarinaPanelProps) {
   const [messages, setMessages] = useState<CarinaMessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,6 +28,14 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
   const [vitalsData, setVitalsData] = useState<Record<string, string | null> | null>(null);
   const [fbsData, setFbsData] = useState<Record<string, string | null> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     if (isOpen && panelRef.current) {
@@ -113,6 +122,29 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
 
   if (!isOpen) return null;
 
+  const panelWidth = 384;
+  const panelHeight = 600;
+  const gap = 8;
+  const btnSize = 56;
+
+  let panelStyle: React.CSSProperties | undefined;
+  if (!isMobile) {
+    const minLeft = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 260 : 0;
+    const btnX = position?.x ?? (window.innerWidth - btnSize);
+    const btnY = position?.y ?? (window.innerHeight - btnSize);
+    let px = btnX - gap - panelWidth;
+    let py = btnY;
+    if (px < minLeft) px = btnX + btnSize + gap;
+    if (px + panelWidth > window.innerWidth - 8) px = window.innerWidth - panelWidth - 8;
+    if (py + panelHeight > window.innerHeight - 8) py = window.innerHeight - panelHeight - 8;
+    if (py < 8) py = 8;
+    panelStyle = { left: px, top: py };
+  }
+
+  const panelClass = isMobile
+    ? 'fixed inset-x-2 bottom-20 top-16 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden'
+    : 'fixed w-96 h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden';
+
   return (
     <div
       ref={panelRef}
@@ -120,7 +152,8 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
       aria-modal="true"
       aria-label="Carina AI Assistant"
       tabIndex={-1}
-      className="fixed bottom-24 right-6 w-96 h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none max-sm:inset-x-2 max-sm:bottom-16 max-sm:h-[calc(100vh-8rem)]"
+      style={panelStyle}
+      className={panelClass}
     >
       <CarinaHeader onClose={onClose} />
 

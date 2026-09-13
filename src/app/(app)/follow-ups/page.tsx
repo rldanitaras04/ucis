@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { createFollowUp, completeFollowUp, cancelFollowUp, fetchFollowUps } from './actions';
 import PatientSearch from '@/components/PatientSearch';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface FollowUp {
   id: string;
@@ -107,6 +108,8 @@ export default function FollowUpsPage() {
     }
   };
 
+  const { paginatedData, pagination } = usePagination(followUps, 10);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-label="Loading follow-ups">
@@ -208,7 +211,7 @@ export default function FollowUpsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {followUps.map((fu) => (
+              {paginatedData.map((fu) => (
                 <tr key={fu.id} className="hover:bg-[#F8FAFC]">
                   <td>
                     {fu.patient?.last_name}, {fu.patient?.first_name}
@@ -250,6 +253,7 @@ export default function FollowUpsPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {followUps.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No follow-ups found

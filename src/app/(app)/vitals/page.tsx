@@ -6,6 +6,7 @@ import { recordVitalSigns, fetchVitalSigns } from './actions';
 import { fetchPatientName } from '../actions/patients';
 import PatientSearch from '@/components/PatientSearch';
 import VitalsAnalysis from '@/components/VitalsAnalysis';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface VitalRecord {
   id: string;
@@ -46,6 +47,8 @@ function VitalsPageContent() {
 
   const [recentRecords, setRecentRecords] = useState<VitalRecord[]>([]);
   const [recordsLoading, setRecordsLoading] = useState(false);
+
+  const { paginatedData: paginatedRecords, pagination: recordsPagination } = usePagination(recentRecords, 10);
 
   const fetchRecentRecords = useCallback(async () => {
     setRecordsLoading(true);
@@ -358,7 +361,7 @@ function VitalsPageContent() {
                 </tr>
               </thead>
               <tbody>
-                {recentRecords.map((record) => (
+                {paginatedRecords.map((record) => (
                   <tr key={record.id}>
                     <td className="text-body text-[#0F172A]">
                       {record.patient?.user_profile?.last_name}, {record.patient?.user_profile?.first_name}
@@ -394,6 +397,7 @@ function VitalsPageContent() {
             </table>
           </div>
         )}
+        <PaginationControls {...recordsPagination} />
       </div>
     </div>
   );

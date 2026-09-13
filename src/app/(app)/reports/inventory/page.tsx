@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { fetchInventoryReport } from '@/app/(app)/dispensing/history-actions';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface Medicine {
   id: string;
@@ -59,6 +60,8 @@ export default function InventoryReportPage() {
     if (filter === 'expired') return med.expired_batches > 0;
     return true;
   });
+
+  const { paginatedData, pagination } = usePagination(filteredMedicines, 10);
 
   const handleExport = () => {
     const headers = ['Name', 'Generic', 'Category', 'Form', 'Strength', 'Manufacturer', 'Total Stock', 'Batches', 'Stock Value', 'Near Expiry Batches', 'Expired Batches', 'Status'];
@@ -151,7 +154,7 @@ export default function InventoryReportPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {filteredMedicines.map((med) => (
+              {paginatedData.map((med) => (
                 <tr key={med.id} className="hover:bg-[#F8FAFC]">
                   <td className="font-medium">{med.name}</td>
                   <td className="text-sm text-[#64748B]">{med.generic_name || '—'}</td>
@@ -182,6 +185,7 @@ export default function InventoryReportPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
       </div>
     </div>
   );

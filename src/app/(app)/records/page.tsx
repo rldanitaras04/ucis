@@ -5,6 +5,7 @@ import { fetchPatients } from './actions';
 import { registerPatient } from '@/app/(app)/patient/actions';
 import { fetchSystemConfig } from '@/app/(app)/admin/library/actions';
 import Link from 'next/link';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface Patient {
   id: string;
@@ -47,6 +48,8 @@ export default function RecordsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState<string | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const { paginatedData: paginatedPatients, pagination: patientsPagination } = usePagination(patients, 10);
 
   const [showRegister, setShowRegister] = useState(false);
   const [regLoading, setRegLoading] = useState(false);
@@ -196,7 +199,7 @@ export default function RecordsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {patients.map((patient) => {
+              {paginatedPatients.map((patient) => {
                 const isStudent = patient.user_type === 'student';
                 return (
                 <tr key={patient.id} className="hover:bg-[#F8FAFC]">
@@ -230,6 +233,7 @@ export default function RecordsPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...patientsPagination} />
         {patients.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No patients found

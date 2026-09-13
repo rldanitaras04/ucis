@@ -7,6 +7,7 @@ import { createPrescription, cancelPrescription, fetchPrescriptions, fetchAvaila
 import { fetchPatientName } from '../actions/patients';
 import { dispenseMedication, fetchMedicineBatches } from '../dispensing/actions';
 import PatientSearch from '@/components/PatientSearch';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface Medicine {
   id: string;
@@ -304,6 +305,8 @@ function PrescriptionsPageContent() {
     return groups;
   }, [filteredPrescriptions]);
 
+  const { paginatedData: paginatedEncounters, pagination: encountersPagination } = usePagination(encounterGroups, 10);
+
   const toggleGroup = (id: string) => {
     setExpandedGroups(prev => {
       const next = new Set(prev);
@@ -589,7 +592,7 @@ function PrescriptionsPageContent() {
       )}
 
       <div className="space-y-4">
-        {encounterGroups.map(group => {
+        {paginatedEncounters.map(group => {
           const groupId = group.encounterId || 'unlinked';
           const isExpanded = expandedGroups.has(groupId);
           return (
@@ -667,6 +670,7 @@ function PrescriptionsPageContent() {
             </div>
           );
         })}
+        <PaginationControls {...encountersPagination} />
         {encounterGroups.length === 0 && (
           <div className="card text-center py-12 text-[#64748B]">
             <Pill size={48} className="mx-auto text-[#D1D5DB] mb-3" />

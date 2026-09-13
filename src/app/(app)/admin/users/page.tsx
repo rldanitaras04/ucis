@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { updateUserRole, updateUserStatus, fetchAdminUsers, checkAdminAccess } from './actions';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface UserProfile {
   id: string;
@@ -96,6 +97,8 @@ export default function AdminUsersPage() {
     );
   });
 
+  const { paginatedData: paginatedUsers, pagination: usersPagination } = usePagination(filteredUsers, 10);
+
   const handleUpdateRole = async () => {
     if (!editingRole || !selectedRoleId) return;
     setActionLoading('role');
@@ -182,7 +185,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {filteredUsers.map((user) => (
+              {paginatedUsers.map((user) => (
                 <tr key={user.id} className="hover:bg-[#F8FAFC]">
                   <td className="font-medium">
                     {user.last_name}, {user.first_name}
@@ -238,6 +241,7 @@ export default function AdminUsersPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...usersPagination} />
         {filteredUsers.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No users found

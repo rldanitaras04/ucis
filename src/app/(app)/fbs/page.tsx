@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { recordFBS, fetchFBSRecords } from './actions';
 import { fetchPatientName } from '../actions/patients';
 import PatientSearch from '@/components/PatientSearch';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 import FBSAnalysis from '@/components/FBSAnalysis';
 import { useSearchParams } from 'next/navigation';
 
@@ -42,6 +43,8 @@ function FBSPageContent() {
 
   const [recentRecords, setRecentRecords] = useState<FBSRecord[]>([]);
   const [recordsLoading, setRecordsLoading] = useState(false);
+
+  const { paginatedData: paginatedRecords, pagination: recordsPagination } = usePagination(recentRecords, 10);
 
   const prevFbsRef = useRef<{ value: string; fasting: string }>({ value: '', fasting: '' });
 
@@ -246,7 +249,7 @@ function FBSPageContent() {
                 </tr>
               </thead>
               <tbody>
-                {recentRecords.map((record) => {
+                {paginatedRecords.map((record) => {
                   const classification = classifyFBS(record.fbs_value);
                   return (
                     <tr key={record.id}>
@@ -284,6 +287,7 @@ function FBSPageContent() {
             </table>
           </div>
         )}
+        <PaginationControls {...recordsPagination} />
       </div>
     </div>
   );

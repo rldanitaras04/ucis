@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { fetchAuditLogs, fetchAuditLogStats, fetchLoginHistory } from './actions';
 import {MagnifyingGlass, Clock, StackSimple, Users, Calendar } from '@phosphor-icons/react';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 export default function AuditPage() {
   const [activeTab, setActiveTab] = useState<'audit' | 'login'>('audit');
@@ -16,6 +17,9 @@ export default function AuditPage() {
     start_date: '',
     end_date: '',
   });
+
+  const { paginatedData: paginatedAuditLogs, pagination: auditPagination } = usePagination(auditLogs, 10);
+  const { paginatedData: paginatedLoginHistory, pagination: loginPagination } = usePagination(loginHistory, 10);
 
   useEffect(() => {
     loadData();
@@ -211,7 +215,7 @@ export default function AuditPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {auditLogs.map((log) => (
+                    {paginatedAuditLogs.map((log) => (
                       <tr key={log.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB]">
                         <td className="py-3 px-4 text-sm text-[#64748B]">
                           {formatDate(log.created_at)}
@@ -243,6 +247,7 @@ export default function AuditPage() {
                 </table>
               </div>
             )}
+            <PaginationControls {...auditPagination} />
           </div>
         </div>
       )}
@@ -271,7 +276,7 @@ export default function AuditPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {loginHistory.map((login) => (
+                  {paginatedLoginHistory.map((login) => (
                     <tr key={login.id} className="border-b border-[#F3F4F6] hover:bg-[#F9FAFB]">
                       <td className="py-3 px-4 text-sm text-[#111827] font-mono">
                         {login.user_id ? login.user_id.substring(0, 8) + '...' : '-'}
@@ -298,6 +303,7 @@ export default function AuditPage() {
               </table>
             </div>
           )}
+          <PaginationControls {...loginPagination} />
         </div>
       )}
     </div>

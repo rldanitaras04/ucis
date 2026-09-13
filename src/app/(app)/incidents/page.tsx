@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createIncident, updateIncidentStatus, fetchIncidents } from './actions';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface Incident {
   id: string;
@@ -25,6 +26,8 @@ export default function IncidentsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{ incidentId: string; status: string } | null>(null);
+
+  const { paginatedData, pagination } = usePagination(incidents, 10);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -301,7 +304,7 @@ export default function IncidentsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {incidents.map((incident) => {
+              {paginatedData.map((incident) => {
                 const nextStatus = getNextStatus(incident.status);
                 return (
                   <tr key={incident.id} className="hover:bg-[#F8FAFC]">
@@ -341,6 +344,7 @@ export default function IncidentsPage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...pagination} />
         {incidents.length === 0 && (
           <div className="text-center py-12 text-body text-[#64748B]">
             No incidents reported

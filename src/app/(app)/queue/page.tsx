@@ -5,6 +5,7 @@ import { callNextPatient, startQueueService, completeQueueService, cancelQueueEn
 import PatientSearch from '@/components/PatientSearch';
 import { DEFAULT_CLINIC_ID } from '@/lib/config';
 import Link from 'next/link';
+import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface QueueEntry {
   id: string;
@@ -55,6 +56,8 @@ export default function QueuePage() {
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [services, setServices] = useState<ClinicService[]>([]);
   const [formData, setFormData] = useState({ patient_id: '', service_id: '', chief_complaint: '' });
+
+  const { paginatedData: paginatedQueueEntries, pagination: queuePagination } = usePagination(queueEntries, 10);
 
   const loadQueue = async () => {
     const result = await fetchQueue();
@@ -259,7 +262,7 @@ export default function QueuePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {queueEntries.map((entry) => {
+              {paginatedQueueEntries.map((entry) => {
                 const profile = entry.patient?.user_profile;
                 const isStudent = profile?.user_type === 'student';
                 return (
@@ -315,6 +318,7 @@ export default function QueuePage() {
             </tbody>
           </table>
         </div>
+        <PaginationControls {...queuePagination} />
         {queueEntries.length === 0 && (
           <div className="empty-state">
             <p className="empty-state-title">No queue entries today</p>
