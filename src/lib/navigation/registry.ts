@@ -94,7 +94,7 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     href: '/medicines',
     section: 'Pharmacy',
     priority: 31,
-    requiredRoles: ['admin', 'super_admin'],
+    requiredRoles: ['nurse', 'admin', 'super_admin'],
   },
   {
     id: 'referrals',

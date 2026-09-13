@@ -27,6 +27,7 @@ interface Prescription {
   patient_id: string;
   status: string;
   prescribed_date: string;
+  unit?: string;
   patient?: { id: string; first_name: string; last_name: string; employee_student_id: string | null };
   items?: PrescriptionItem[];
 }
@@ -288,6 +289,7 @@ export default function DispensingPage() {
                 <th scope="col">Dosage</th>
                 <th scope="col">Frequency</th>
                 <th scope="col">Qty</th>
+                <th scope="col">Unit</th>
                 <th scope="col">Stock</th>
                 <th scope="col">Actions</th>
               </tr>
@@ -317,6 +319,7 @@ export default function DispensingPage() {
                     <td>{item.dosage}</td>
                     <td>{item.frequency}</td>
                     <td className="tabular-nums">{item.quantity}</td>
+                    <td className="text-sm text-[#64748B]">{rx.unit || '—'}</td>
                     <td>
                       {batches.length === 0 ? (
                         <span className="badge badge-danger">No stock</span>

@@ -1,7 +1,14 @@
 'use server';
 
 import { requireAuth, handleAuthError } from '@/lib/supabase/auth-guard';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchDispensingHistory(filters?: {
   start_date?: string;
@@ -10,7 +17,7 @@ export async function fetchDispensingHistory(filters?: {
 }): Promise<{ success: true; data: any[]; summary: { totalDispensed: number; uniquePatients: number; uniqueMedicines: number } } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     let query = supabase
       .from('dispensing_records')
@@ -26,7 +33,8 @@ export async function fetchDispensingHistory(filters?: {
           frequency,
           prescription:prescriptions(
             id,
-            patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name))
+            unit,
+            patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name, employee_student_id))
           )
         ),
         batch:medicine_batches(
@@ -47,9 +55,36 @@ export async function fetchDispensingHistory(filters?: {
     const { data, error } = await query;
     if (error) throw error;
 
-    const records = data || [];
+    const records = (data || []).map((r: any) => {
+      const pi = Array.isArray(r.prescription_item) ? r.prescription_item[0] : r.prescription_item;
+      const rx = pi ? (Array.isArray(pi.prescription) ? pi.prescription[0] : pi.prescription) : null;
+      const patient = rx ? (Array.isArray(rx.patient) ? rx.patient[0] : rx.patient) : null;
+      const profile = patient?.user_profile ? (Array.isArray(patient.user_profile) ? patient.user_profile[0] : patient.user_profile) : null;
+      const batch = Array.isArray(r.batch) ? r.batch[0] : r.batch;
+      const med = batch?.medicine ? (Array.isArray(batch.medicine) ? batch.medicine[0] : batch.medicine) : null;
+      return {
+        ...r,
+        prescription_item: pi ? {
+          ...pi,
+          prescription: rx ? {
+            ...rx,
+            unit: rx.unit || null,
+            patient: profile ? {
+              first_name: profile.first_name || '',
+              last_name: profile.last_name || '',
+              employee_student_id: profile.employee_student_id || null,
+            } : null,
+          } : null,
+        } : null,
+        batch: batch ? {
+          ...batch,
+          medicine: med,
+        } : null,
+      };
+    });
+
     const uniquePatients = new Set(
-      records.map((r: any) => r.prescription_item?.prescription?.patient?.id).filter(Boolean)
+      records.map((r: any) => r.prescription_item?.prescription?.patient?.last_name).filter(Boolean)
     ).size;
     const uniqueMedicines = new Set(
       records.map((r: any) => r.batch?.medicine?.id).filter(Boolean)
@@ -82,7 +117,7 @@ export async function fetchInventoryReport(): Promise<{
 } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data: medicines, error } = await supabase
       .from('medicines')

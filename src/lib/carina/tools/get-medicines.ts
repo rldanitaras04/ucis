@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 export const getMedicinesTool: CarinaToolDefinition = {
   name: 'get_medicines',
   description: 'Search medicines inventory. Returns medicine names, stock levels, and categories.',
-  allowedRoles: ['admin', 'super_admin'],
+  allowedRoles: ['nurse', 'admin', 'super_admin'],
   inputSchema: {
     type: 'object',
     properties: {

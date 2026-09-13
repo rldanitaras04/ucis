@@ -51,7 +51,7 @@ export async function addBatch(data: {
   manufactured_date?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
+    const user = await requireAnyRole('nurse', 'clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
     const { data: batch, error } = await supabase
@@ -95,7 +95,7 @@ export async function updateBatch(
   }
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
+    const user = await requireAnyRole('nurse', 'clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
     const { error } = await supabase
@@ -129,7 +129,7 @@ export async function createMedicine(data: {
   manufacturer?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
+    const user = await requireAnyRole('nurse', 'clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
     const { data: medicine, error } = await supabase
@@ -175,7 +175,7 @@ export async function updateMedicine(
   }
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
+    const user = await requireAnyRole('nurse', 'clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
     const { error } = await supabase
@@ -211,7 +211,7 @@ export async function deleteMedicine(
   id: string
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
+    const user = await requireAnyRole('nurse', 'clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
     const { error } = await supabase

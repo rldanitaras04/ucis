@@ -13,6 +13,7 @@ interface DispensingRecord {
     dosage: string;
     frequency: string;
     prescription?: {
+      unit?: string;
       patient?: {
         first_name: string;
         last_name: string;
@@ -66,7 +67,7 @@ export default function DispensingHistoryPage() {
   };
 
   const handleExport = () => {
-    const headers = ['Date', 'Patient', 'University ID', 'Medicine', 'Strength', 'Form', 'Batch', 'Qty Dispensed', 'Dosage', 'Frequency'];
+    const headers = ['Date', 'Patient', 'University ID', 'Medicine', 'Strength', 'Form', 'Batch', 'Qty Dispensed', 'Unit', 'Dosage', 'Frequency'];
     const rows = records.map((r) => [
       new Date(r.dispensed_at).toLocaleDateString(),
       `${r.prescription_item?.prescription?.patient?.last_name || ''}, ${r.prescription_item?.prescription?.patient?.first_name || ''}`,
@@ -76,6 +77,7 @@ export default function DispensingHistoryPage() {
       r.batch?.medicine?.form || '',
       r.batch?.batch_number || '',
       r.quantity_dispensed?.toString() || '',
+      r.prescription_item?.prescription?.unit || '',
       r.prescription_item?.dosage || '',
       r.prescription_item?.frequency || '',
     ]);
@@ -152,6 +154,7 @@ export default function DispensingHistoryPage() {
                   <th scope="col">Medicine</th>
                   <th scope="col">Batch</th>
                   <th scope="col">Qty</th>
+                  <th scope="col">Unit</th>
                   <th scope="col">Dosage</th>
                   <th scope="col">Frequency</th>
                 </tr>
@@ -171,12 +174,13 @@ export default function DispensingHistoryPage() {
                     </td>
                     <td className="text-sm text-[#64748B]">{r.batch?.batch_number || '—'}</td>
                     <td className="tabular-nums">{r.quantity_dispensed}</td>
+                    <td className="text-sm text-[#64748B]">{r.prescription_item?.prescription?.unit || '—'}</td>
                     <td className="text-sm">{r.prescription_item?.dosage}</td>
                     <td className="text-sm">{r.prescription_item?.frequency}</td>
                   </tr>
                 ))}
                 {records.length === 0 && (
-                  <tr><td colSpan={7} className="text-center py-12 text-[#64748B]">No dispensing records found</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 text-[#64748B]">No dispensing records found</td></tr>
                 )}
               </tbody>
             </table>
