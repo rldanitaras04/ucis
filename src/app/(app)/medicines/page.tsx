@@ -224,7 +224,7 @@ export default function MedicinesPage() {
         </button>
       </div>
 
-      {error && <div className="alert-error mb-4" role="alert">{error}<button onClick={() => setError(null)} className="float-right font-bold">&times;</button></div>}
+      {error && <div className="alert-error mb-4" role="alert">{error}<button onClick={() => setError(null)} className="float-right font-bold" aria-label="Close">&times;</button></div>}
       {success && <div className="alert-success mb-4">{success}</div>}
 
       {/* Filters */}

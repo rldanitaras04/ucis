@@ -2,10 +2,19 @@
 
 import { requireAuth, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { isValidUserType } from '@/lib/user-type';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 const BUCKET_NAME = 'ucis-bucket';
-const SIGNED_URL_EXPIRY = 3600; // 1 hour
+const SIGNED_URL_EXPIRY = 3600;
 
 export interface UserProfileData {
   id: string;
@@ -20,19 +29,24 @@ export interface UserProfileData {
   address: string | null;
   avatar_url: string | null;
   avatar_signed_url?: string | null;
+  employee_student_id: string | null;
+  user_type: string;
+  college: string | null;
+  course: string | null;
+  year_level: string | null;
+  department: string | null;
+  position: string | null;
+  status: string;
+  blood_type: string | null;
+  allergies: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
 }
 
-/**
- * Get a signed URL for an avatar stored in Supabase storage.
- * @param supabase - Supabase client
- * @param avatarUrl - The stored avatar URL (contains the path)
- * @returns Signed URL or null
- */
 async function getAvatarSignedUrl(supabase: any, avatarUrl: string | null): Promise<string | null> {
   if (!avatarUrl) return null;
 
   let path: string;
-
   if (avatarUrl.startsWith('avatars/')) {
     path = avatarUrl;
   } else {
@@ -56,24 +70,52 @@ async function getAvatarSignedUrl(supabase: any, avatarUrl: string | null): Prom
 export async function fetchProfile(): Promise<{ success: true; data: UserProfileData } | { success: false; error: string }> {
   try {
     const user = await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data, error } = await supabase
       .from('user_profiles')
-      .select('id, first_name, middle_name, last_name, suffix, contact_number, email, date_of_birth, gender, address, avatar_url')
+      .select(`
+        id, first_name, middle_name, last_name, suffix, contact_number, email,
+        date_of_birth, gender, address, avatar_url, employee_student_id,
+        user_type, college, course, year_level, department, position, status,
+        patient:patient_profiles!user_profile_id(blood_type, allergies, emergency_contact_name, emergency_contact_phone)
+      `)
       .eq('auth_user_id', user.id)
       .single();
 
     if (error) throw error;
 
-    // Get signed URL for avatar
     const avatarSignedUrl = await getAvatarSignedUrl(supabase, data.avatar_url);
+
+    const patient = data.patient as any;
 
     return {
       success: true,
       data: {
-        ...data,
+        id: data.id,
+        first_name: data.first_name,
+        middle_name: data.middle_name,
+        last_name: data.last_name,
+        suffix: data.suffix,
+        contact_number: data.contact_number,
+        email: data.email,
+        date_of_birth: data.date_of_birth,
+        gender: data.gender,
+        address: data.address,
+        avatar_url: data.avatar_url,
         avatar_signed_url: avatarSignedUrl,
+        employee_student_id: data.employee_student_id,
+        user_type: data.user_type,
+        college: data.college,
+        course: data.course,
+        year_level: data.year_level,
+        department: data.department,
+        position: data.position,
+        status: data.status,
+        blood_type: patient?.blood_type || null,
+        allergies: patient?.allergies || null,
+        emergency_contact_name: patient?.emergency_contact_name || null,
+        emergency_contact_phone: patient?.emergency_contact_phone || null,
       },
     };
   } catch (error) {
@@ -84,26 +126,70 @@ export async function fetchProfile(): Promise<{ success: true; data: UserProfile
 export async function updateProfile(updates: Partial<UserProfileData>): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
-    const { error } = await supabase
+    if (updates.user_type && !isValidUserType(updates.user_type)) {
+      return { success: false, error: 'Invalid user type. Must be student, faculty, or non_teaching_staff.' };
+    }
+
+    // Update user_profiles fields
+    const profileFields: Record<string, any> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    const profileKeys = [
+      'first_name', 'middle_name', 'last_name', 'suffix', 'contact_number',
+      'email', 'date_of_birth', 'gender', 'address', 'avatar_url',
+      'college', 'course', 'year_level', 'department', 'position',
+      'employee_student_id', 'user_type',
+    ];
+    for (const key of profileKeys) {
+      if (key in updates) {
+        profileFields[key] = updates[key as keyof typeof updates] || null;
+      }
+    }
+
+    const { error: profileError } = await supabase
       .from('user_profiles')
-      .update({
-        first_name: updates.first_name,
-        middle_name: updates.middle_name || null,
-        last_name: updates.last_name,
-        suffix: updates.suffix || null,
-        contact_number: updates.contact_number || null,
-        email: updates.email || null,
-        date_of_birth: updates.date_of_birth || null,
-        gender: updates.gender || null,
-        address: updates.address || null,
-        avatar_url: updates.avatar_url,
-        updated_at: new Date().toISOString(),
-      })
+      .update(profileFields)
       .eq('auth_user_id', user.id);
 
-    if (error) throw error;
+    if (profileError) throw profileError;
+
+    // Update patient_profiles fields
+    const patientFields: Record<string, any> = {};
+    const patientKeys = ['blood_type', 'allergies', 'emergency_contact_name', 'emergency_contact_phone'];
+    for (const key of patientKeys) {
+      if (key in updates) {
+        patientFields[key] = updates[key as keyof typeof updates] || null;
+      }
+    }
+
+    if (Object.keys(patientFields).length > 0) {
+      // Get patient_profiles id
+      const { data: patientRow } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('auth_user_id', user.id)
+        .single();
+
+      if (patientRow) {
+        const { data: patientProfile } = await supabase
+          .from('patient_profiles')
+          .select('id')
+          .eq('user_profile_id', patientRow.id)
+          .maybeSingle();
+
+        if (patientProfile) {
+          const { error: patientError } = await supabase
+            .from('patient_profiles')
+            .update(patientFields)
+            .eq('id', patientProfile.id);
+
+          if (patientError) throw patientError;
+        }
+      }
+    }
 
     await supabase.rpc('write_audit_log', {
       p_action: 'profile.update',
@@ -123,25 +209,22 @@ export async function updateProfile(updates: Partial<UserProfileData>): Promise<
 export async function uploadAvatar(formData: FormData): Promise<{ success: true; url: string } | { success: false; error: string }> {
   try {
     const user = await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const file = formData.get('avatar') as File;
     if (!file) {
       return { success: false, error: 'No file provided' };
     }
 
-    // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
       return { success: false, error: 'Invalid file type. Please upload a JPEG, PNG, WebP, or GIF image.' };
     }
 
-    // Validate file size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       return { success: false, error: 'File too large. Maximum size is 5MB.' };
     }
 
-    // Delete old avatar if exists
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('avatar_url')
@@ -155,7 +238,6 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
       }
     }
 
-    // Upload new avatar
     const fileExt = file.name.split('.').pop();
     const filePath = `avatars/${user.id}/avatar.${fileExt}`;
 
@@ -165,7 +247,6 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
 
     if (uploadError) throw uploadError;
 
-    // Get signed URL
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from(BUCKET_NAME)
       .createSignedUrl(filePath, SIGNED_URL_EXPIRY);
@@ -177,7 +258,6 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
 
     const avatarUrl = signedUrlData.signedUrl;
 
-    // Update profile with storage path
     const { error: updateError } = await supabase
       .from('user_profiles')
       .update({ avatar_url: filePath, updated_at: new Date().toISOString() })
@@ -206,9 +286,8 @@ export async function uploadAvatar(formData: FormData): Promise<{ success: true;
 export async function removeAvatar(): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
-    // Get current avatar path
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('avatar_url')
@@ -222,7 +301,6 @@ export async function removeAvatar(): Promise<{ success: true } | { success: fal
       }
     }
 
-    // Clear avatar_url in profile
     const { error } = await supabase
       .from('user_profiles')
       .update({ avatar_url: null, updated_at: new Date().toISOString() })

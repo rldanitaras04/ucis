@@ -150,7 +150,7 @@ export default function DocumentsPage() {
       {error && (
         <div className="alert-error mb-4" role="alert">
           {error}
-          <button onClick={() => setError(null)} className="float-right font-bold">&times;</button>
+          <button onClick={() => setError(null)} className="float-right font-bold" aria-label="Close">&times;</button>
         </div>
       )}
 
@@ -392,7 +392,7 @@ export default function DocumentsPage() {
             <div className="p-6 border-b border-[#E5E7EB]">
               <div className="flex items-center justify-between">
                 <h2 className="text-subheading text-[#0F172A]">Document Details</h2>
-                <button onClick={() => setSelectedDocument(null)} className="text-[#9CA3AF] hover:text-[#111827]">&times;</button>
+                <button onClick={() => setSelectedDocument(null)} className="text-[#9CA3AF] hover:text-[#111827]" aria-label="Close">&times;</button>
               </div>
             </div>
             <div className="p-6 space-y-4">

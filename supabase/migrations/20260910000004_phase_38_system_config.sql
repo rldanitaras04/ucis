@@ -42,13 +42,12 @@ INSERT INTO system_config (config_key, config_value, label, sort_order) VALUES
   ('patient_type', 'student', 'Student', 1),
   ('patient_type', 'faculty', 'Faculty', 2),
   ('patient_type', 'non_teaching_staff', 'Non-Teaching Staff', 3),
-  ('patient_type', 'walk_in', 'Walk-in', 4)
+  ('patient_type', 'non_teaching_staff', 'Non-Teaching Staff', 3)
 ON CONFLICT (config_key, config_value) DO NOTHING;
 
--- Seed: user_type options (mirrors patient_type for auth registration)
+-- Seed: user_type options
 INSERT INTO system_config (config_key, config_value, label, sort_order) VALUES
   ('user_type', 'student', 'Student', 1),
   ('user_type', 'faculty', 'Faculty', 2),
-  ('user_type', 'non_teaching_staff', 'Non-Teaching Staff', 3),
-  ('user_type', 'walk_in', 'Walk-in Patient', 4)
+  ('user_type', 'non_teaching_staff', 'Non-Teaching Staff', 3)
 ON CONFLICT (config_key, config_value) DO NOTHING;

@@ -57,7 +57,7 @@ export default function AdminClinicsPage() {
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-[#64748B]">Campus</span>
             <p className="font-medium text-[#0F172A]">{DEFAULT_CAMPUS_NAME}</p>

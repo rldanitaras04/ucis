@@ -2,17 +2,25 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchQueue(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'doctor', 'dentist', 'nurse');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const today = new Date().toISOString().split('T')[0];
 
     const { data, error } = await supabase
       .from('queue_entries')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, id, university_id), clinic:clinics!clinic_id(name), service:clinic_services!service_id(name), encounter_id')
+      .select(`*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(id, first_name, last_name, user_type, employee_student_id, college, course, year_level, department, position)), service:clinic_services!service_id(name), encounter:encounters!encounter_id(chief_complaint)`)
       .eq('queue_date', today)
       .order('queue_number', { ascending: true });
 
@@ -102,40 +110,50 @@ export async function callNextPatient(clinicId?: string): Promise<{ success: tru
 export async function startQueueService(entryId: string): Promise<{ success: true; encounterId?: string } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'doctor', 'dentist', 'nurse');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     // Get the queue entry details
     const { data: entry, error: fetchError } = await supabase
       .from('queue_entries')
-      .select('*, patient:patient_profiles!patient_id(id), clinic:clinics!clinic_id(id), service:clinic_services!service_id(id)')
+      .select('*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name)), clinic:clinics!clinic_id(id), service:clinic_services!service_id(id)')
       .eq('id', entryId)
       .single();
 
     if (fetchError || !entry) throw new Error('Queue entry not found');
 
-    // Create encounter linked to this queue entry
-    const { data: encounter, error: encError } = await supabase
-      .from('encounters')
-      .insert({
-        patient_id: entry.patient_id,
-        queue_entry_id: entryId,
-        clinic_id: entry.clinic_id,
-        service_id: entry.service_id,
-        status: 'in_progress',
-        visit_date: new Date().toISOString(),
-      })
-      .select()
-      .single();
+    let encounterId = entry.encounter_id;
 
-    if (encError) throw encError;
+    // If no encounter exists yet (added to queue without chief complaint), create one
+    if (!encounterId) {
+      const { data: encounter, error: encError } = await supabase
+        .from('encounters')
+        .insert({
+          patient_id: entry.patient_id,
+          queue_entry_id: entryId,
+          clinic_id: entry.clinic_id,
+          service_id: entry.service_id,
+          status: 'in_progress',
+          visit_date: new Date().toISOString(),
+        })
+        .select('id')
+        .single();
 
-    // Update queue entry status and link encounter
+      if (encError) throw encError;
+      encounterId = encounter.id;
+    } else {
+      // Update existing encounter status to in_progress
+      await supabase
+        .from('encounters')
+        .update({ status: 'in_progress', updated_at: new Date().toISOString() })
+        .eq('id', encounterId);
+    }
+
+    // Update queue entry status
     const { error } = await supabase
       .from('queue_entries')
       .update({
         status: 'in_service',
         started_at: new Date().toISOString(),
-        encounter_id: encounter.id,
       })
       .eq('id', entryId);
 
@@ -150,7 +168,7 @@ export async function startQueueService(entryId: string): Promise<{ success: tru
     });
 
     revalidatePath('/queue');
-    return { success: true, encounterId: encounter.id };
+    return { success: true, encounterId };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -234,14 +252,12 @@ export async function addToQueue(data: {
   clinic_id: string;
   service_id: string;
   priority?: number;
+  chief_complaint?: string;
 }): Promise<{ success: true; queueNumber: number; entryId: string } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'doctor', 'dentist', 'nurse');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
-    // Use the atomic create_queue_entry RPC which handles:
-    // - Atomic queue number generation using queue_counters with upsert
-    // - Prevents race conditions with concurrent queue entries
     const { data: queueNumber, error: queueError } = await supabase.rpc('create_queue_entry', {
       p_clinic_id: data.clinic_id,
       p_service_id: data.service_id,
@@ -250,7 +266,6 @@ export async function addToQueue(data: {
 
     if (queueError) throw queueError;
 
-    // Get the created entry for the ID
     const today = new Date().toISOString().split('T')[0];
     const { data: entry, error: fetchError } = await supabase
       .from('queue_entries')
@@ -263,6 +278,30 @@ export async function addToQueue(data: {
       .single();
 
     if (fetchError) throw fetchError;
+
+    let encounterId = null;
+    if (data.chief_complaint) {
+      const { data: encounter, error: encError } = await supabase
+        .from('encounters')
+        .insert({
+          patient_id: data.patient_id,
+          clinic_id: data.clinic_id,
+          service_id: data.service_id,
+          chief_complaint: data.chief_complaint,
+          visit_date: today,
+          status: 'in_progress',
+        })
+        .select('id')
+        .single();
+
+      if (!encError && encounter) {
+        encounterId = encounter.id;
+        await supabase
+          .from('queue_entries')
+          .update({ encounter_id: encounterId })
+          .eq('id', entry.id);
+      }
+    }
 
     await supabase.rpc('write_audit_log', {
       p_actor: user.id,

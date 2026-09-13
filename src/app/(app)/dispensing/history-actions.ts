@@ -26,7 +26,7 @@ export async function fetchDispensingHistory(filters?: {
           frequency,
           prescription:prescriptions(
             id,
-            patient:patient_profiles!patient_id(id, first_name, last_name, university_id)
+            patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name))
           )
         ),
         batch:medicine_batches(

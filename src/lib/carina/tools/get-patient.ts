@@ -21,7 +21,7 @@ export const getPatientTool: CarinaToolDefinition = {
 
     const { data, error } = await supabase
       .from('patient_profiles')
-      .select('id, first_name, middle_name, last_name, suffix, date_of_birth, gender, blood_type, allergies, contact_number, email, address, patient_type, status, created_at')
+      .select('id, blood_type, allergies, emergency_contact_name, emergency_contact_phone, created_at, user_profile:user_profiles!user_profile_id(first_name, middle_name, last_name, suffix, date_of_birth, gender, contact_number, email, address, user_type, status, employee_student_id)')
       .eq('id', patientId)
       .single();
 

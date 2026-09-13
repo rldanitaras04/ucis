@@ -2,15 +2,23 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchAdminUsers(): Promise<{ success: true; data: { users: any[]; userRoles: any[]; roles: any[] } } | { success: false; error: string }> {
   try {
     await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const [usersResult, userRolesResult, rolesResult] = await Promise.all([
-      supabase.from('user_profiles').select('*').order('last_name', { ascending: true }),
+      supabase.from('user_profiles').select('*, patient:patient_profiles!user_profile_id(id, blood_type, allergies, emergency_contact_name, emergency_contact_phone)').order('last_name', { ascending: true }),
       supabase.from('user_roles').select('*, roles(name)').eq('is_active', true),
       supabase.from('roles').select('id, name').order('name'),
     ]);
@@ -34,7 +42,7 @@ export async function fetchAdminUsers(): Promise<{ success: true; data: { users:
 export async function checkAdminAccess(): Promise<{ success: true; isAdmin: boolean } | { success: false; error: string }> {
   try {
     const user = await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data: roles } = await supabase
       .from('user_roles')
       .select('roles(name)')
@@ -51,11 +59,11 @@ export async function checkAdminAccess(): Promise<{ success: true; isAdmin: bool
 export async function updateUserRole(userId: string, roleId: string): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { error } = await supabase
       .from('user_roles')
-      .update({ role_id: roleId, updated_at: new Date().toISOString() })
+      .update({ role_id: roleId, updated_at: new Date().toISOString(), updated_by: user.id })
       .eq('user_id', userId);
 
     if (error) throw error;
@@ -78,11 +86,11 @@ export async function updateUserRole(userId: string, roleId: string): Promise<{ 
 export async function updateUserStatus(userId: string, status: 'active' | 'suspended'): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { error } = await supabase
       .from('user_profiles')
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status, updated_at: new Date().toISOString(), updated_by: user.id })
       .eq('id', userId);
 
     if (error) throw error;

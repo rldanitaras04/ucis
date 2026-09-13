@@ -3,14 +3,22 @@
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@supabase/supabase-js';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchReferrals(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('referrals')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id), from_clinic:clinics!from_clinic_id(name), to_clinic:clinics!to_clinic_id(name)')
+      .select('*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name)), from_clinic:clinics!from_clinic_id(name), to_clinic:clinics!to_clinic_id(name)')
       .order('referral_date', { ascending: false });
     if (error) throw error;
     return { success: true, data: data || [] };

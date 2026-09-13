@@ -49,14 +49,14 @@ export const registerPatientTool: CarinaToolDefinition = {
         type: 'string',
         description: 'Emergency contact phone',
       },
-      university_id: {
+      employee_student_id: {
         type: 'string',
-        description: 'University or employee ID',
+        description: 'Student ID or Employee ID',
       },
       patient_type: {
         type: 'string',
-        description: 'Patient type',
-        enum: ['student', 'faculty', 'non_teaching_staff', 'walk_in'],
+        description: 'Patient type (student/faculty/non_teaching_staff)',
+        enum: ['student', 'faculty', 'non_teaching_staff'],
       },
     },
     required: ['first_name', 'last_name', 'gender'],
@@ -70,14 +70,14 @@ export const registerPatientTool: CarinaToolDefinition = {
         p_last_name: args.last_name,
         p_date_of_birth: args.date_of_birth || null,
         p_gender: args.gender,
-        p_patient_type: args.patient_type || 'walk_in',
+        p_user_type: args.patient_type || 'student',
         p_email: args.email || null,
         p_contact_number: args.contact_number || null,
         p_blood_type: args.blood_type || null,
         p_allergies: args.allergies || null,
         p_emergency_contact_name: args.emergency_contact_name || null,
         p_emergency_contact_phone: args.emergency_contact_phone || null,
-        p_university_id: args.university_id || null,
+        p_employee_student_id: args.employee_student_id || null,
       })
       .single();
 

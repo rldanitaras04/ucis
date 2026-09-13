@@ -12,7 +12,7 @@ export type UserRole =
 export interface UserProfile {
   id: string;
   auth_user_id: string;
-  user_type: 'student' | 'faculty' | 'non_teaching_staff' | 'walk_in';
+  user_type: 'student' | 'faculty' | 'non_teaching_staff' | 'admin' | 'super_admin';
   university_id?: string;
   campus_id?: string;
   employee_student_id?: string;
@@ -33,26 +33,19 @@ export interface UserProfile {
 export interface PatientProfile {
   id: string;
   user_profile_id?: string;
-  university_id?: string;
-  first_name: string;
-  middle_name?: string;
-  last_name: string;
-  suffix?: string;
-  date_of_birth: string;
-  gender: string;
   blood_type?: string;
   allergies?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  contact_number?: string;
-  email?: string;
-  address?: string;
-  campus_id?: string;
   clinic_id?: string;
-  patient_type: 'student' | 'faculty' | 'non_teaching_staff' | 'walk_in';
-  status: 'active' | 'inactive' | 'deceased';
   created_at: string;
   updated_at: string;
+  // Joined from user_profiles via user_profile_id
+  user_profile?: UserProfile;
+}
+
+export interface PatientWithUser extends PatientProfile {
+  user_profile: UserProfile;
 }
 
 export interface ProviderProfile {

@@ -26,7 +26,8 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
     allergies: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
-    patient_type: 'student',
+    user_type: 'student',
+    employee_student_id: '',
     status: 'active',
   });
 
@@ -34,25 +35,27 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
     async function load() {
       const [patientResult, typesResult] = await Promise.all([
         fetchPatientById(id),
-        fetchSystemConfig('patient_type'),
+        fetchSystemConfig('user_type'),
       ]);
       if (typesResult.success) setPatientTypes(typesResult.data);
       const result = patientResult;
       if (result.success && result.data) {
         const p = result.data;
+        const up = p.user_profile || {};
         setForm({
-          first_name: p.first_name || '',
-          last_name: p.last_name || '',
-          email: p.email || '',
-          contact_number: p.contact_number || '',
-          date_of_birth: p.date_of_birth || '',
-          gender: p.gender || 'male',
+          first_name: up.first_name || '',
+          last_name: up.last_name || '',
+          email: up.email || '',
+          contact_number: up.contact_number || '',
+          date_of_birth: up.date_of_birth || '',
+          gender: up.gender || 'male',
           blood_type: p.blood_type || '',
           allergies: p.allergies || '',
           emergency_contact_name: p.emergency_contact_name || '',
           emergency_contact_phone: p.emergency_contact_phone || '',
-          patient_type: p.patient_type || 'student',
-          status: p.status || 'active',
+          user_type: up.user_type || 'student',
+          employee_student_id: up.employee_student_id || '',
+          status: up.status || 'active',
         });
       } else if (!result.success) {
         setError(result.error || 'Patient not found');
@@ -83,7 +86,8 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
       allergies: form.allergies || undefined,
       emergency_contact_name: form.emergency_contact_name || undefined,
       emergency_contact_phone: form.emergency_contact_phone || undefined,
-      patient_type: form.patient_type,
+      user_type: form.user_type,
+      employee_student_id: form.employee_student_id || undefined,
       status: form.status,
     });
 
@@ -117,7 +121,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
       {success && <div className="alert-success mb-4" role="status">Patient updated successfully.</div>}
 
       <form onSubmit={handleSubmit} className="card space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="first_name" className="label">First Name *</label>
             <input id="first_name" name="first_name" value={form.first_name} onChange={handleChange} required className="input-field" />
@@ -128,7 +132,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="email" className="label">Email</label>
             <input id="email" name="email" type="email" value={form.email} onChange={handleChange} className="input-field" />
@@ -139,7 +143,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="date_of_birth" className="label">Date of Birth</label>
             <input id="date_of_birth" name="date_of_birth" type="date" value={form.date_of_birth} onChange={handleChange} className="input-field" />
@@ -154,7 +158,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="blood_type" className="label">Blood Type</label>
             <select id="blood_type" name="blood_type" value={form.blood_type} onChange={handleChange} className="input-field">
@@ -166,10 +170,16 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
             </select>
           </div>
           <div>
-            <label htmlFor="patient_type" className="label">Patient Type *</label>
-            <select id="patient_type" name="patient_type" value={form.patient_type} onChange={handleChange} className="input-field">
+            <label htmlFor="user_type" className="label">Patient Type *</label>
+            <select id="user_type" name="user_type" value={form.user_type} onChange={handleChange} className="input-field">
               {patientTypes.map(pt => <option key={pt.config_value} value={pt.config_value}>{pt.label}</option>)}
             </select>
+          </div>
+          <div>
+            <label htmlFor="employee_student_id" className="label">
+              {form.user_type === 'student' ? 'Student ID' : 'Employee ID'}
+            </label>
+            <input id="employee_student_id" name="employee_student_id" value={form.employee_student_id} onChange={handleChange} className="input-field" />
           </div>
         </div>
 
@@ -178,7 +188,7 @@ export default function EditPatientPage({ params }: { params: Promise<{ id: stri
           <textarea id="allergies" name="allergies" value={form.allergies} onChange={handleChange} rows={2} className="input-field" />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="emergency_contact_name" className="label">Emergency Contact Name</label>
             <input id="emergency_contact_name" name="emergency_contact_name" value={form.emergency_contact_name} onChange={handleChange} className="input-field" />

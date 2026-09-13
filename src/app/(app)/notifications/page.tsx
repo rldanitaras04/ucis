@@ -2,15 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { fetchNotifications, markNotificationRead, markAllNotificationsRead, deleteNotification } from './actions';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  is_read: boolean;
-  created_at: string;
-}
+import type { Notification } from '@/lib/notifications/types';
+import PageHeader from '@/components/layout/PageHeader';
+import PageContainer from '@/components/layout/PageContainer';
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -64,36 +58,28 @@ export default function NotificationsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64" role="status" aria-label="Loading notifications">
-        <div className="spinner"></div>
+        <div className="w-8 h-8 border-2 border-[#E5E7EB] border-t-[#1E40AF] rounded-full animate-spin" />
         <span className="sr-only">Loading notifications...</span>
       </div>
     );
   }
 
   return (
-    <div className="page-container">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-heading text-[#0F172A]">
-          Notifications
-          {unreadCount > 0 && (
-            <span className="ml-2 text-body font-normal text-[#64748B]">
-              ({unreadCount} unread)
-            </span>
-          )}
-        </h1>
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllRead}
-            disabled={actionLoading === 'all'}
-            className="btn-primary"
-          >
-            {actionLoading === 'all' ? 'Marking...' : 'Mark All Read'}
-          </button>
-        )}
-      </div>
+    <PageContainer variant="wide">
+      <PageHeader
+        title="Notifications"
+        description={unreadCount > 0 ? `${unreadCount} unread` : undefined}
+        actions={
+          unreadCount > 0 ? (
+            <button onClick={handleMarkAllRead} disabled={actionLoading === 'all'} className="btn-primary">
+              {actionLoading === 'all' ? 'Marking...' : 'Mark All Read'}
+            </button>
+          ) : undefined
+        }
+      />
 
       {error && (
-        <div className="alert-error mb-4" role="alert">
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700" role="alert">
           {error}
         </div>
       )}
@@ -111,7 +97,7 @@ export default function NotificationsPage() {
                 <h3 className={`font-medium ${notification.is_read ? 'text-[#64748B]' : 'text-[#0F172A]'}`}>
                   {notification.title}
                 </h3>
-                <p className="text-body text-[#64748B] mt-1">{notification.message}</p>
+                <p className="text-body text-[#64748B] mt-1">{notification.body || ''}</p>
                 <p className="text-small text-[#94A3B8] mt-2">
                   {new Date(notification.created_at).toLocaleString()}
                 </p>
@@ -143,6 +129,6 @@ export default function NotificationsPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

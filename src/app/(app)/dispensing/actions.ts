@@ -2,23 +2,44 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchActivePrescriptions(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
-    await requireAuth();
-    const supabase = createServerSupabaseClient();
+    await requireAnyRole('clinic_staff', 'nurse', 'admin', 'super_admin');
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('prescriptions')
       .select(`
         *,
-        patient:patient_profiles!patient_id(first_name, last_name, university_id),
+        patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name, employee_student_id)),
         items:prescription_items(*, medicine:medicines(id, name, generic_name, form, strength))
       `)
       .eq('status', 'active')
       .order('prescribed_date', { ascending: false });
     if (error) throw error;
-    return { success: true, data: data || [] };
+    const flattened = (data || []).map((rx: any) => {
+      const p = rx.patient as any;
+      const profile = p?.user_profile ? (Array.isArray(p.user_profile) ? p.user_profile[0] : p.user_profile) : null;
+      return {
+        ...rx,
+        patient: p ? {
+          id: p.id,
+          first_name: profile?.first_name || '',
+          last_name: profile?.last_name || '',
+          employee_student_id: profile?.employee_student_id || null,
+        } : null,
+      };
+    });
+    return { success: true, data: flattened };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -26,8 +47,8 @@ export async function fetchActivePrescriptions(): Promise<{ success: true; data:
 
 export async function fetchMedicineBatches(medicineId?: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
-    await requireAuth();
-    const supabase = createServerSupabaseClient();
+    await requireAnyRole('clinic_staff', 'nurse', 'admin', 'super_admin');
+    const supabase = getAdminClient();
 
     let query = supabase
       .from('medicine_batches')
@@ -54,7 +75,7 @@ export async function dispenseMedication(data: {
   quantity: number;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
+    const user = await requireAnyRole('clinic_staff', 'nurse', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
     const { data: dispensingId, error } = await supabase.rpc('dispense_prescription', {

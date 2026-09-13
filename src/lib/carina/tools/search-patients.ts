@@ -3,14 +3,14 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 
 export const searchPatientsTool: CarinaToolDefinition = {
   name: 'search_patients',
-  description: 'Search for patients by name, university ID, or email. Returns matching patient records.',
+  description: 'Search for patients by name, employee/student ID, or email. Returns matching patient records.',
   allowedRoles: ['doctor', 'dentist', 'nurse', 'clinic_staff', 'admin', 'super_admin'],
   inputSchema: {
     type: 'object',
     properties: {
       query: {
         type: 'string',
-        description: 'Search term (name, university ID, or email)',
+        description: 'Search term (name, employee/student ID, or email)',
       },
       limit: {
         type: 'string',
@@ -25,9 +25,9 @@ export const searchPatientsTool: CarinaToolDefinition = {
     const limit = parseInt(args.limit as string || '10', 10);
 
     const { data, error } = await supabase
-      .from('patient_profiles')
-      .select('id, first_name, last_name, university_id, email, patient_type, status')
-      .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,university_id.ilike.%${query}%,email.ilike.%${query}%`)
+      .from('user_profiles')
+      .select('id, first_name, last_name, employee_student_id, email, user_type, status, patient:patient_profiles!user_profile_id(id, blood_type)')
+      .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,employee_student_id.ilike.%${query}%,email.ilike.%${query}%`)
       .eq('status', 'active')
       .order('last_name')
       .limit(limit);

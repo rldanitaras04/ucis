@@ -2,15 +2,23 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchVitalSigns(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('vital_signs')
-      .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, respiratory_rate, temperature, oxygen_saturation, height, weight, bmi, notes, patient:patient_profiles!patient_id(first_name, last_name, university_id)')
+      .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, respiratory_rate, temperature, oxygen_saturation, height, weight, bmi, notes, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name, employee_student_id))')
       .order('recorded_at', { ascending: false })
       .limit(10);
     if (error) throw error;
@@ -23,7 +31,7 @@ export async function fetchVitalSigns(): Promise<{ success: true; data: any[] } 
 export async function fetchPatientVitals(patientId: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('vital_signs')
       .select('id, patient_id, recorded_at, blood_pressure_systolic, blood_pressure_diastolic, pulse_rate, respiratory_rate, temperature, oxygen_saturation, height, weight, bmi, notes')
@@ -51,11 +59,12 @@ export async function recordVitalSigns(data: {
   notes?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('nurse', 'doctor', 'admin', 'super_admin');
+    const user = await requireAnyRole('nurse', 'clinic_staff', 'doctor', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
+    const admin = getAdminClient();
 
     // Only clinical roles should record vitals
-    if (!['nurse', 'doctor'].some(r => user.roles.includes(r)) && !user.roles.includes('super_admin')) {
+    if (!['nurse', 'clinic_staff', 'doctor'].some(r => user.roles.includes(r)) && !user.roles.includes('super_admin')) {
       throw new Error('FORBIDDEN');
     }
 
@@ -66,7 +75,7 @@ export async function recordVitalSigns(data: {
       bmi = Math.round((data.weight / (heightM * heightM)) * 10) / 10;
     }
 
-    const { data: vital, error } = await supabase
+    const { data: vital, error } = await admin
       .from('vital_signs')
       .insert({
         patient_id: data.patient_id,
@@ -89,7 +98,7 @@ export async function recordVitalSigns(data: {
 
     if (error) throw error;
 
-    await supabase.rpc('write_audit_log', {
+    await admin.rpc('write_audit_log', {
       p_actor: user.id,
       p_action: 'vitals.record',
       p_resource_type: 'vital_signs',

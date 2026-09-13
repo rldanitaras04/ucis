@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
 import CarinaLauncher from '@/components/carina/CarinaLauncher';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,12 +17,19 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.png',
   },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'UCIS',
+  },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  themeColor: '#1E40AF',
 };
 
 export default function RootLayout({
@@ -45,6 +53,7 @@ export default function RootLayout({
         />
         {children}
         <CarinaLauncher />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );

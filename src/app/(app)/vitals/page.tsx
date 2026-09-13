@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { recordVitalSigns, fetchVitalSigns } from './actions';
+import { fetchPatientName } from '../actions/patients';
 import PatientSearch from '@/components/PatientSearch';
 import VitalsAnalysis from '@/components/VitalsAnalysis';
 
@@ -15,13 +16,19 @@ interface VitalRecord {
   pulse_rate: number | null;
   temperature: number | null;
   oxygen_saturation: number | null;
-  patient?: { first_name: string; last_name: string; university_id?: string };
+  patient?: { user_profile?: { first_name: string; last_name: string; employee_student_id?: string } };
 }
 
 function VitalsPageContent() {
   const searchParams = useSearchParams();
-  const [patientId, setPatientId] = useState(searchParams.get('patient') || '');
-  const [encounterId, setEncounterId] = useState(searchParams.get('encounter') || '');
+  const patientIdFromQueue = searchParams.get('patient') || '';
+  const encounterIdFromQueue = searchParams.get('encounter') || '';
+  const fromQueue = !!patientIdFromQueue && !!encounterIdFromQueue;
+
+  const [patientId, setPatientId] = useState(patientIdFromQueue);
+  const [encounterId, setEncounterId] = useState(encounterIdFromQueue);
+  const [patientName, setPatientName] = useState('');
+  const [patientNameLoading, setPatientNameLoading] = useState(false);
   const [formData, setFormData] = useState({
     blood_pressure_systolic: '',
     blood_pressure_diastolic: '',
@@ -52,6 +59,18 @@ function VitalsPageContent() {
   useEffect(() => {
     fetchRecentRecords();
   }, [fetchRecentRecords]);
+
+  useEffect(() => {
+    if (fromQueue && patientIdFromQueue) {
+      setPatientNameLoading(true);
+      fetchPatientName(patientIdFromQueue).then((result) => {
+        if (result.success) {
+          setPatientName(`${result.data.last_name}, ${result.data.first_name}`);
+        }
+        setPatientNameLoading(false);
+      });
+    }
+  }, [fromQueue, patientIdFromQueue]);
 
   const carinaTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -170,15 +189,32 @@ function VitalsPageContent() {
       )}
 
       <form onSubmit={handleSubmit} className="card space-y-4">
-        <PatientSearch
-          id="vitals-patient-search"
-          label="Patient"
-          required
-          value={patientId}
-          onChange={(patientId) => setPatientId(patientId)}
-        />
+        {fromQueue ? (
+          <div>
+            <label className="label">Patient *</label>
+            <div className="input-field bg-[#F8FAFC]">
+              {patientNameLoading ? (
+                <span className="text-[#94A3B8]">Loading...</span>
+              ) : (
+                <span className="font-medium text-[#0F172A]">{patientName || patientId}</span>
+              )}
+              <input type="hidden" value={patientId} />
+            </div>
+          </div>
+        ) : (
+          <PatientSearch
+            id="vitals-patient-search"
+            label="Patient"
+            required
+            value={patientId}
+            onChange={(pid, patient) => {
+              setPatientId(pid);
+              if (patient) setPatientName(`${patient.last_name}, ${patient.first_name}`);
+            }}
+          />
+        )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="systolic" className="label">Systolic BP</label>
             <input
@@ -201,7 +237,7 @@ function VitalsPageContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="pulse" className="label">Pulse Rate</label>
             <input
@@ -224,7 +260,7 @@ function VitalsPageContent() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label htmlFor="temperature" className="label">Temperature</label>
             <input
@@ -249,7 +285,7 @@ function VitalsPageContent() {
           <div></div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="height" className="label">Height (cm)</label>
             <input
@@ -325,9 +361,9 @@ function VitalsPageContent() {
                 {recentRecords.map((record) => (
                   <tr key={record.id}>
                     <td className="text-body text-[#0F172A]">
-                      {record.patient?.last_name}, {record.patient?.first_name}
+                      {record.patient?.user_profile?.last_name}, {record.patient?.user_profile?.first_name}
                       <br />
-                      <span className="text-small text-[#94A3B8]">{record.patient?.university_id || '—'}</span>
+                      <span className="text-small text-[#94A3B8]">{record.patient?.user_profile?.employee_student_id || '—'}</span>
                     </td>
                     <td className="text-body text-[#334155]">
                       {new Date(record.recorded_at).toLocaleDateString()}

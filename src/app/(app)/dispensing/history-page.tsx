@@ -16,7 +16,7 @@ interface DispensingRecord {
       patient?: {
         first_name: string;
         last_name: string;
-        university_id: string;
+        employee_student_id: string;
       };
     };
   };
@@ -70,7 +70,7 @@ export default function DispensingHistoryPage() {
     const rows = records.map((r) => [
       new Date(r.dispensed_at).toLocaleDateString(),
       `${r.prescription_item?.prescription?.patient?.last_name || ''}, ${r.prescription_item?.prescription?.patient?.first_name || ''}`,
-      r.prescription_item?.prescription?.patient?.university_id || '',
+      r.prescription_item?.prescription?.patient?.employee_student_id || '',
       r.batch?.medicine?.name || r.prescription_item?.medication_name || '',
       r.batch?.medicine?.strength || '',
       r.batch?.medicine?.form || '',
@@ -163,7 +163,7 @@ export default function DispensingHistoryPage() {
                     <td>
                       {r.prescription_item?.prescription?.patient?.last_name}, {r.prescription_item?.prescription?.patient?.first_name}
                       <br />
-                      <span className="text-xs text-[#94A3B8]">{r.prescription_item?.prescription?.patient?.university_id}</span>
+                      <span className="text-xs text-[#94A3B8]">{r.prescription_item?.prescription?.patient?.employee_student_id}</span>
                     </td>
                     <td className="font-medium">
                       {r.batch?.medicine?.name || r.prescription_item?.medication_name}

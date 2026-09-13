@@ -17,14 +17,6 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     requiredRoles: ['clinic_staff', 'doctor', 'dentist', 'nurse', 'admin', 'super_admin'],
   },
   {
-    id: 'patient-register',
-    label: 'Patient Registration',
-    href: '/patient/register',
-    section: 'Clinical',
-    priority: 11,
-    requiredRoles: ['clinic_staff', 'admin', 'super_admin'],
-  },
-  {
     id: 'patient-records',
     label: 'Patient Records',
     href: '/records',
@@ -86,7 +78,7 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     href: '/dispensing',
     section: 'Pharmacy',
     priority: 30,
-    requiredRoles: ['clinic_staff', 'admin', 'super_admin'],
+    requiredRoles: ['clinic_staff', 'nurse', 'admin', 'super_admin'],
   },
   {
     id: 'dispensing-history',
@@ -94,7 +86,7 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     href: '/dispensing/history',
     section: 'Pharmacy',
     priority: 31,
-    requiredRoles: ['clinic_staff', 'admin', 'super_admin'],
+    requiredRoles: ['clinic_staff', 'nurse', 'admin', 'super_admin'],
   },
   {
     id: 'medicines',

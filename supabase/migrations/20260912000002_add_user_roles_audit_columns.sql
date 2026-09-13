@@ -1,0 +1,6 @@
+ALTER TABLE user_roles
+  ADD COLUMN updated_at TIMESTAMPTZ,
+  ADD COLUMN updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+
+ALTER TABLE user_profiles
+  ADD COLUMN IF NOT EXISTS updated_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;

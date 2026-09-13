@@ -19,8 +19,23 @@ interface QueueEntry {
   started_at?: string;
   completed_at?: string;
   encounter_id?: string;
-  patient?: { first_name: string; last_name: string; id: string; university_id?: string };
-  clinic?: { name: string };
+  encounter?: { chief_complaint?: string } | { chief_complaint?: string }[] | null;
+  chief_complaint?: string;
+  patient?: {
+    id: string;
+    user_profile?: {
+      id: string;
+      first_name: string;
+      last_name: string;
+      user_type?: string;
+      employee_student_id?: string;
+      college?: string;
+      course?: string;
+      year_level?: string;
+      department?: string;
+      position?: string;
+    };
+  };
   service?: { name: string };
 }
 
@@ -39,7 +54,7 @@ export default function QueuePage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState<string | null>(null);
   const [services, setServices] = useState<ClinicService[]>([]);
-  const [formData, setFormData] = useState({ patient_id: '', service_id: '' });
+  const [formData, setFormData] = useState({ patient_id: '', service_id: '', chief_complaint: '' });
 
   const loadQueue = async () => {
     const result = await fetchQueue();
@@ -73,12 +88,13 @@ export default function QueuePage() {
       patient_id: formData.patient_id,
       clinic_id: DEFAULT_CLINIC_ID,
       service_id: formData.service_id,
+      chief_complaint: formData.chief_complaint || undefined,
     });
 
     if (result.success) {
       setSuccess('Patient added to queue');
       setShowAddForm(false);
-      setFormData({ patient_id: '', service_id: '' });
+      setFormData({ patient_id: '', service_id: '', chief_complaint: '' });
       await loadQueue();
     } else {
       setError(result.error || 'Failed to add to queue');
@@ -195,6 +211,17 @@ export default function QueuePage() {
               </select>
             </div>
           </div>
+          <div>
+            <label htmlFor="chief_complaint" className="label">Chief Complaint</label>
+            <input
+              id="chief_complaint"
+              type="text"
+              value={formData.chief_complaint}
+              onChange={(e) => setFormData({ ...formData, chief_complaint: e.target.value })}
+              className="input-field"
+              placeholder="e.g. Fever, headache..."
+            />
+          </div>
           <button type="submit" disabled={actionLoading === 'add'} className="btn-primary">
             {actionLoading === 'add' ? 'Adding...' : 'Add to Queue'}
           </button>
@@ -204,8 +231,8 @@ export default function QueuePage() {
       {/* Cancel Confirmation Dialog */}
       {confirmCancel && (
         <div className="dialog-overlay" onClick={() => setConfirmCancel(null)}>
-          <div className="dialog-content" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-subheading text-[#0F172A] mb-2">Cancel Queue Entry?</h3>
+          <div className="dialog-content" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="cancel-queue-dialog-title">
+            <h3 id="cancel-queue-dialog-title" className="text-subheading text-[#0F172A] mb-2">Cancel Queue Entry?</h3>
             <p className="text-body text-[#64748B] mb-4">This action will remove the patient from the queue. This cannot be undone.</p>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setConfirmCancel(null)} className="btn-secondary">Keep</button>
@@ -224,22 +251,35 @@ export default function QueuePage() {
               <tr>
                 <th scope="col">Queue #</th>
                 <th scope="col">Patient</th>
-                <th scope="col">Clinic</th>
+                <th scope="col">Details</th>
+                <th scope="col">Chief Complaint</th>
                 <th scope="col">Service</th>
                 <th scope="col">Status</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {queueEntries.map((entry) => (
+              {queueEntries.map((entry) => {
+                const profile = entry.patient?.user_profile;
+                const isStudent = profile?.user_type === 'student';
+                return (
                 <tr key={entry.id} className="hover:bg-[#F8FAFC]">
                   <td className="font-medium tabular-nums">{entry.queue_number}</td>
                   <td>
-                    {entry.patient?.last_name}, {entry.patient?.first_name}
+                    <span className="font-medium text-[#0F172A]">{profile?.last_name}, {profile?.first_name}</span>
                     <br />
-                    <span className="text-small text-[#94A3B8]">{entry.patient?.university_id || '—'}</span>
+                    <span className="text-small text-[#64748B]">{profile?.employee_student_id || '—'}</span>
                   </td>
-                  <td>{entry.clinic?.name}</td>
+                  <td className="text-small text-[#64748B]">
+                    {isStudent ? (
+                      <>{profile?.course ? `${profile.course} ${profile.year_level || ''}`.toUpperCase() : '—'}</>
+                    ) : (
+                      <>{profile?.department ? `${profile.department} ${profile.position || ''}`.toUpperCase() : '—'}</>
+                    )}
+                  </td>
+                  <td className="text-small text-[#64748B] max-w-[200px] truncate">
+                    {(Array.isArray(entry.encounter) ? entry.encounter[0]?.chief_complaint : entry.encounter?.chief_complaint) || '—'}
+                  </td>
                   <td>{entry.service?.name}</td>
                   <td>
                     <span className={`badge ${getStatusColor(entry.status)}`}>
@@ -270,7 +310,8 @@ export default function QueuePage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

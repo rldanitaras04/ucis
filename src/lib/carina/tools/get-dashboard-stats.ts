@@ -39,7 +39,7 @@ export const getDashboardStatsTool: CarinaToolDefinition = {
     const total = queueData?.length || 0;
 
     const { count: patientCount } = await supabase
-      .from('patient_profiles')
+      .from('user_profiles')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'active');
 

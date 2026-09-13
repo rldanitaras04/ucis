@@ -81,10 +81,10 @@ export default function PatientPortalPage() {
 
       <div className="card mb-6">
         <h2 className="text-subheading text-[#0F172A] mb-4">My Information</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <p className="text-small text-[#64748B]">Name</p>
-            <p className="font-medium text-[#0F172A]">{patient.first_name} {patient.last_name}</p>
+            <p className="font-medium text-[#0F172A]">{patient.user_profile?.first_name} {patient.user_profile?.last_name}</p>
           </div>
           <div>
             <p className="text-small text-[#64748B]">Blood Type</p>

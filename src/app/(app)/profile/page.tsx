@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { fetchProfile, updateProfile, uploadAvatar, removeAvatar, UserProfileData } from './actions';
+import { fetchSystemConfig } from '@/app/(app)/admin/library/actions';
 import { Camera, Check, Trash } from '@phosphor-icons/react';
 
 export default function ProfilePage() {
@@ -14,6 +15,11 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [colleges, setColleges] = useState<{ config_value: string; label: string }[]>([]);
+  const [courses, setCourses] = useState<{ config_value: string; label: string }[]>([]);
+  const [yearLevels, setYearLevels] = useState<{ config_value: string; label: string }[]>([]);
+  const [departments, setDepartments] = useState<{ config_value: string; label: string }[]>([]);
+
   const [form, setForm] = useState({
     first_name: '',
     middle_name: '',
@@ -24,6 +30,17 @@ export default function ProfilePage() {
     date_of_birth: '',
     gender: '',
     address: '',
+    college: '',
+    course: '',
+    year_level: '',
+    department: '',
+    position: '',
+    employee_student_id: '',
+    user_type: 'student',
+    blood_type: '',
+    allergies: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
   });
 
   useEffect(() => {
@@ -41,11 +58,27 @@ export default function ProfilePage() {
           date_of_birth: result.data.date_of_birth || '',
           gender: result.data.gender || '',
           address: result.data.address || '',
+          college: result.data.college || '',
+          course: result.data.course || '',
+          year_level: result.data.year_level || '',
+          department: result.data.department || '',
+          position: result.data.position || '',
+          employee_student_id: result.data.employee_student_id || '',
+          user_type: result.data.user_type || 'student',
+          blood_type: result.data.blood_type || '',
+          allergies: result.data.allergies || '',
+          emergency_contact_name: result.data.emergency_contact_name || '',
+          emergency_contact_phone: result.data.emergency_contact_phone || '',
         });
       }
       setLoading(false);
     };
     loadProfile();
+
+    fetchSystemConfig('college').then(r => { if (r.success) setColleges(r.data); });
+    fetchSystemConfig('course').then(r => { if (r.success) setCourses(r.data); });
+    fetchSystemConfig('year_level').then(r => { if (r.success) setYearLevels(r.data); });
+    fetchSystemConfig('department').then(r => { if (r.success) setDepartments(r.data); });
   }, []);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,6 +132,10 @@ export default function ProfilePage() {
     }
     setSaving(false);
   };
+
+  const userType = profile?.user_type;
+  const isStudent = userType === 'student';
+  const isFacultyOrStaff = userType === 'faculty' || userType === 'non_teaching_staff';
 
   if (loading) {
     return (
@@ -180,133 +217,259 @@ export default function ProfilePage() {
                 </button>
               )}
             </div>
-            <p className="text-xs text-[#9CA3AF] mt-1">JPEG, PNG, WebP, or GIF. Max 5MB.</p>
+            <p className="text-xs text-[#64748B] mt-1">JPEG, PNG, WebP, or GIF. Max 5MB.</p>
           </div>
         </div>
       </div>
 
-      {/* Profile Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-[#E5E7EB] p-6">
-        <h2 className="text-lg font-medium text-[#111827] mb-4">Personal Information</h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              First Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={form.first_name}
-              onChange={e => setForm(prev => ({ ...prev, first_name: e.target.value }))}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Middle Name
-            </label>
-            <input
-              type="text"
-              value={form.middle_name}
-              onChange={e => setForm(prev => ({ ...prev, middle_name: e.target.value }))}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Last Name <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={form.last_name}
-              onChange={e => setForm(prev => ({ ...prev, last_name: e.target.value }))}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Suffix
-            </label>
-            <input
-              type="text"
-              value={form.suffix}
-              onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))}
-              placeholder="Jr., Sr., III, etc."
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Contact Number
-            </label>
-            <input
-              type="tel"
-              value={form.contact_number}
-              onChange={e => setForm(prev => ({ ...prev, contact_number: e.target.value }))}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={form.email}
-              readOnly
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Date of Birth
-            </label>
-            <input
-              type="date"
-              value={form.date_of_birth}
-              onChange={e => setForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Gender
-            </label>
-            <select
-              value={form.gender}
-              onChange={e => setForm(prev => ({ ...prev, gender: e.target.value }))}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
-            >
-              <option value="">Select gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-[#374151] mb-1">
-              Address
-            </label>
-            <textarea
-              value={form.address}
-              onChange={e => setForm(prev => ({ ...prev, address: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent resize-none"
-            />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Personal Information */}
+        <div className="bg-white rounded-lg border border-[#E5E7EB] p-6">
+          <h2 className="text-lg font-medium text-[#111827] mb-4">Personal Information</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">
+                First Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={form.first_name}
+                onChange={e => setForm(prev => ({ ...prev, first_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Middle Name</label>
+              <input
+                type="text"
+                value={form.middle_name}
+                onChange={e => setForm(prev => ({ ...prev, middle_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={form.last_name}
+                onChange={e => setForm(prev => ({ ...prev, last_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Suffix</label>
+              <input
+                type="text"
+                value={form.suffix}
+                onChange={e => setForm(prev => ({ ...prev, suffix: e.target.value }))}
+                placeholder="Jr., Sr., III, etc."
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Contact Number</label>
+              <input
+                type="tel"
+                value={form.contact_number}
+                onChange={e => setForm(prev => ({ ...prev, contact_number: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Email</label>
+              <input
+                type="email"
+                value={form.email}
+                readOnly
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm bg-gray-50 text-gray-500 cursor-not-allowed"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Date of Birth</label>
+              <input
+                type="date"
+                value={form.date_of_birth}
+                onChange={e => setForm(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Gender</label>
+              <select
+                value={form.gender}
+                onChange={e => setForm(prev => ({ ...prev, gender: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-[#374151] mb-1">Address</label>
+              <textarea
+                value={form.address}
+                onChange={e => setForm(prev => ({ ...prev, address: e.target.value }))}
+                rows={3}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent resize-none"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end mt-6">
+        {/* Academic / Employment */}
+        <div className="bg-white rounded-lg border border-[#E5E7EB] p-6">
+          <h2 className="text-lg font-medium text-[#111827] mb-4">Academic / Employment</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">User Type</label>
+              <select
+                value={form.user_type}
+                onChange={e => setForm(prev => ({ ...prev, user_type: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              >
+                <option value="student">Student</option>
+                <option value="faculty">Faculty</option>
+                <option value="non_teaching_staff">Non-Teaching Staff</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">
+                {isStudent ? 'Student ID' : 'Employee ID'}
+              </label>
+              <input
+                type="text"
+                value={form.employee_student_id}
+                onChange={e => setForm(prev => ({ ...prev, employee_student_id: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+
+            {isStudent && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-[#374151] mb-1">College</label>
+                  <select
+                    value={form.college}
+                    onChange={e => setForm(prev => ({ ...prev, college: e.target.value }))}
+                    className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+                  >
+                    <option value="">Select college</option>
+                    {colleges.map(c => <option key={c.config_value} value={c.config_value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#374151] mb-1">Course</label>
+                  <select
+                    value={form.course}
+                    onChange={e => setForm(prev => ({ ...prev, course: e.target.value }))}
+                    className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+                  >
+                    <option value="">Select course</option>
+                    {courses.map(c => <option key={c.config_value} value={c.config_value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#374151] mb-1">Year Level</label>
+                  <select
+                    value={form.year_level}
+                    onChange={e => setForm(prev => ({ ...prev, year_level: e.target.value }))}
+                    className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+                  >
+                    <option value="">Select year</option>
+                    {yearLevels.map(y => <option key={y.config_value} value={y.config_value}>{y.label}</option>)}
+                  </select>
+                </div>
+              </>
+            )}
+
+            {isFacultyOrStaff && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-[#374151] mb-1">Department</label>
+                  <select
+                    value={form.department}
+                    onChange={e => setForm(prev => ({ ...prev, department: e.target.value }))}
+                    className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+                  >
+                    <option value="">Select department</option>
+                    {departments.map(d => <option key={d.config_value} value={d.config_value}>{d.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-[#374151] mb-1">Position</label>
+                  <input
+                    type="text"
+                    value={form.position}
+                    onChange={e => setForm(prev => ({ ...prev, position: e.target.value }))}
+                    className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Medical Information */}
+        <div className="bg-white rounded-lg border border-[#E5E7EB] p-6">
+          <h2 className="text-lg font-medium text-[#111827] mb-4">Medical Information</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Blood Type</label>
+              <select
+                value={form.blood_type}
+                onChange={e => setForm(prev => ({ ...prev, blood_type: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              >
+                <option value="">Select blood type</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Emergency Contact Name</label>
+              <input
+                type="text"
+                value={form.emergency_contact_name}
+                onChange={e => setForm(prev => ({ ...prev, emergency_contact_name: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#374151] mb-1">Emergency Contact Phone</label>
+              <input
+                type="tel"
+                value={form.emergency_contact_phone}
+                onChange={e => setForm(prev => ({ ...prev, emergency_contact_phone: e.target.value }))}
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-[#374151] mb-1">Allergies</label>
+              <textarea
+                value={form.allergies}
+                onChange={e => setForm(prev => ({ ...prev, allergies: e.target.value }))}
+                rows={3}
+                placeholder="List any known allergies"
+                className="w-full px-3 py-2 border border-[#D1D5DB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent resize-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end">
           <button
             type="submit"
             disabled={saving}

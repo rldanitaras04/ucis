@@ -2,16 +2,24 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchOdontograms(patientId?: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAnyRole('dentist', 'nurse', 'admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     let query = supabase
       .from('odontogram_records')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id), encounter:encounters!encounter_id(id, visit_date, status)')
+      .select('*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name)), encounter:encounters!encounter_id(id, visit_date, status)')
       .order('created_at', { ascending: false });
 
     if (patientId) {
@@ -30,11 +38,11 @@ export async function fetchOdontograms(patientId?: string): Promise<{ success: t
 export async function fetchOdontogram(recordId: string): Promise<{ success: true; data: any } | { success: false; error: string }> {
   try {
     await requireAnyRole('dentist', 'nurse', 'admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data, error } = await supabase
       .from('odontogram_records')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id, date_of_birth, sex), encounter:encounters!encounter_id(id, visit_date, status, clinic:clinics!clinic_id(name), service:clinic_services!service_id(name))')
+      .select('*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name, date_of_birth, gender)), encounter:encounters!encounter_id(id, visit_date, status, clinic:clinics!clinic_id(name), service:clinic_services!service_id(name))')
       .eq('id', recordId)
       .single();
 

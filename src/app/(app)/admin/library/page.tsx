@@ -24,14 +24,12 @@ interface ServiceEntry {
 }
 
 const CONFIG_GROUPS: Record<string, { label: string; description: string }> = {
-  patient_type: { label: 'Patient Types', description: 'Options for patient classification during registration' },
-  user_type: { label: 'User Types', description: 'Options for user classification during account creation' },
+  user_type: { label: 'User Types', description: 'Options for user classification during registration' },
 };
 
 const SERVICE_CATEGORIES = ['medical', 'dental', 'fbs', 'pharmacy', 'general'];
 
 const TABS = [
-  { key: 'patient_type', label: 'Patient Types' },
   { key: 'user_type', label: 'User Types' },
   { key: 'clinic_services', label: 'Clinic Services' },
 ];
@@ -42,7 +40,7 @@ export default function LibraryManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [activeGroup, setActiveGroup] = useState<string>('patient_type');
+  const [activeGroup, setActiveGroup] = useState<string>('user_type');
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<ConfigEntry | ServiceEntry | null>(null);
   const [formData, setFormData] = useState({ config_value: '', label: '', sort_order: 0, name: '', category: 'medical', description: '' });

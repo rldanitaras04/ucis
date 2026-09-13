@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 export function createServerSupabaseClient() {
@@ -26,6 +27,13 @@ export function createServerSupabaseClient() {
   );
 }
 
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
 export async function getUser() {
   const supabase = createServerSupabaseClient();
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -34,19 +42,23 @@ export async function getUser() {
     return null;
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('auth_user_id', user.id)
-    .single();
+  const admin = getAdminClient();
 
-  // Get user roles
-  const { data: roles } = await supabase
-    .from('user_roles')
-    .select('roles(name)')
-    .eq('user_id', user.id)
-    .eq('is_active', true);
+  const [
+    { data: profile },
+    { data: roles },
+  ] = await Promise.all([
+    admin
+      .from('user_profiles')
+      .select('*')
+      .eq('auth_user_id', user.id)
+      .single(),
+    admin
+      .from('user_roles')
+      .select('roles(name)')
+      .eq('user_id', user.id)
+      .eq('is_active', true),
+  ]);
 
   const userRoles = roles?.map((r: any) => r.roles?.name).filter(Boolean) || [];
 

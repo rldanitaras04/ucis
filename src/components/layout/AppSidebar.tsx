@@ -115,7 +115,7 @@ export default function AppSidebar({
                 className="w-full flex items-center justify-between px-3 mb-2 group"
                 aria-expanded={expandedGroups[section.id] !== false}
               >
-                <span className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider">
                   {section.label}
                 </span>
                 <span className="text-[#9CA3AF] group-hover:text-[#6B7280] transition-colors">

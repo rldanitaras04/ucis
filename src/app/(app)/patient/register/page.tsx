@@ -16,10 +16,26 @@ export default function CheckInPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<{ id: string } | null>(null);
   const [patientTypes, setPatientTypes] = useState<{ config_value: string; label: string }[]>([]);
+  const [colleges, setColleges] = useState<{ config_value: string; label: string }[]>([]);
+  const [courses, setCourses] = useState<{ config_value: string; label: string }[]>([]);
+  const [yearLevels, setYearLevels] = useState<{ config_value: string; label: string }[]>([]);
+  const [departments, setDepartments] = useState<{ config_value: string; label: string }[]>([]);
 
   useEffect(() => {
-    fetchSystemConfig('patient_type').then(r => {
+    fetchSystemConfig('user_type').then(r => {
       if (r.success) setPatientTypes(r.data);
+    });
+    fetchSystemConfig('college').then(r => {
+      if (r.success) setColleges(r.data);
+    });
+    fetchSystemConfig('course').then(r => {
+      if (r.success) setCourses(r.data);
+    });
+    fetchSystemConfig('year_level').then(r => {
+      if (r.success) setYearLevels(r.data);
+    });
+    fetchSystemConfig('department').then(r => {
+      if (r.success) setDepartments(r.data);
     });
   }, []);
 
@@ -36,8 +52,13 @@ export default function CheckInPage() {
     allergies: '',
     emergency_contact_name: '',
     emergency_contact_phone: '',
-    university_id: '',
-    patient_type: 'student',
+    employee_student_id: '',
+    college: '',
+    course: '',
+    year_level: '',
+    department: '',
+    position: '',
+    user_type: 'student',
     address: '',
   });
 
@@ -73,8 +94,13 @@ export default function CheckInPage() {
       allergies: regData.allergies || undefined,
       emergency_contact_name: regData.emergency_contact_name || undefined,
       emergency_contact_phone: regData.emergency_contact_phone || undefined,
-      university_id: regData.university_id || undefined,
-      patient_type: regData.patient_type,
+      employee_student_id: regData.employee_student_id || undefined,
+      college: regData.college || undefined,
+      course: regData.course || undefined,
+      year_level: regData.year_level || undefined,
+      department: regData.department || undefined,
+      position: regData.position || undefined,
+      user_type: regData.user_type,
       address: regData.address || undefined,
     });
 
@@ -223,16 +249,62 @@ export default function CheckInPage() {
           {/* Type & ID */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="patient_type" className="label">Patient Type *</label>
-              <select id="patient_type" required value={regData.patient_type} onChange={(e) => setRegData({ ...regData, patient_type: e.target.value })} className="select-field">
+              <label htmlFor="user_type" className="label">Patient Type *</label>
+              <select id="user_type" required value={regData.user_type} onChange={(e) => setRegData({ ...regData, user_type: e.target.value })} className="select-field">
                 {patientTypes.map(pt => <option key={pt.config_value} value={pt.config_value}>{pt.label}</option>)}
               </select>
             </div>
             <div>
-              <label htmlFor="university_id" className="label">University/Employee ID</label>
-              <input id="university_id" type="text" value={regData.university_id} onChange={(e) => setRegData({ ...regData, university_id: e.target.value })} className="input-field" />
+              <label htmlFor="employee_student_id" className="label">
+                {regData.user_type === 'student' ? 'Student ID' : 'Employee ID'}
+              </label>
+              <input id="employee_student_id" type="text" value={regData.employee_student_id} onChange={(e) => setRegData({ ...regData, employee_student_id: e.target.value })} className="input-field" />
             </div>
           </div>
+
+          {/* Student-specific fields */}
+          {regData.user_type === 'student' && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="college" className="label">College</label>
+                <select id="college" value={regData.college} onChange={(e) => setRegData({ ...regData, college: e.target.value })} className="select-field">
+                  <option value="">Select</option>
+                  {colleges.map(c => <option key={c.config_value} value={c.config_value}>{c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="course" className="label">Course</label>
+                <select id="course" value={regData.course} onChange={(e) => setRegData({ ...regData, course: e.target.value })} className="select-field">
+                  <option value="">Select</option>
+                  {courses.map(c => <option key={c.config_value} value={c.config_value}>{c.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="year_level" className="label">Year</label>
+                <select id="year_level" value={regData.year_level} onChange={(e) => setRegData({ ...regData, year_level: e.target.value })} className="select-field">
+                  <option value="">Select</option>
+                  {yearLevels.map(y => <option key={y.config_value} value={y.config_value}>{y.label}</option>)}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Faculty / Non-teaching staff fields */}
+          {(regData.user_type === 'faculty' || regData.user_type === 'non_teaching_staff') && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="department" className="label">Department</label>
+                <select id="department" value={regData.department} onChange={(e) => setRegData({ ...regData, department: e.target.value })} className="select-field">
+                  <option value="">Select</option>
+                  {departments.map(d => <option key={d.config_value} value={d.config_value}>{d.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="position" className="label">Position</label>
+                <input id="position" type="text" value={regData.position} onChange={(e) => setRegData({ ...regData, position: e.target.value })} className="input-field" />
+              </div>
+            </div>
+          )}
 
           {/* Emergency & Allergies */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -285,7 +357,7 @@ export default function CheckInPage() {
                 first_name: '', middle_name: '', last_name: '', suffix: '',
                 email: '', contact_number: '', date_of_birth: '', gender: '',
                 blood_type: '', allergies: '', emergency_contact_name: '',
-                emergency_contact_phone: '', university_id: '', patient_type: 'student',
+                emergency_contact_phone: '',                 employee_student_id: '', college: '', course: '', year_level: '', department: '', position: '', user_type: 'student',
                 address: '',
               });
             }} className="btn-secondary">Register Another</button>

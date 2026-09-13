@@ -6,14 +6,16 @@ import Link from 'next/link';
 
 interface Patient {
   id: string;
-  first_name: string;
-  last_name: string;
-  email?: string;
-  contact_number?: string;
-  gender: string;
-  patient_type: string;
-  status: string;
-  date_of_birth: string;
+  user_profile?: {
+    first_name: string;
+    last_name: string;
+    email?: string;
+    contact_number?: string;
+    gender: string;
+    user_type: string;
+    status: string;
+    date_of_birth: string;
+  };
 }
 
 export default function AdminPatientsPage() {
@@ -90,13 +92,13 @@ export default function AdminPatientsPage() {
             <tbody className="divide-y divide-[#E2E8F0]">
               {patients.map((patient) => (
                 <tr key={patient.id} className="hover:bg-[#F8FAFC]">
-                  <td className="font-medium">{patient.last_name}, {patient.first_name}</td>
-                  <td>{patient.gender}</td>
-                  <td>{new Date(patient.date_of_birth).toLocaleDateString()}</td>
-                  <td>{patient.patient_type}</td>
+                  <td className="font-medium">{patient.user_profile?.last_name}, {patient.user_profile?.first_name}</td>
+                  <td>{patient.user_profile?.gender}</td>
+                  <td>{patient.user_profile?.date_of_birth ? new Date(patient.user_profile.date_of_birth).toLocaleDateString() : '—'}</td>
+                  <td>{patient.user_profile?.user_type}</td>
                   <td>
-                    <span className={`badge ${patient.status === 'active' ? 'badge-success' : 'badge-neutral'}`}>
-                      {patient.status}
+                    <span className={`badge ${patient.user_profile?.status === 'active' ? 'badge-success' : 'badge-neutral'}`}>
+                      {patient.user_profile?.status}
                     </span>
                   </td>
                   <td>

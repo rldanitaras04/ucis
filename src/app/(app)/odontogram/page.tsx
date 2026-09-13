@@ -118,14 +118,14 @@ export default function OdontogramPage() {
       {error && (
         <div className="alert-error mb-4" role="alert">
           {error}
-          <button onClick={() => setError(null)} className="float-right font-bold">&times;</button>
+          <button onClick={() => setError(null)} className="float-right font-bold" aria-label="Close">&times;</button>
         </div>
       )}
 
       {success && (
         <div className="alert-success mb-4" role="alert">
           {success}
-          <button onClick={() => setSuccess(null)} className="float-right font-bold">&times;</button>
+          <button onClick={() => setSuccess(null)} className="float-right font-bold" aria-label="Close">&times;</button>
         </div>
       )}
 
@@ -307,7 +307,7 @@ export default function OdontogramPage() {
               </div>
             </div>
             <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-[#9CA3AF] uppercase">Patient</p>
                   <p className="text-sm font-medium text-[#111827]">

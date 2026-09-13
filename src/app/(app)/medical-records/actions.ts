@@ -2,28 +2,56 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchMedicalRecords(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAnyRole('doctor', 'dentist', 'nurse', 'admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data, error } = await supabase
       .from('encounters')
       .select(`
         id, visit_date, chief_complaint, status, created_at,
-        patient:patient_profiles!patient_id(id, first_name, last_name),
+        patient:patient_profiles!patient_id(id, blood_type, allergies, user_profile:user_profiles!user_profile_id(first_name, last_name, employee_student_id, user_type, course, year_level, department, position)),
         clinic:clinics!clinic_id(id, name),
         service:clinic_services!service_id(id, name),
         medical_record:medical_records!encounter_id(
-          id, diagnosis, treatment_plan, status, finalized_at
+          id, chief_complaint, diagnosis, treatment_plan, status, finalized_at
         )
       `)
       .order('visit_date', { ascending: false });
 
     if (error) throw error;
-    return { success: true, data: data || [] };
+    const flattened = (data || []).map((row: any) => {
+      const p = row.patient as any;
+      const profile = p?.user_profile ? (Array.isArray(p.user_profile) ? p.user_profile[0] : p.user_profile) : null;
+      return {
+        ...row,
+        patient: p ? {
+          id: p.id,
+          first_name: profile?.first_name || '',
+          last_name: profile?.last_name || '',
+          employee_student_id: profile?.employee_student_id || null,
+          user_type: profile?.user_type || null,
+          course: profile?.course || null,
+          year_level: profile?.year_level || null,
+          department: profile?.department || null,
+          position: profile?.position || null,
+          blood_type: p.blood_type,
+          allergies: p.allergies,
+        } : null,
+      };
+    });
+    return { success: true, data: flattened };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -32,13 +60,13 @@ export async function fetchMedicalRecords(): Promise<{ success: true; data: any[
 export async function fetchMedicalRecordDetail(encounterId: string): Promise<{ success: true; data: any } | { success: false; error: string }> {
   try {
     await requireAnyRole('doctor', 'dentist', 'nurse', 'admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data, error } = await supabase
       .from('encounters')
       .select(`
         id, visit_date, chief_complaint, status, created_at,
-        patient:patient_profiles!patient_id(id, first_name, last_name, date_of_birth, gender, blood_type, university_id),
+        patient:patient_profiles!patient_id(id, blood_type, allergies, emergency_contact_name, emergency_contact_phone, user_profile:user_profiles!user_profile_id(first_name, last_name, employee_student_id, user_type, course, year_level, department, position, date_of_birth, gender)),
         clinic:clinics!clinic_id(id, name),
         service:clinic_services!service_id(id, name),
         medical_record:medical_records!encounter_id(
@@ -50,7 +78,29 @@ export async function fetchMedicalRecordDetail(encounterId: string): Promise<{ s
       .single();
 
     if (error) throw error;
-    return { success: true, data };
+    const p = data?.patient as any;
+    const profile = p?.user_profile ? (Array.isArray(p.user_profile) ? p.user_profile[0] : p.user_profile) : null;
+    const flattened = data ? {
+      ...data,
+      patient: p ? {
+        id: p.id,
+        first_name: profile?.first_name || '',
+        last_name: profile?.last_name || '',
+        employee_student_id: profile?.employee_student_id || null,
+        user_type: profile?.user_type || null,
+        course: profile?.course || null,
+        year_level: profile?.year_level || null,
+        department: profile?.department || null,
+        position: profile?.position || null,
+        date_of_birth: profile?.date_of_birth || null,
+        gender: profile?.gender || null,
+        blood_type: p.blood_type,
+        allergies: p.allergies,
+        emergency_contact_name: p.emergency_contact_name,
+        emergency_contact_phone: p.emergency_contact_phone,
+      } : null,
+    } : data;
+    return { success: true, data: flattened };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -59,11 +109,11 @@ export async function fetchMedicalRecordDetail(encounterId: string): Promise<{ s
 export async function fetchClinicsAndPatients(): Promise<{ success: true; data: { clinics: any[]; patients: any[]; services: any[] } } | { success: false; error: string }> {
   try {
     await requireAnyRole('doctor', 'dentist', 'nurse', 'admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const [clinicsResult, patientsResult, servicesResult] = await Promise.all([
       supabase.from('clinics').select('id, name').eq('is_active', true).order('name'),
-      supabase.from('patient_profiles').select('id, first_name, last_name').order('last_name'),
+      supabase.from('patient_profiles').select('id, user_profile:user_profiles!user_profile_id(first_name, last_name)').order('id'),
       supabase.from('clinic_services').select('id, name, clinic_id'),
     ]);
 
@@ -162,7 +212,7 @@ export async function upsertMedicalRecord(data: {
   status?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('doctor', 'dentist', 'admin', 'super_admin');
+    const user = await requireAnyRole('doctor', 'dentist', 'nurse', 'clinic_staff', 'admin', 'super_admin');
     const supabase = createServerSupabaseClient();
 
     const { data: existing } = await supabase

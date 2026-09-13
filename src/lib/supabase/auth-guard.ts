@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 
 export interface AuthUser {
@@ -9,41 +10,55 @@ export interface AuthUser {
   permissions: string[];
 }
 
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
 /**
  * Get the current authenticated user with profile and roles.
  * Returns null if not authenticated.
+ *
+ * Uses cookie-based client for auth verification (getUser),
+ * then service-role client for profile/roles/permissions queries
+ * because RLS policies depending on auth.uid() fail in server components.
  */
 export async function getCurrentUser(): Promise<AuthUser | null> {
   const supabase = createServerSupabaseClient();
-  
+
   const { data: { user }, error } = await supabase.auth.getUser();
-  
+
   if (error || !user) {
     return null;
   }
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('auth_user_id', user.id)
-    .single();
+  const admin = getAdminClient();
 
-  // Get user roles
-  const { data: rolesData } = await supabase
-    .from('user_roles')
-    .select('roles(name)')
-    .eq('user_id', user.id)
-    .eq('is_active', true);
+  const [
+    { data: profile },
+    { data: rolesData },
+    { data: permsData },
+  ] = await Promise.all([
+    admin
+      .from('user_profiles')
+      .select('*')
+      .eq('auth_user_id', user.id)
+      .single(),
+    admin
+      .from('user_roles')
+      .select('roles(name)')
+      .eq('user_id', user.id)
+      .eq('is_active', true),
+    admin
+      .from('user_roles')
+      .select('roles(role_permissions(permissions(name)))')
+      .eq('user_id', user.id)
+      .eq('is_active', true),
+  ]);
 
   const roles = rolesData?.map((r: any) => r.roles?.name).filter(Boolean) || [];
-
-  // Get user permissions
-  const { data: permsData } = await supabase
-    .from('user_roles')
-    .select('roles(role_permissions(permissions(name)))')
-    .eq('user_id', user.id)
-    .eq('is_active', true);
 
   const permissions = new Set<string>();
   permsData?.forEach((r: any) => {

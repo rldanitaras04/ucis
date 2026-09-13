@@ -2,6 +2,14 @@
 
 import { requireAuth, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchDashboardStats(): Promise<{
   success: true;
@@ -115,11 +123,12 @@ export async function fetchRecentActivity(): Promise<{
   try {
     const user = await requireAuth();
     const supabase = createServerSupabaseClient();
+    const adminSupabase = getAdminClient();
 
     // Fetch recent encounters based on user role
-    let encounterQuery = supabase
+    let encounterQuery = adminSupabase
       .from('encounters')
-      .select('id, visit_date, status, chief_complaint, patient:patient_profiles!patient_id(first_name, last_name)')
+      .select('id, visit_date, status, chief_complaint, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name))')
       .order('visit_date', { ascending: false })
       .limit(5);
 

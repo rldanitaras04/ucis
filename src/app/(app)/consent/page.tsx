@@ -109,14 +109,14 @@ export default function ConsentPage() {
       {error && (
         <div className="alert-error mb-4" role="alert">
           {error}
-          <button onClick={() => setError(null)} className="float-right font-bold">&times;</button>
+          <button onClick={() => setError(null)} className="float-right font-bold" aria-label="Close">&times;</button>
         </div>
       )}
 
       {success && (
         <div className="alert-success mb-4" role="alert">
           {success}
-          <button onClick={() => setSuccess(null)} className="float-right font-bold">&times;</button>
+          <button onClick={() => setSuccess(null)} className="float-right font-bold" aria-label="Close">&times;</button>
         </div>
       )}
 

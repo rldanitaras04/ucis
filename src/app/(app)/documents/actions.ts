@@ -2,7 +2,15 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchDocuments(filters?: {
   patient_id?: string;
@@ -11,11 +19,11 @@ export async function fetchDocuments(filters?: {
 }): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     let query = supabase
       .from('documents')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
+      .select('*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name))')
       .order('issued_at', { ascending: false });
 
     if (filters?.patient_id) {
@@ -40,11 +48,11 @@ export async function fetchDocuments(filters?: {
 export async function fetchDocument(documentId: string): Promise<{ success: true; data: any } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data, error } = await supabase
       .from('documents')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id, date_of_birth, sex)')
+      .select('*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name, date_of_birth, gender))')
       .eq('id', documentId)
       .single();
 

@@ -2,13 +2,20 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { DEFAULT_CLINIC_ID } from '@/lib/config';
 
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
 export async function fetchSystemConfig(configKey: string): Promise<{ success: true; data: { id: string; config_value: string; label: string; sort_order: number; is_active: boolean }[] } | { success: false; error: string }> {
   try {
-    await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('system_config')
       .select('id, config_value, label, sort_order, is_active')
@@ -25,7 +32,7 @@ export async function fetchSystemConfig(configKey: string): Promise<{ success: t
 export async function fetchAllSystemConfigs(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('system_config')
       .select('*')
@@ -46,7 +53,7 @@ export async function createSystemConfig(data: {
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data: record, error } = await supabase
       .from('system_config')
@@ -82,7 +89,7 @@ export async function updateSystemConfig(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { error } = await supabase
       .from('system_config')
@@ -109,7 +116,7 @@ export async function updateSystemConfig(
 export async function deleteSystemConfig(id: string): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { error } = await supabase
       .from('system_config')
@@ -140,7 +147,7 @@ export async function deleteSystemConfig(id: string): Promise<{ success: true } 
 export async function fetchClinicServices(): Promise<{ success: true; data: { id: string; name: string; category: string; description: string | null; is_active: boolean }[] } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('clinic_services')
       .select('id, name, category, description, is_active')
@@ -160,7 +167,7 @@ export async function createClinicService(data: {
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data: record, error } = await supabase
       .from('clinic_services')
@@ -196,7 +203,7 @@ export async function updateClinicService(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { error } = await supabase
       .from('clinic_services')
@@ -223,7 +230,7 @@ export async function updateClinicService(
 export async function deleteClinicService(id: string): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const user = await requireAnyRole('admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { error } = await supabase
       .from('clinic_services')

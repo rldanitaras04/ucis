@@ -2,15 +2,23 @@
 
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function fetchFollowUps(): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
     await requireAuth();
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
     const { data, error } = await supabase
       .from('follow_ups')
-      .select('*, patient:patient_profiles!patient_id(first_name, last_name, patient_id)')
+      .select('*, patient:patient_profiles!patient_id(id, user_profile:user_profiles!user_profile_id(first_name, last_name))')
       .order('scheduled_date', { ascending: true });
     if (error) throw error;
     return { success: true, data: data || [] };

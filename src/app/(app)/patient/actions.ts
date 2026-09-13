@@ -3,6 +3,15 @@
 import { requireAuth, requireAnyRole, handleAuthError } from '@/lib/supabase/auth-guard';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { isValidUserType } from '@/lib/user-type';
+import { createClient } from '@supabase/supabase-js';
+
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function registerPatient(data: {
   first_name: string;
@@ -17,13 +26,18 @@ export async function registerPatient(data: {
   allergies?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  university_id?: string;
-  patient_type: string;
+  employee_student_id?: string;
+  college?: string;
+  course?: string;
+  year_level?: string;
+  department?: string;
+  position?: string;
+  user_type: string;
   address?: string;
 }): Promise<{ success: true; id: string } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'nurse', 'doctor', 'dentist');
+    const supabase = getAdminClient();
 
     const { data: patientId, error } = await supabase.rpc('register_patient', {
       p_first_name: data.first_name,
@@ -32,15 +46,20 @@ export async function registerPatient(data: {
       p_suffix: data.suffix || null,
       p_date_of_birth: data.date_of_birth,
       p_gender: data.gender,
-      p_patient_type: data.patient_type,
+      p_user_type: data.user_type,
       p_email: data.email || null,
       p_contact_number: data.contact_number || null,
       p_blood_type: data.blood_type || null,
       p_allergies: data.allergies || null,
       p_emergency_contact_name: data.emergency_contact_name || null,
       p_emergency_contact_phone: data.emergency_contact_phone || null,
-      p_university_id: data.university_id || null,
+      p_employee_student_id: data.employee_student_id || null,
       p_address: data.address || null,
+      p_college: data.college || null,
+      p_course: data.course || null,
+      p_year_level: data.year_level || null,
+      p_department: data.department || null,
+      p_position: data.position || null,
     });
 
     if (error) throw error;
@@ -62,21 +81,32 @@ export async function registerPatient(data: {
 
 export async function fetchPatientsAdmin(search?: string): Promise<{ success: true; data: any[] } | { success: false; error: string }> {
   try {
-    await requireAnyRole('admin', 'super_admin', 'clinic_staff');
-    const supabase = createServerSupabaseClient();
+    await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'nurse', 'doctor', 'dentist');
+    const supabase = getAdminClient();
 
     let q = supabase
       .from('patient_profiles')
-      .select('id, first_name, last_name, email, contact_number, gender, patient_type, status, date_of_birth')
-      .order('last_name', { ascending: true });
-
-    if (search && search.trim().length > 0) {
-      q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%`);
-    }
+      .select('id, user_profile:user_profiles!user_profile_id(first_name, last_name, email, contact_number, gender, user_type, status, date_of_birth)')
+      .order('id', { ascending: true });
 
     const { data, error } = await q;
     if (error) throw error;
-    return { success: true, data: data || [] };
+
+    let results = data || [];
+
+    if (search && search.trim().length > 0) {
+      const term = search.trim().toLowerCase();
+      results = results.filter((row: any) => {
+        const profile = row.user_profile;
+        if (!profile) return false;
+        return (
+          (profile.first_name && profile.first_name.toLowerCase().includes(term)) ||
+          (profile.last_name && profile.last_name.toLowerCase().includes(term))
+        );
+      });
+    }
+
+    return { success: true, data: results };
   } catch (error) {
     return handleAuthError(error);
   }
@@ -85,11 +115,11 @@ export async function fetchPatientsAdmin(search?: string): Promise<{ success: tr
 export async function fetchPatientById(patientId: string): Promise<{ success: true; data: any } | { success: false; error: string }> {
   try {
     await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'doctor', 'dentist', 'nurse');
-    const supabase = createServerSupabaseClient();
+    const supabase = getAdminClient();
 
     const { data, error } = await supabase
       .from('patient_profiles')
-      .select('*')
+      .select('*, user_profile:user_profiles!user_profile_id(*)')
       .eq('id', patientId)
       .single();
 
@@ -111,19 +141,58 @@ export async function updatePatient(patientId: string, data: {
   allergies?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  patient_type?: string;
+  user_type?: string;
+  employee_student_id?: string;
   status?: string;
 }): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff');
-    const supabase = createServerSupabaseClient();
+    const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'nurse', 'doctor', 'dentist');
+    const supabase = getAdminClient();
 
-    const { error } = await supabase
-      .from('patient_profiles')
-      .update(data)
-      .eq('id', patientId);
+    if (data.user_type && !isValidUserType(data.user_type)) {
+      return { success: false, error: 'Invalid user type. Must be student, faculty, or non_teaching_staff.' };
+    }
 
-    if (error) throw error;
+    const demographicFields: Record<string, any> = {};
+    const patientFields: Record<string, any> = {};
+
+    const demographicKeys = ['first_name', 'last_name', 'email', 'contact_number', 'date_of_birth', 'gender', 'status', 'employee_student_id'];
+
+    for (const [key, value] of Object.entries(data)) {
+      if (key === 'user_type') {
+        demographicFields['user_type'] = value;
+      } else if (demographicKeys.includes(key)) {
+        demographicFields[key] = value;
+      } else {
+        patientFields[key] = value;
+      }
+    }
+
+    if (Object.keys(patientFields).length > 0) {
+      const { error: patientError } = await supabase
+        .from('patient_profiles')
+        .update(patientFields)
+        .eq('id', patientId);
+
+      if (patientError) throw patientError;
+    }
+
+    if (Object.keys(demographicFields).length > 0) {
+      const { data: patientRecord, error: lookupError } = await supabase
+        .from('patient_profiles')
+        .select('user_profile_id')
+        .eq('id', patientId)
+        .single();
+
+      if (lookupError) throw lookupError;
+
+      const { error: profileError } = await getAdminClient()
+        .from('user_profiles')
+        .update(demographicFields)
+        .eq('id', patientRecord.user_profile_id);
+
+      if (profileError) throw profileError;
+    }
 
     await supabase.rpc('write_audit_log', {
       p_actor: user.id,
@@ -171,8 +240,8 @@ export async function checkInPatient(data: {
   service_id: string;
 }): Promise<{ success: true; queueNumber: number; entryId: string } | { success: false; error: string }> {
   try {
-    const user = await requireAnyRole('clinic_staff', 'admin', 'super_admin');
-    const supabase = createServerSupabaseClient();
+    const user = await requireAnyRole('admin', 'super_admin', 'clinic_staff', 'nurse', 'doctor', 'dentist');
+    const supabase = getAdminClient();
 
     // Check if patient already has an active queue entry today
     const today = new Date().toISOString().split('T')[0];
@@ -249,9 +318,9 @@ export async function fetchPatientPortalData(): Promise<{
       .single();
 
     const { data: patientData, error: patientError } = userProfile
-      ? await supabase
+      ? await getAdminClient()
           .from('patient_profiles')
-          .select('*')
+          .select('*, user_profile:user_profiles!user_profile_id(*)')
           .eq('user_profile_id', userProfile.id)
           .single()
       : { data: null, error: { message: 'No user profile found' } };

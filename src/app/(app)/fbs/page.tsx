@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense, useRef } from 'react';
 import { recordFBS, fetchFBSRecords } from './actions';
+import { fetchPatientName } from '../actions/patients';
 import PatientSearch from '@/components/PatientSearch';
 import FBSAnalysis from '@/components/FBSAnalysis';
 import { useSearchParams } from 'next/navigation';
@@ -13,7 +14,7 @@ interface FBSRecord {
   fbs_value: number;
   fasting_hours: number | null;
   notes: string | null;
-  patient_profiles?: { university_id: string; first_name: string; last_name: string } | null;
+  patient_profiles?: { id: string; user_profile?: { first_name: string; last_name: string; employee_student_id: string } | null } | null;
 }
 
 function classifyFBS(value: number): { label: string; className: string } {
@@ -24,8 +25,14 @@ function classifyFBS(value: number): { label: string; className: string } {
 
 function FBSPageContent() {
   const searchParams = useSearchParams();
-  const [patientId, setPatientId] = useState(searchParams.get('patient') || '');
-  const [encounterId] = useState(searchParams.get('encounter') || '');
+  const patientIdFromQueue = searchParams.get('patient') || '';
+  const encounterIdFromQueue = searchParams.get('encounter') || '';
+  const fromQueue = !!patientIdFromQueue && !!encounterIdFromQueue;
+
+  const [patientId, setPatientId] = useState(patientIdFromQueue);
+  const [encounterId] = useState(encounterIdFromQueue);
+  const [patientName, setPatientName] = useState('');
+  const [patientNameLoading, setPatientNameLoading] = useState(false);
   const [fbsValue, setFbsValue] = useState('');
   const [fastingHours, setFastingHours] = useState('');
   const [notes, setNotes] = useState('');
@@ -50,6 +57,18 @@ function FBSPageContent() {
   useEffect(() => {
     fetchRecentRecords();
   }, [fetchRecentRecords]);
+
+  useEffect(() => {
+    if (fromQueue && patientIdFromQueue) {
+      setPatientNameLoading(true);
+      fetchPatientName(patientIdFromQueue).then((result) => {
+        if (result.success) {
+          setPatientName(`${result.data.last_name}, ${result.data.first_name}`);
+        }
+        setPatientNameLoading(false);
+      });
+    }
+  }, [fromQueue, patientIdFromQueue]);
 
   useEffect(() => {
     const hasFbs = fbsValue.trim() !== '';
@@ -121,15 +140,32 @@ function FBSPageContent() {
       )}
 
       <form onSubmit={handleSubmit} className="card space-y-4">
-        <PatientSearch
-          id="fbs-patient-search"
-          label="Patient"
-          required
-          value={patientId}
-          onChange={(patientId) => setPatientId(patientId)}
-        />
+        {fromQueue ? (
+          <div>
+            <label className="label">Patient *</label>
+            <div className="input-field bg-[#F8FAFC]">
+              {patientNameLoading ? (
+                <span className="text-[#94A3B8]">Loading...</span>
+              ) : (
+                <span className="font-medium text-[#0F172A]">{patientName || patientId}</span>
+              )}
+              <input type="hidden" value={patientId} />
+            </div>
+          </div>
+        ) : (
+          <PatientSearch
+            id="fbs-patient-search"
+            label="Patient"
+            required
+            value={patientId}
+            onChange={(pid, patient) => {
+              setPatientId(pid);
+              if (patient) setPatientName(`${patient.last_name}, ${patient.first_name}`);
+            }}
+          />
+        )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="fbsValue" className="label">FBS Value (mg/dL) *</label>
             <input
@@ -215,10 +251,10 @@ function FBSPageContent() {
                   return (
                     <tr key={record.id}>
                       <td className="text-body text-[#0F172A]">
-                        {record.patient_profiles ? (
+                        {record.patient_profiles?.user_profile ? (
                           <div>
-                            <div className="font-medium">{record.patient_profiles.first_name} {record.patient_profiles.last_name}</div>
-                            <div className="text-xs text-[#64748B]">{record.patient_profiles.university_id}</div>
+                            <div className="font-medium">{record.patient_profiles.user_profile.first_name} {record.patient_profiles.user_profile.last_name}</div>
+                            <div className="text-xs text-[#64748B]">{record.patient_profiles.user_profile.employee_student_id}</div>
                           </div>
                         ) : (
                           record.patient_id

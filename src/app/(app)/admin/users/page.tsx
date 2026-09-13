@@ -10,8 +10,17 @@ interface UserProfile {
   first_name: string;
   last_name: string;
   email: string;
+  user_type?: string;
+  employee_student_id?: string;
   status: string;
   created_at: string;
+  patient?: {
+    id: string;
+    blood_type?: string;
+    allergies?: string;
+    emergency_contact_name?: string;
+    emergency_contact_phone?: string;
+  } | null;
 }
 
 interface UserRole {
@@ -131,14 +140,14 @@ export default function AdminUsersPage() {
       {error && (
         <div className="alert-error mb-4" role="alert">
           {error}
-          <button onClick={() => setError(null)} className="ml-2 text-[#94A3B8] hover:text-[#0F172A]">&times;</button>
+          <button onClick={() => setError(null)} className="ml-2 text-[#94A3B8] hover:text-[#0F172A]" aria-label="Close">&times;</button>
         </div>
       )}
 
       {success && (
         <div className="alert-success mb-4" role="status">
           {success}
-          <button onClick={() => setSuccess(null)} className="ml-2 text-[#94A3B8] hover:text-[#0F172A]">&times;</button>
+          <button onClick={() => setSuccess(null)} className="ml-2 text-[#94A3B8] hover:text-[#0F172A]" aria-label="Close">&times;</button>
         </div>
       )}
 
@@ -163,6 +172,9 @@ export default function AdminUsersPage() {
               <tr>
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
+                <th scope="col">Type</th>
+                <th scope="col">ID</th>
+                <th scope="col">Patient</th>
                 <th scope="col">Roles</th>
                 <th scope="col">Status</th>
                 <th scope="col">Joined</th>
@@ -176,6 +188,15 @@ export default function AdminUsersPage() {
                     {user.last_name}, {user.first_name}
                   </td>
                   <td>{user.email}</td>
+                  <td>{user.user_type || '—'}</td>
+                  <td className="text-small text-[#64748B]">{user.employee_student_id || '—'}</td>
+                  <td>
+                    {user.patient ? (
+                      <span className="badge badge-success">Yes</span>
+                    ) : (
+                      <span className="badge badge-neutral">No</span>
+                    )}
+                  </td>
                   <td>
                     <div className="flex flex-wrap gap-1">
                       {getUserRoles(user.auth_user_id).map((role, idx) => (

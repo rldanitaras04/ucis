@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase/client';
 import { fetchSystemConfig } from '@/app/(app)/admin/library/actions';
+import { registerUser } from './actions';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
@@ -17,16 +17,35 @@ export default function RegisterPage() {
     confirmPassword: '',
     userType: 'student',
     universityId: '',
+    college: '',
+    course: '',
+    yearLevel: '',
+    department: '',
+    position: '',
   });
   const [loading, setLoading] = useState(false);
   const [userTypes, setUserTypes] = useState<{ config_value: string; label: string }[]>([]);
+  const [colleges, setColleges] = useState<{ config_value: string; label: string }[]>([]);
+  const [courses, setCourses] = useState<{ config_value: string; label: string }[]>([]);
+  const [yearLevels, setYearLevels] = useState<{ config_value: string; label: string }[]>([]);
+  const [departments, setDepartments] = useState<{ config_value: string; label: string }[]>([]);
   const router = useRouter();
-
-  const supabase = createClient();
 
   useEffect(() => {
     fetchSystemConfig('user_type').then(r => {
       if (r.success) setUserTypes(r.data);
+    });
+    fetchSystemConfig('college').then(r => {
+      if (r.success) setColleges(r.data);
+    });
+    fetchSystemConfig('course').then(r => {
+      if (r.success) setCourses(r.data);
+    });
+    fetchSystemConfig('year_level').then(r => {
+      if (r.success) setYearLevels(r.data);
+    });
+    fetchSystemConfig('department').then(r => {
+      if (r.success) setDepartments(r.data);
     });
   }, []);
 
@@ -46,56 +65,23 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const result = await registerUser({
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            user_type: formData.userType,
-          },
-        },
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        userType: formData.userType,
+        employeeStudentId: formData.universityId || undefined,
+        college: formData.college || undefined,
+        course: formData.course || undefined,
+        yearLevel: formData.yearLevel || undefined,
+        department: formData.department || undefined,
+        position: formData.position || undefined,
       });
 
-      if (authError) throw authError;
+      if (!result.success) throw new Error(result.error);
 
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            auth_user_id: authData.user.id,
-            user_type: formData.userType,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            email: formData.email,
-            university_id: formData.universityId || null,
-            status: 'active',
-          });
-
-        if (profileError) throw profileError;
-
-        let roleName = formData.userType;
-        if (formData.userType === 'walk_in') {
-          roleName = 'student';
-        }
-
-        const { data: role } = await supabase
-          .from('roles')
-          .select('id')
-          .eq('name', roleName)
-          .single();
-
-        if (role) {
-          await supabase.from('user_roles').insert({
-            user_id: authData.user.id,
-            role_id: role.id,
-            is_active: true,
-          });
-        }
-      }
-
-      toast.success('Registration successful! Please check your email to verify your account.');
+      toast.success('Account created successfully!');
       router.push('/auth/login');
     } catch (error: any) {
       toast.error(error.message || 'Failed to register');
@@ -180,7 +166,9 @@ export default function RegisterPage() {
             </div>
             {(formData.userType === 'student' || formData.userType === 'faculty' || formData.userType === 'non_teaching_staff') && (
               <div>
-                <label htmlFor="universityId" className="label">University/Employee ID</label>
+                <label htmlFor="universityId" className="label">
+                  {formData.userType === 'student' ? 'Student ID' : 'Employee ID'}
+                </label>
                 <input
                   id="universityId"
                   name="universityId"
@@ -190,6 +178,46 @@ export default function RegisterPage() {
                   onChange={handleChange}
                   placeholder="Optional"
                 />
+              </div>
+            )}
+            {formData.userType === 'student' && (
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label htmlFor="college" className="label">College</label>
+                  <select id="college" name="college" className="select-field" value={formData.college} onChange={handleChange}>
+                    <option value="">Select</option>
+                    {colleges.map(c => <option key={c.config_value} value={c.config_value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="course" className="label">Course</label>
+                  <select id="course" name="course" className="select-field" value={formData.course} onChange={handleChange}>
+                    <option value="">Select</option>
+                    {courses.map(c => <option key={c.config_value} value={c.config_value}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="yearLevel" className="label">Year</label>
+                  <select id="yearLevel" name="yearLevel" className="select-field" value={formData.yearLevel} onChange={handleChange}>
+                    <option value="">Select</option>
+                    {yearLevels.map(y => <option key={y.config_value} value={y.config_value}>{y.label}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+            {(formData.userType === 'faculty' || formData.userType === 'non_teaching_staff') && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="department" className="label">Department</label>
+                  <select id="department" name="department" className="select-field" value={formData.department} onChange={handleChange}>
+                    <option value="">Select</option>
+                    {departments.map(d => <option key={d.config_value} value={d.config_value}>{d.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="position" className="label">Position</label>
+                  <input id="position" name="position" type="text" className="input-field" value={formData.position} onChange={handleChange} />
+                </div>
               </div>
             )}
             <div>
