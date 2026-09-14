@@ -29,7 +29,6 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
   const [fbsData, setFbsData] = useState<Record<string, string | null> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
@@ -40,17 +39,15 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
 
   useEffect(() => {
     const vv = window.visualViewport;
-    if (!vv) return;
-    const onResize = () => setViewportHeight(vv.height);
+    if (!vv || !panelRef.current) return;
+    const onResize = () => {
+      if (panelRef.current) {
+        panelRef.current.style.height = `${vv.height - 16 - 80}px`;
+      }
+    };
     onResize();
     vv.addEventListener('resize', onResize);
     return () => vv.removeEventListener('resize', onResize);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen && panelRef.current) {
-      panelRef.current.focus();
-    }
   }, [isOpen]);
 
   const handleSend = useCallback(async (content: string) => {
@@ -139,7 +136,9 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
 
   let panelStyle: React.CSSProperties | undefined;
   if (isMobile) {
-    const vvHeight = viewportHeight ?? window.innerHeight;
+    const vvHeight = typeof window !== 'undefined' && window.visualViewport
+      ? window.visualViewport.height
+      : window.innerHeight;
     panelStyle = {
       left: '8px',
       right: '8px',
@@ -169,7 +168,6 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
       role="dialog"
       aria-modal="true"
       aria-label="Carina AI Assistant"
-      tabIndex={-1}
       style={panelStyle}
       className={panelClass}
     >

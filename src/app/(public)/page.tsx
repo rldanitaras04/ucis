@@ -7,11 +7,11 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
           <h1 className="text-display text-[#0F172A] sm:text-5xl md:text-6xl">
-            University Clinic
-            <span className="text-[#1E40AF]"> Information System</span>
+            U-Care:
+            <span className="text-[#1E40AF]"> University Clinic Information System</span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-body text-[#64748B] sm:text-lg md:mt-5 md:text-xl md:max-w-2xl">
-            A comprehensive medical and dental clinic management system designed for Philippine State Universities and Colleges.
+            A comprehensive medical and dental clinic management system designed for Iloilo State University of Fisheries Science and Technology - Dingle Campus.
           </p>
           <div className="mt-10 flex justify-center gap-4">
             <Link href="/auth/login" className="btn-primary px-8 py-3 text-base">
@@ -37,7 +37,7 @@ export default function Home() {
               </div>
               <h3 className="text-subheading text-[#0F172A]">Secure & Private</h3>
               <p className="mt-2 text-body text-[#64748B]">
-                Row-level security ensures patients can only see their own records. Clinical data is protected at the database level.
+                Role-based access control ensures only authorized users can access patient records. Clinical data is protected at the database level.
               </p>
             </div>
             <div className="card text-center">
