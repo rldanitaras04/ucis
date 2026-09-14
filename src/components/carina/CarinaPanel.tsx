@@ -29,12 +29,22 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
   const [fbsData, setFbsData] = useState<Record<string, string | null> | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 640);
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => setViewportHeight(vv.height);
+    onResize();
+    vv.addEventListener('resize', onResize);
+    return () => vv.removeEventListener('resize', onResize);
   }, []);
 
   useEffect(() => {
@@ -128,7 +138,15 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
   const btnSize = 56;
 
   let panelStyle: React.CSSProperties | undefined;
-  if (!isMobile) {
+  if (isMobile) {
+    const vvHeight = viewportHeight ?? window.innerHeight;
+    panelStyle = {
+      left: '8px',
+      right: '8px',
+      top: '16px',
+      height: `${vvHeight - 16 - 80}px`,
+    };
+  } else {
     const minLeft = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 260 : 0;
     const btnX = position?.x ?? (window.innerWidth - btnSize);
     const btnY = position?.y ?? (window.innerHeight - btnSize);
@@ -142,7 +160,7 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
   }
 
   const panelClass = isMobile
-    ? 'fixed inset-x-2 bottom-20 top-16 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden'
+    ? 'fixed inset-x-2 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden'
     : 'fixed w-96 h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden';
 
   return (
