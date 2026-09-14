@@ -37,7 +37,7 @@ export default function CarinaInput({ onSend, disabled }: CarinaInputProps) {
   };
 
   return (
-    <div className="border-t border-[#E2E8F0] px-4 py-3">
+    <div className="flex-shrink-0 border-t border-[#E2E8F0] px-4 py-3">
       <div className="flex items-end gap-2">
         <label htmlFor="carina-input" className="sr-only">
           Message to Carina
@@ -52,7 +52,7 @@ export default function CarinaInput({ onSend, disabled }: CarinaInputProps) {
           placeholder="Ask Carina anything..."
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none border border-[#CBD5E1] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent disabled:bg-[#F1F5F9] disabled:text-[#94A3B8]"
+          className="flex-1 min-h-0 resize-none border border-[#CBD5E1] rounded-xl px-4 py-2.5 text-sm text-[#0F172A] placeholder-[#64748B] focus:outline-none focus:ring-2 focus:ring-[#1E40AF] focus:border-transparent disabled:bg-[#F1F5F9] disabled:text-[#94A3B8]"
           style={{ minHeight: '40px', maxHeight: '120px' }}
           aria-describedby="carina-input-hint"
         />
