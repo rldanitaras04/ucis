@@ -6,7 +6,7 @@ interface CarinaEmptyStateProps {
 
 export default function CarinaEmptyState({ userName }: CarinaEmptyStateProps) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
+    <div className="flex flex-col items-center justify-center px-6 py-8">
       <div className="w-20 h-20 rounded-full overflow-hidden mb-4 shadow-lg">
         <img src="/carina.png" alt="Carina" className="w-full h-full object-cover" />
       </div>

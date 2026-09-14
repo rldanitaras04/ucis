@@ -26,7 +26,7 @@ export default function CarinaMessageList({ messages, isLoading, toolResults, us
 
   return (
     <div
-      className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-4"
+      className="px-2 py-4"
       role="log"
       aria-label="Carina conversation"
       aria-live="polite"

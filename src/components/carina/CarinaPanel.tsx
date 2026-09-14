@@ -161,22 +161,26 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
         <CarinaError message={error} onDismiss={() => setError(null)} onRetry={handleRetry} />
       )}
 
-      {(vitalsData || fbsData) && (
-        <div className="flex-1 overflow-y-auto px-2 py-4">
-          {vitalsData && <CarinaVitalsAnalysis vitals={vitalsData} />}
-          {fbsData && <CarinaFBSAnalysis fbs={fbsData} />}
-        </div>
-      )}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        {(vitalsData || fbsData) && (
+          <div className="px-2 py-4">
+            {vitalsData && <CarinaVitalsAnalysis vitals={vitalsData} />}
+            {fbsData && <CarinaFBSAnalysis fbs={fbsData} />}
+          </div>
+        )}
 
-      {!vitalsData && !fbsData && messages.length === 0 ? (
-        <CarinaEmptyState userName={userName} />
-      ) : (
-        <CarinaMessageList messages={messages} isLoading={isLoading} toolResults={toolResults} userAvatarUrl={userAvatarUrl} />
-      )}
+        {!vitalsData && !fbsData && messages.length === 0 && (
+          <CarinaEmptyState userName={userName} />
+        )}
 
-      {messages.length === 0 && !vitalsData && !fbsData && (
-        <CarinaSuggestions roles={roles} onSelect={handleSend} />
-      )}
+        {(!vitalsData && !fbsData && messages.length > 0) && (
+          <CarinaMessageList messages={messages} isLoading={isLoading} toolResults={toolResults} userAvatarUrl={userAvatarUrl} />
+        )}
+
+        {messages.length === 0 && !vitalsData && !fbsData && (
+          <CarinaSuggestions roles={roles} onSelect={handleSend} />
+        )}
+      </div>
 
       <CarinaInput onSend={handleSend} disabled={isLoading} />
     </div>
