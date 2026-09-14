@@ -55,7 +55,10 @@ export default function CarinaLauncher() {
       const collapsed = (e as CustomEvent).detail?.collapsed;
       setSidebarWidth(collapsed ? 72 : 260);
     };
+    let lastWidth = window.innerWidth;
     const onResize = () => {
+      if (window.innerWidth === lastWidth) return;
+      lastWidth = window.innerWidth;
       setSidebarWidth(window.innerWidth < 1024 ? 0 : 260);
       if (posRef.current) {
         const minLeft = window.innerWidth < 1024 ? 0 : 260;

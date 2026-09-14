@@ -37,19 +37,6 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv || !panelRef.current) return;
-    const onResize = () => {
-      if (panelRef.current) {
-        panelRef.current.style.height = `${vv.height - 16 - 80}px`;
-      }
-    };
-    onResize();
-    vv.addEventListener('resize', onResize);
-    return () => vv.removeEventListener('resize', onResize);
-  }, [isOpen]);
-
   const handleSend = useCallback(async (content: string) => {
     setError(null);
     setToolResults([]);
@@ -134,32 +121,23 @@ export default function CarinaPanel({ isOpen, onClose, roles, userName, userAvat
   const gap = 8;
   const btnSize = 56;
 
-  let panelStyle: React.CSSProperties | undefined;
-  if (isMobile) {
-    const vvHeight = typeof window !== 'undefined' && window.visualViewport
-      ? window.visualViewport.height
-      : window.innerHeight;
-    panelStyle = {
-      left: '8px',
-      right: '8px',
-      top: '16px',
-      height: `${vvHeight - 16 - 80}px`,
-    };
-  } else {
-    const minLeft = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 260 : 0;
-    const btnX = position?.x ?? (window.innerWidth - btnSize);
-    const btnY = position?.y ?? (window.innerHeight - btnSize);
-    let px = btnX - gap - panelWidth;
-    let py = btnY;
-    if (px < minLeft) px = btnX + btnSize + gap;
-    if (px + panelWidth > window.innerWidth - 8) px = window.innerWidth - panelWidth - 8;
-    if (py + panelHeight > window.innerHeight - 8) py = window.innerHeight - panelHeight - 8;
-    if (py < 8) py = 8;
-    panelStyle = { left: px, top: py };
-  }
+  const panelStyle: React.CSSProperties | undefined = isMobile
+    ? undefined
+    : (() => {
+        const minLeft = typeof window !== 'undefined' && window.innerWidth >= 1024 ? 260 : 0;
+        const btnX = position?.x ?? (window.innerWidth - btnSize);
+        const btnY = position?.y ?? (window.innerHeight - btnSize);
+        let px = btnX - gap - panelWidth;
+        let py = btnY;
+        if (px < minLeft) px = btnX + btnSize + gap;
+        if (px + panelWidth > window.innerWidth - 8) px = window.innerWidth - panelWidth - 8;
+        if (py + panelHeight > window.innerHeight - 8) py = window.innerHeight - panelHeight - 8;
+        if (py < 8) py = 8;
+        return { left: px, top: py };
+      })();
 
   const panelClass = isMobile
-    ? 'fixed inset-x-2 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden'
+    ? 'fixed left-2 right-2 bottom-[80px] top-4 max-h-[calc(100dvh-96px)] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden'
     : 'fixed w-96 h-[600px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50 outline-none overflow-hidden';
 
   return (
