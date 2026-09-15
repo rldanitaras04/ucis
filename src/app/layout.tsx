@@ -9,11 +9,11 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
-    default: 'UCIS - University Clinic Information System',
-    template: '%s | UCIS',
+    default: 'U-Care - University Clinic Information System',
+    template: '%s | U-Care',
   },
   description: 'Medical and Dental Clinic Information System for Philippine State Universities',
-  keywords: ['clinic', 'medical', 'dental', 'university', 'healthcare', 'UCIS'],
+  keywords: ['clinic', 'medical', 'dental', 'university', 'healthcare', 'U-Care'],
   icons: {
     icon: '/favicon.png',
   },
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'UCIS',
+    title: 'U-Care',
   },
 };
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Eye, EyeSlash } from '@phosphor-icons/react';
 import { fetchSystemConfig } from '@/app/(app)/admin/library/actions';
 import { registerUser } from './actions';
 import toast from 'react-hot-toast';
@@ -24,6 +25,8 @@ export default function RegisterPage() {
     position: '',
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [userTypes, setUserTypes] = useState<{ config_value: string; label: string }[]>([]);
   const [colleges, setColleges] = useState<{ config_value: string; label: string }[]>([]);
   const [courses, setCourses] = useState<{ config_value: string; label: string }[]>([]);
@@ -106,7 +109,7 @@ export default function RegisterPage() {
             className="rounded-2xl mx-auto mb-4"
             priority
           />
-          <h1 className="text-display text-[#0F172A]">UCIS</h1>
+          <h1 className="text-display text-[#0F172A]">U-Care</h1>
           <h2 className="text-heading text-[#0F172A] mt-2">
             Create an account
           </h2>
@@ -222,29 +225,49 @@ export default function RegisterPage() {
             )}
             <div>
               <label htmlFor="password" className="label">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="input-field"
-                value={formData.password}
-                onChange={handleChange}
-                minLength={12}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="input-field pr-11"
+                  value={formData.password}
+                  onChange={handleChange}
+                  minLength={12}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               <p className="mt-1 text-small text-[#94A3B8]">At least 12 characters</p>
             </div>
             <div>
               <label htmlFor="confirmPassword" className="label">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                className="input-field"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  className="input-field pr-11"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           </div>
 

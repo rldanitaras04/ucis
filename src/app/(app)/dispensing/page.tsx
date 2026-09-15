@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { X, Pill, WarningCircle, CheckCircle } from '@phosphor-icons/react';
-import { dispenseMedication, fetchActivePrescriptions, fetchMedicineBatches } from './actions';
+import { dispenseMedication, fetchActivePrescriptions, fetchMedicineBatches, fetchDispensedQuantities } from './actions';
 import { usePagination, PaginationControls } from '@/components/Pagination';
 
 interface MedicineRef {
@@ -57,6 +57,7 @@ interface DispenseLine {
 export default function DispensingPage() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [medicineBatches, setMedicineBatches] = useState<MedicineBatch[]>([]);
+  const [dispensedMap, setDispensedMap] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -71,14 +72,17 @@ export default function DispensingPage() {
   const [singleRx, setSingleRx] = useState<Prescription | null>(null);
   const [singleBatch, setSingleBatch] = useState('');
   const [singleQty, setSingleQty] = useState(1);
+  const [singleRemaining, setSingleRemaining] = useState(0);
 
   const loadData = async () => {
-    const [rxResult, batchResult] = await Promise.all([
+    const [rxResult, batchResult, dispensedResult] = await Promise.all([
       fetchActivePrescriptions(),
       fetchMedicineBatches(),
+      fetchDispensedQuantities(),
     ]);
     if (rxResult.success) setPrescriptions(rxResult.data);
     if (batchResult.success) setMedicineBatches(batchResult.data);
+    if (dispensedResult.success) setDispensedMap(dispensedResult.data);
   };
 
   useEffect(() => {
@@ -87,14 +91,16 @@ export default function DispensingPage() {
   }, []);
 
   const allItems = useMemo(() => {
-    const items: { rx: Prescription; item: PrescriptionItem }[] = [];
+    const items: { rx: Prescription; item: PrescriptionItem; dispensed: number; remaining: number }[] = [];
     for (const rx of prescriptions) {
       for (const item of rx.items || []) {
-        items.push({ rx, item });
+        const dispensed = dispensedMap[item.id] || 0;
+        const remaining = Math.max(0, (item.quantity || 0) - dispensed);
+        items.push({ rx, item, dispensed, remaining });
       }
     }
     return items;
-  }, [prescriptions]);
+  }, [prescriptions, dispensedMap]);
 
   const { paginatedData, pagination } = usePagination(allItems, 10);
 
@@ -129,16 +135,17 @@ export default function DispensingPage() {
 
   const openBulkPanel = () => {
     const lines: DispenseLine[] = allItems
-      .filter(i => selected.has(i.item.id))
+      .filter(i => selected.has(i.item.id) && i.remaining > 0)
       .map(i => {
         const batches = getMatchingBatches(i.item);
         const bestBatch = batches.length === 1 ? batches[0] : null;
+        const totalStock = batches.reduce((sum, b) => sum + b.quantity, 0);
         return {
           prescriptionItemId: i.item.id,
           medicationName: i.item.medication_name,
-          requestedQty: i.item.quantity || 1,
+          requestedQty: i.remaining,
           selectedBatchId: bestBatch?.id || '',
-          dispenseQty: bestBatch ? Math.min(i.item.quantity || 1, bestBatch.quantity) : 1,
+          dispenseQty: bestBatch ? Math.min(i.remaining, bestBatch.quantity) : 1,
           maxQty: bestBatch?.quantity || 0,
           status: 'pending' as const,
         };
@@ -201,11 +208,12 @@ export default function DispensingPage() {
     setBulkProcessing(false);
   };
 
-  const openSingleDispense = (rx: Prescription, item: PrescriptionItem) => {
+  const openSingleDispense = (rx: Prescription, item: PrescriptionItem, remaining: number) => {
     setSingleRx(rx);
     setSingleItem(item);
+    setSingleRemaining(remaining);
     setSingleBatch('');
-    setSingleQty(1);
+    setSingleQty(remaining > 0 ? remaining : 1);
   };
 
   const handleSingleDispense = async () => {
@@ -213,17 +221,19 @@ export default function DispensingPage() {
     setActionLoading(singleItem.id);
     setError(null);
     const batch = medicineBatches.find(b => b.id === singleBatch);
-    const qty = batch && singleQty > batch.quantity ? batch.quantity : singleQty;
+    const maxAllowed = Math.min(singleRemaining, batch?.quantity || 0);
+    const qty = singleQty > maxAllowed ? maxAllowed : singleQty;
     const result = await dispenseMedication({
       prescription_item_id: singleItem.id,
       medicine_batch_id: singleBatch,
       quantity: qty,
     });
     if (result.success) {
-      if (batch && singleQty > batch.quantity) {
-        setSuccess(`Dispensed ${qty} (partial — batch only had ${batch.quantity})`);
+      const remainingAfter = singleRemaining - qty;
+      if (remainingAfter > 0) {
+        setSuccess(`Dispensed ${qty} — ${remainingAfter} still remaining`);
       } else {
-        setSuccess('Medication dispensed successfully');
+        setSuccess('Medication fully dispensed');
       }
       setSingleItem(null);
       setSingleRx(null);
@@ -292,18 +302,23 @@ export default function DispensingPage() {
                 <th scope="col">Dosage</th>
                 <th scope="col">Frequency</th>
                 <th scope="col">Qty</th>
+                <th scope="col">Dispensed</th>
                 <th scope="col">Unit</th>
                 <th scope="col">Stock</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0]">
-              {paginatedData.map(({ rx, item }) => {
+              {paginatedData.map(({ rx, item, dispensed, remaining }) => {
                 const batches = getMatchingBatches(item);
+                const totalStock = batches.reduce((sum, b) => sum + b.quantity, 0);
+                const isFullyDispensed = remaining === 0;
+                const pct = item.quantity > 0 ? Math.round((dispensed / item.quantity) * 100) : 0;
                 return (
                   <tr key={item.id} className={`hover:bg-[#F8FAFC] ${selected.has(item.id) ? 'bg-[#F0F7FF]' : ''}`}>
                     <td>
                       <input type="checkbox" checked={selected.has(item.id)} onChange={() => toggleSelect(item.id)}
+                        disabled={isFullyDispensed}
                         className="rounded border-[#D1D5DB] text-[#1E40AF] focus:ring-[#1E40AF]" />
                     </td>
                     <td>
@@ -322,19 +337,37 @@ export default function DispensingPage() {
                     <td>{item.dosage}</td>
                     <td>{item.frequency}</td>
                     <td className="tabular-nums">{item.quantity}</td>
+                    <td>
+                      {isFullyDispensed ? (
+                        <span className="badge badge-success">Complete</span>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm tabular-nums font-medium text-[#0F172A]">{dispensed} / {item.quantity}</span>
+                          <div className="w-20 h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full ${pct >= 100 ? 'bg-[#059669]' : pct > 0 ? 'bg-[#D97706]' : 'bg-[#CBD5E1]'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                          </div>
+                        </div>
+                      )}
+                    </td>
                     <td className="text-sm text-[#64748B]">{rx.unit || '—'}</td>
                     <td>
                       {batches.length === 0 ? (
                         <span className="badge badge-danger">No stock</span>
                       ) : (
-                        <span className="badge badge-success">{batches.length} batch{batches.length > 1 ? 'es' : ''}</span>
+                        <span className={`badge ${totalStock >= remaining ? 'badge-success' : 'badge-warning'}`}>
+                          {totalStock} left
+                        </span>
                       )}
                     </td>
                     <td>
-                      <button onClick={() => openSingleDispense(rx, item)} disabled={batches.length === 0}
-                        className="btn-primary py-1 px-3 text-sm" style={{ display: singleItem?.id === item.id ? 'none' : undefined }}>
-                        Dispense
-                      </button>
+                      {isFullyDispensed ? (
+                        <span className="text-sm text-[#94A3B8]">Done</span>
+                      ) : (
+                        <button onClick={() => openSingleDispense(rx, item, remaining)} disabled={batches.length === 0 || totalStock === 0}
+                          className="btn-primary py-1 px-3 text-sm" style={{ display: singleItem?.id === item.id ? 'none' : undefined }}>
+                          Dispense
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -352,11 +385,12 @@ export default function DispensingPage() {
 
       {singleItem && singleRx && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4">
             <h2 className="text-subheading text-[#0F172A]">Dispense Medication</h2>
             <div className="text-sm text-[#64748B]">
               <p><span className="font-medium text-[#0F172A]">{singleItem.medication_name}</span> — {singleItem.dosage}</p>
               <p>{singleRx.patient?.last_name}, {singleRx.patient?.first_name}</p>
+              <p className="mt-1 text-[#D97706] font-medium">Remaining to dispense: {singleRemaining} of {singleItem.quantity}</p>
             </div>
             <div>
               <label className="label">Select Batch *</label>
@@ -375,11 +409,21 @@ export default function DispensingPage() {
             {singleBatch && (
               <div>
                 <label className="label">Quantity</label>
-                <input type="number" min="1" max={medicineBatches.find(b => b.id === singleBatch)?.quantity || 999}
-                  value={singleQty} onChange={e => setSingleQty(Number(e.target.value))} className="input-field w-full" />
-                {singleQty > (medicineBatches.find(b => b.id === singleBatch)?.quantity || 0) && (
-                  <p className="text-xs text-[#D97706] mt-1">Partial dispense: will dispense available quantity only</p>
-                )}
+                {(() => {
+                  const batch = medicineBatches.find(b => b.id === singleBatch);
+                  const maxAllowed = Math.min(singleRemaining, batch?.quantity || 0);
+                  return (
+                    <>
+                      <input type="number" min="1" max={maxAllowed}
+                        value={singleQty} onChange={e => setSingleQty(Number(e.target.value))} className="input-field w-full" />
+                      {singleQty > maxAllowed && (
+                        <p className="text-xs text-[#D97706] mt-1">
+                          Max available: {maxAllowed} ({batch?.quantity} in batch, {singleRemaining} remaining)
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
             <div className="flex gap-3 justify-end">
@@ -413,7 +457,7 @@ export default function DispensingPage() {
                     <div className="flex items-start justify-between mb-2">
                       <div>
                         <span className="font-medium text-[#0F172A]">{line.medicationName}</span>
-                        <span className="text-sm text-[#64748B] ml-2">Qty needed: {line.requestedQty}</span>
+                        <span className="text-sm text-[#64748B] ml-2">Remaining: {line.requestedQty}</span>
                       </div>
                       {line.status === 'dispensed' && <span className="badge badge-success">Dispensed</span>}
                       {line.status === 'error' && <span className="badge badge-danger">{line.error}</span>}
@@ -438,7 +482,7 @@ export default function DispensingPage() {
                           <input type="number" min="1" max={line.maxQty} value={line.dispenseQty}
                             onChange={e => updateBulkLine(idx, { dispenseQty: Number(e.target.value) })} className="input-field w-full text-sm" />
                           {line.dispenseQty < line.requestedQty && line.maxQty > 0 && (
-                            <p className="text-xs text-[#D97706] mt-1">Partial: {line.dispenseQty} of {line.requestedQty}</p>
+                            <p className="text-xs text-[#D97706] mt-1">Partial: {line.dispenseQty} of {line.requestedQty} remaining</p>
                           )}
                         </div>
                       </div>

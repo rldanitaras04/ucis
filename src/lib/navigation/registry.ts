@@ -62,7 +62,7 @@ export const NAVIGATION_REGISTRY: NavigationItem[] = [
     href: '/dental',
     section: 'Clinical',
     priority: 23,
-    requiredRoles: ['dentist', 'admin', 'super_admin'],
+    requiredRoles: ['dentist', 'nurse', 'admin', 'super_admin'],
   },
   {
     id: 'odontogram',

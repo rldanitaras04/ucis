@@ -4,12 +4,14 @@ import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Eye, EyeSlash } from '@phosphor-icons/react';
 import { createClient } from '@/lib/supabase/client';
 import toast from 'react-hot-toast';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,7 +53,7 @@ function LoginForm() {
             className="rounded-2xl mx-auto mb-4"
             priority
           />
-          <h1 className="text-display text-[#0F172A]">UCIS</h1>
+          <h1 className="text-display text-[#0F172A]">U-Care</h1>
           <h2 className="text-heading text-[#0F172A] mt-2">
             Sign in to your account
           </h2>
@@ -80,16 +82,26 @@ function LoginForm() {
               <label htmlFor="password" className="label">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="input-field"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  required
+                  className="input-field pr-11"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B] transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
           </div>
 

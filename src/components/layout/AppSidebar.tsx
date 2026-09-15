@@ -98,7 +98,7 @@ export default function AppSidebar({
               priority
             />
           </div>
-          {!collapsed && <span className="text-lg font-semibold text-[#111827]">UCIS</span>}
+          {!collapsed && <span className="text-lg font-semibold text-[#111827]">U-Care</span>}
         </div>
 
       {/* Navigation */}

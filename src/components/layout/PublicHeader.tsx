@@ -8,6 +8,8 @@ import { List, X } from '@phosphor-icons/react';
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Features', href: '/#features' },
+  { label: 'How It Works', href: '/#how-it-works' },
+  { label: 'User Roles', href: '/#roles' },
 ];
 
 export default function PublicHeader() {
@@ -26,7 +28,7 @@ export default function PublicHeader() {
               className="rounded-lg"
               priority
             />
-            <span className="text-xl font-bold text-[#0F172A]">UCIS</span>
+            <span className="text-xl font-bold text-[#0F172A]">U-Care</span>
             <span className="hidden md:block text-body text-[#64748B] ml-2">
               University Clinic Information System
             </span>

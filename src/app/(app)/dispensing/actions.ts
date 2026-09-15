@@ -69,6 +69,24 @@ export async function fetchMedicineBatches(medicineId?: string): Promise<{ succe
   }
 }
 
+export async function fetchDispensedQuantities(): Promise<{ success: true; data: Record<string, number> } | { success: false; error: string }> {
+  try {
+    await requireAnyRole('clinic_staff', 'nurse', 'admin', 'super_admin');
+    const supabase = getAdminClient();
+    const { data, error } = await supabase
+      .from('dispensing_records')
+      .select('prescription_item_id, quantity_dispensed');
+    if (error) throw error;
+    const map: Record<string, number> = {};
+    for (const row of data || []) {
+      map[row.prescription_item_id] = (map[row.prescription_item_id] || 0) + row.quantity_dispensed;
+    }
+    return { success: true, data: map };
+  } catch (error) {
+    return handleAuthError(error);
+  }
+}
+
 export async function dispenseMedication(data: {
   prescription_item_id: string;
   medicine_batch_id: string;

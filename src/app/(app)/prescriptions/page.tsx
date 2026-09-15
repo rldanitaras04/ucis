@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { MagnifyingGlass, X, Plus, Funnel, CaretDown, CaretRight, Pill } from '@phosphor-icons/react';
 import { createPrescription, cancelPrescription, fetchPrescriptions, fetchAvailableMedicines } from './actions';
 import { fetchPatientName } from '../actions/patients';
-import { dispenseMedication, fetchMedicineBatches } from '../dispensing/actions';
+import { dispenseMedication, fetchMedicineBatches, fetchDispensedQuantities } from '../dispensing/actions';
 import PatientSearch from '@/components/PatientSearch';
 import { usePagination, PaginationControls } from '@/components/Pagination';
 
@@ -119,6 +119,8 @@ function PrescriptionsPageContent() {
   const [selectedBatch, setSelectedBatch] = useState('');
   const [dispenseQty, setDispenseQty] = useState(1);
   const [dispenseLoading, setDispenseLoading] = useState(false);
+  const [dispensedMap, setDispensedMap] = useState<Record<string, number>>({});
+  const [dispenseRemaining, setDispenseRemaining] = useState(0);
 
   const filteredMedicines = medicines.filter(med =>
     med.name.toLowerCase().includes(medicineSearch.toLowerCase()) ||
@@ -140,12 +142,16 @@ function PrescriptionsPageContent() {
   });
 
   const loadPrescriptions = async () => {
-    const result = await fetchPrescriptions();
-    if (result.success) {
-      setPrescriptions(result.data);
+    const [rxResult, dispensedResult] = await Promise.all([
+      fetchPrescriptions(),
+      fetchDispensedQuantities(),
+    ]);
+    if (rxResult.success) {
+      setPrescriptions(rxResult.data);
     } else {
-      setError(result.error);
+      setError(rxResult.error);
     }
+    if (dispensedResult.success) setDispensedMap(dispensedResult.data);
   };
 
   const loadMedicines = async () => {
@@ -212,7 +218,11 @@ function PrescriptionsPageContent() {
   const openDispense = async (prescriptionItemId: string) => {
     setDispenseTarget(prescriptionItemId);
     setSelectedBatch('');
-    setDispenseQty(1);
+    const item = prescriptions.flatMap(rx => rx.items || []).find(i => i.id === prescriptionItemId);
+    const dispensed = dispensedMap[prescriptionItemId] || 0;
+    const remaining = item ? Math.max(0, (item.quantity || 0) - dispensed) : 0;
+    setDispenseRemaining(remaining);
+    setDispenseQty(remaining > 0 ? remaining : 1);
     const result = await fetchMedicineBatches();
     if (result.success) setMedicineBatches(result.data);
   };
@@ -222,17 +232,19 @@ function PrescriptionsPageContent() {
     setDispenseLoading(true);
     setError(null);
     const batch = medicineBatches.find(b => b.id === selectedBatch);
-    const qty = batch && dispenseQty > batch.quantity ? batch.quantity : dispenseQty;
+    const maxAllowed = Math.min(dispenseRemaining, batch?.quantity || 0);
+    const qty = dispenseQty > maxAllowed ? maxAllowed : dispenseQty;
     const result = await dispenseMedication({
       prescription_item_id: dispenseTarget,
       medicine_batch_id: selectedBatch,
       quantity: qty,
     });
     if (result.success) {
-      if (batch && dispenseQty > batch.quantity) {
-        setSuccess(`Dispensed ${qty} (partial — batch only had ${batch.quantity})`);
+      const remainingAfter = dispenseRemaining - qty;
+      if (remainingAfter > 0) {
+        setSuccess(`Dispensed ${qty} — ${remainingAfter} still remaining`);
       } else {
-        setSuccess('Medication dispensed successfully');
+        setSuccess('Medication fully dispensed');
       }
       setDispenseTarget(null);
       await loadPrescriptions();
@@ -686,6 +698,7 @@ function PrescriptionsPageContent() {
             <div className="text-sm text-[#64748B]">
               <p><span className="font-medium text-[#0F172A]">{dispenseItem.item.medication_name}</span> — {dispenseItem.item.dosage}</p>
               <p>{dispenseItem.prescription.patient?.last_name}, {dispenseItem.prescription.patient?.first_name}</p>
+              <p className="mt-1 text-[#D97706] font-medium">Remaining to dispense: {dispenseRemaining} of {dispenseItem.item.quantity}</p>
             </div>
             <div>
               <label className="label">Select Batch *</label>
@@ -704,11 +717,21 @@ function PrescriptionsPageContent() {
             {selectedBatch && (
               <div>
                 <label className="label">Quantity</label>
-                <input type="number" min="1" max={medicineBatches.find(b => b.id === selectedBatch)?.quantity || 999}
-                  value={dispenseQty} onChange={e => setDispenseQty(Number(e.target.value))} className="input-field w-full" />
-                {dispenseQty > (medicineBatches.find(b => b.id === selectedBatch)?.quantity || 0) && (
-                  <p className="text-xs text-[#D97706] mt-1">Partial dispense: will dispense available quantity only</p>
-                )}
+                {(() => {
+                  const batch = medicineBatches.find(b => b.id === selectedBatch);
+                  const maxAllowed = Math.min(dispenseRemaining, batch?.quantity || 0);
+                  return (
+                    <>
+                      <input type="number" min="1" max={maxAllowed}
+                        value={dispenseQty} onChange={e => setDispenseQty(Number(e.target.value))} className="input-field w-full" />
+                      {dispenseQty > maxAllowed && (
+                        <p className="text-xs text-[#D97706] mt-1">
+                          Max available: {maxAllowed} ({batch?.quantity} in batch, {dispenseRemaining} remaining)
+                        </p>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             )}
             <div className="flex gap-3 justify-end">
